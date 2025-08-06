@@ -8,7 +8,9 @@ import ThemeToggle from "./components/ThemeToggle.jsx";
 import LikeSystem from "./components/LikeSystem.jsx";
 import DashboardStats from "./components/DashboardStats.jsx";
 import ROICalculator from "./components/Calculadora.jsx";
-import AIChatBot from "./components/AIChatBot.jsx";   
+import AIChatBot from "./components/AIChatBot.jsx";
+import WebCalculator from "./components/CalculadoraWeb.jsx";
+   
 import "./index.css";
 
 export default function App() {
@@ -18,6 +20,7 @@ export default function App() {
       <DashboardStats />
       <LikeSystem />
       {<ROICalculator />}
+      <WebCalculator />
       {<AIChatBot />}
       
       <div className="max-w-5xl mx-auto p-4 space-y-20">

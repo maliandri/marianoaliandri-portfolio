@@ -49,6 +49,28 @@ export class EmailService {
     }
   }
 
+  async sendWebLead(leadData) {
+    try {
+      const response = await fetch(`${this.API_URL}/.netlify/functions/send-web-lead`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(leadData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error sending web lead:', error);
+      throw error;
+    }
+  }
+
   async checkServerHealth() {
     try {
       const response = await fetch(`${this.API_URL}/.netlify/functions/send-contact`, {

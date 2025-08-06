@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { emailService } from '../utils/emailService';
 
 function ROICalculator() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +19,7 @@ function ROICalculator() {
   });
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [emailStatus, setEmailStatus] = useState({ loading: false, sent: false, error: null });
 
   const sectors = [
     { value: 'retail', label: 'Retail/Comercio', factor: 1.2 },
@@ -132,25 +134,46 @@ function ROICalculator() {
       reportGenerationTime: ''
     });
     setResults(null);
+    setEmailStatus({ loading: false, sent: false, error: null });
   };
 
   const sendLeadData = async () => {
-    // Simular envío de lead
-    const leadData = {
-      ...formData,
-      calculatedROI: results,
-      timestamp: new Date().toISOString(),
-      source: 'ROI Calculator'
-    };
-    
-    console.log('Lead generado:', leadData);
-    
-    // Guardar en localStorage como ejemplo
-    const leads = JSON.parse(localStorage.getItem('roi_leads') || '[]');
-    leads.push(leadData);
-    localStorage.setItem('roi_leads', JSON.stringify(leads));
-    
-    alert(`¡Gracias ${formData.company}! Te contactaremos pronto con un análisis detallado.`);
+    setEmailStatus({ loading: true, sent: false, error: null });
+
+    try {
+      const leadData = {
+        ...formData,
+        calculatedROI: results,
+        timestamp: new Date().toISOString(),
+        source: 'ROI Calculator'
+      };
+
+      console.log('Lead generado:', leadData);
+
+      // Enviar email real
+      const response = await emailService.sendROILead(leadData);
+      
+      if (response.success) {
+        setEmailStatus({ loading: false, sent: true, error: null });
+        
+        // Guardar en localStorage como backup
+        const leads = JSON.parse(localStorage.getItem('roi_leads') || '[]');
+        leads.push(leadData);
+        localStorage.setItem('roi_leads', JSON.stringify(leads));
+        
+        alert(`¡Gracias ${formData.company}! Te contactaremos pronto con un análisis detallado.`);
+      }
+    } catch (error) {
+      console.error('Error enviando ROI lead:', error);
+      setEmailStatus({ 
+        loading: false, 
+        sent: false, 
+        error: 'Error enviando información. Intenta por WhatsApp.' 
+      });
+      
+      // Mostrar alert de error también
+      alert('Error enviando información. Intenta contactar por WhatsApp.');
+    }
   };
 
   const formatCurrency = (amount) => {
@@ -490,6 +513,43 @@ function ROICalculator() {
                           </p>
                         </div>
 
+                        {/* Estado del email */}
+                        <AnimatePresence>
+                          {emailStatus.loading && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-2 rounded-lg flex items-center gap-2"
+                            >
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                              Enviando información...
+                            </motion.div>
+                          )}
+                          
+                          {emailStatus.sent && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-2 rounded-lg flex items-center gap-2"
+                            >
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              ¡Información enviada! Te contactaré pronto.
+                            </motion.div>
+                          )}
+                          
+                          {emailStatus.error && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg"
+                            >
+                              {emailStatus.error}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
                         {/* Métricas principales */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                           <motion.div
@@ -559,11 +619,21 @@ function ROICalculator() {
                           </p>
                           <motion.button
                             onClick={sendLeadData}
-                            className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors mr-4"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            disabled={emailStatus.loading}
+                            className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors mr-4 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            whileHover={{ scale: emailStatus.loading ? 1 : 1.05 }}
+                            whileTap={{ scale: emailStatus.loading ? 1 : 0.95 }}
                           >
-                            Solicitar Propuesta 📊
+                            {emailStatus.loading ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                                Enviando...
+                              </>
+                            ) : (
+                              <>
+                                📊 Solicitar Propuesta
+                              </>
+                            )}
                           </motion.button>
                           <motion.button
                             onClick={() => window.open('https://wa.me/+542995414422?text=Hola! Vi los resultados del ROI y me interesa implementar análisis de datos en mi empresa.', '_blank')}
