@@ -3,7 +3,7 @@ export class EmailService {
   constructor() {
     // Reemplaza esta URL con la URL base de tu backend en Render.
     // Ejemplo: 'https://marianoaliandri-portfolio.onrender.com'
-    this.BACKEND_URL = 'URL_DE_TU_BACKEND_EN_RENDER';
+    this.BACKEND_URL = 'https://marianoaliandri-portfolio.onrender.com';
   }
 
   async sendContactForm(formData) {
