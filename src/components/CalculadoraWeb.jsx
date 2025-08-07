@@ -5,8 +5,6 @@ import { EmailService } from '../utils/emailService'; // Importa la clase comple
 
 function WebCalculator() {
   const emailService = new EmailService(); // Crea una nueva instancia de la clase
-}
-function WebCalculator() {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
