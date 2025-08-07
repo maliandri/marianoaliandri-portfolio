@@ -1,9 +1,7 @@
 // src/utils/emailService.js
 export class EmailService {
   constructor() {
-    // Reemplaza esta URL con la URL base de tu backend en Render.
-    // Ejemplo: 'https://marianoaliandri-portfolio.onrender.com'
-    this.BACKEND_URL = 'https://marianoaliandri-portfolio.onrender.com';
+    this.BACKEND_URL = 'https://marianoaliandri-portfolio.onrender.com'; // <--- PEGA AQUÍ LA URL DE RENDER
   }
 
   async sendContactForm(formData) {
@@ -20,10 +18,9 @@ export class EmailService {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-
       return await response.json();
     } catch (error) {
-      console.error('Error enviando formulario de contacto:', error);
+      console.error('Error sending contact form:', error);
       throw error;
     }
   }
@@ -42,10 +39,9 @@ export class EmailService {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-
       return await response.json();
     } catch (error) {
-      console.error('Error enviando lead de ROI:', error);
+      console.error('Error sending ROI lead:', error);
       throw error;
     }
   }
@@ -64,11 +60,12 @@ export class EmailService {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-
       return await response.json();
     } catch (error) {
-      console.error('Error enviando web lead:', error);
+      console.error('Error sending web lead:', error);
       throw error;
     }
   }
 }
+
+export const emailService = new EmailService();
