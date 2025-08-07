@@ -1,13 +1,14 @@
 // src/utils/emailService.js
 export class EmailService {
   constructor() {
-    // Para Netlify Functions, usamos el mismo dominio
-    this.API_URL = window.location.origin;
+    // Reemplaza esta URL con la URL base de tu backend en Render.
+    // Ejemplo: 'https://marianoaliandri-portfolio.onrender.com'
+    this.BACKEND_URL = 'URL_DE_TU_BACKEND_EN_RENDER';
   }
 
   async sendContactForm(formData) {
     try {
-      const response = await fetch(`${this.API_URL}/.netlify/functions/send-contact`, {
+      const response = await fetch(`${this.BACKEND_URL}/api/send-contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -22,14 +23,14 @@ export class EmailService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error sending contact form:', error);
+      console.error('Error enviando formulario de contacto:', error);
       throw error;
     }
   }
 
   async sendROILead(leadData) {
     try {
-      const response = await fetch(`${this.API_URL}/.netlify/functions/send-roi-lead`, {
+      const response = await fetch(`${this.BACKEND_URL}/api/send-roi-lead`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,14 +45,14 @@ export class EmailService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error sending ROI lead:', error);
+      console.error('Error enviando lead de ROI:', error);
       throw error;
     }
   }
 
   async sendWebLead(leadData) {
     try {
-      const response = await fetch(`${this.API_URL}/.netlify/functions/send-web-lead`, {
+      const response = await fetch(`${this.BACKEND_URL}/api/send-web-lead`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,23 +67,8 @@ export class EmailService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error sending web lead:', error);
+      console.error('Error enviando web lead:', error);
       throw error;
     }
   }
-
-  async checkServerHealth() {
-    try {
-      const response = await fetch(`${this.API_URL}/.netlify/functions/send-contact`, {
-        method: 'OPTIONS'
-      });
-      return response.ok;
-    } catch (error) {
-      console.error('Health check failed:', error);
-      return false;
-    }
-  }
 }
-
-// Exportar instancia global
-export const emailService = new EmailService();
