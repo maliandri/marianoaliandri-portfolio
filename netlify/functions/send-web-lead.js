@@ -1,8 +1,7 @@
-// netlify/functions/send-web-lead.js
 const nodemailer = require('nodemailer');
 
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.default.createTransporter({
     host: 'smtp.zoho.com',
     port: 587,
     secure: false,
@@ -16,136 +15,95 @@ const createTransporter = () => {
   });
 };
 
-exports.handler = async (event, context) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS'
-  };
+const sendEmail = async (mailOptions) => {
+  const transporter = createTransporter();
+  await transporter.sendMail(mailOptions);
+};
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
+const buildEmailContent = (leadData) => {
+  // Contenido del email
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Nuevo Web Lead - ${leadData.company}</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
+        h1 { color: #0056b3; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin-bottom: 10px; }
+        strong { color: #555; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>¡Nuevo Lead de Desarrollo Web!</h1>
+        <p><strong>De:</strong> ${leadData.company}</p>
+        <p><strong>Email:</strong> <a href="mailto:${leadData.email}">${leadData.email}</a></p>
+        <p><strong>Teléfono:</strong> ${leadData.phone || 'No especificado'}</p>
+        <p><strong>Origen:</strong> ${leadData.source}</p>
+        <p><strong>Timestamp:</strong> ${leadData.timestamp}</p>
+        
+        <h2>Resumen del Proyecto</h2>
+        <ul>
+          <li><strong>Presupuesto Seleccionado:</strong> $${leadData.budget}</li>
+          <li><strong>Características Elegidas:</strong> ${leadData.features.join(', ') || 'Ninguna'}</li>
+          <li><strong>Características Personalizadas:</strong> ${leadData.customFeatures || 'No especificado'}</li>
+          <li><strong>Diseño Web:</strong> ${leadData.design}</li>
+          <li><strong>Método de Contacto Preferido:</strong> ${leadData.contactMethod || 'No especificado'}</li>
+        </ul>
+        
+        <h2>Resultados Calculados</h2>
+        <ul>
+          <li><strong>Costo Estimado:</strong> $${leadData.calculatedResults.cost}</li>
+          <li><strong>Tiempo Estimado:</strong> ${leadData.calculatedResults.time} semanas</li>
+          <li><strong>ROI Estimado:</strong> ${leadData.calculatedResults.estimatedROI}%</li>
+        </ul>
+      </div>
+    </body>
+    </html>
+  `;
+  return htmlContent;
+};
 
+exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Method not allowed' })
+      body: 'Method Not Allowed',
     };
   }
 
   try {
     const data = JSON.parse(event.body);
+    const emailBody = buildEmailContent(data);
 
-    if (!data.email || !data.company) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Email y empresa requeridos' })
-      };
-    }
-
-    const transporter = createTransporter();
-    
-    // Email de lead Web (para ti)
     const mailOptions = {
-      from: `"Portfolio Web Calculator" <${process.env.ZOHO_USER}>`,
-      to: process.env.TO_EMAIL || process.env.ZOHO_USER,
-      subject: `🌐 Nuevo Lead Web: ${data.company} - ${data.calculatedResults?.developmentCost ? '$' + data.calculatedResults.developmentCost.toLocaleString() : 'N/A'}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 20px; text-align: center;">
-            <h1 style="margin: 0;">🌐 Nuevo Lead de Desarrollo Web</h1>
-            <p style="margin: 10px 0 0 0; opacity: 0.9;">Cliente interesado en desarrollo web profesional</p>
-          </div>
-          
-          <div style="padding: 20px; background: #f9f9f9;">
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <h2 style="color: #1d4ed8; margin-top: 0;">💰 Cotización Calculada</h2>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 15px 0;">
-                <div style="text-align: center; padding: 15px; background: #dbeafe; border-radius: 8px;">
-                  <div style="font-size: 24px; font-weight: bold; color: #1d4ed8;">$${data.calculatedResults?.developmentCost?.toLocaleString() || '0'}</div>
-                  <div style="font-size: 12px; color: #666; margin-top: 5px;">Costo Total</div>
-                </div>
-                <div style="text-align: center; padding: 15px; background: #f0fdf4; border-radius: 8px;">
-                  <div style="font-size: 24px; font-weight: bold; color: #059669;">${data.calculatedResults?.roi || 'N/A'}%</div>
-                  <div style="font-size: 12px; color: #666; margin-top: 5px;">ROI Proyectado</div>
-                </div>
-                <div style="text-align: center; padding: 15px; background: #fef3f2; border-radius: 8px;">
-                  <div style="font-size: 24px; font-weight: bold; color: #dc2626;">${data.calculatedResults?.developmentWeeks || 'N/A'} sem</div>
-                  <div style="font-size: 12px; color: #666; margin-top: 5px;">Tiempo Desarrollo</div>
-                </div>
-                <div style="text-align: center; padding: 15px; background: #fff7ed; border-radius: 8px;">
-                  <div style="font-size: 24px; font-weight: bold; color: #ea580c;">$${data.calculatedResults?.monthlyRevenue?.toLocaleString() || '0'}</div>
-                  <div style="font-size: 12px; color: #666; margin-top: 5px;">Ingresos Extra/Mes</div>
-                </div>
-              </div>
-            </div>
-
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <h3 style="color: #333; margin-top: 0;">🏢 Información del Cliente</h3>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr><td style="padding: 8px; font-weight: bold; color: #555; width: 30%;">Empresa:</td><td style="padding: 8px;">${data.company}</td></tr>
-                <tr><td style="padding: 8px; font-weight: bold; color: #555;">Sector:</td><td style="padding: 8px;">${data.sector || 'No especificado'}</td></tr>
-                <tr><td style="padding: 8px; font-weight: bold; color: #555;">Ingresos Mensuales:</td><td style="padding: 8px;">${data.monthlyRevenue || 'No especificado'}</td></tr>
-                <tr><td style="padding: 8px; font-weight: bold; color: #555;">Email:</td><td style="padding: 8px;"><a href="mailto:${data.email}">${data.email}</a></td></tr>
-                <tr><td style="padding: 8px; font-weight: bold; color: #555;">Teléfono:</td><td style="padding: 8px;">${data.phone || 'No especificado'}</td></tr>
-                <tr><td style="padding: 8px; font-weight: bold; color: #555;">Sitio Actual:</td><td style="padding: 8px;">${data.currentWebsite || 'No especificado'}</td></tr>
-              </table>
-            </div>
-
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <h3 style="color: #333; margin-top: 0;">🌐 Requerimientos del Proyecto</h3>
-              <p><strong>Tipo de sitio:</strong> ${data.websiteType || 'No especificado'}</p>
-              <p><strong>Número de páginas:</strong> ${data.pageCount || 'No especificado'}</p>
-              <p><strong>Nivel de diseño:</strong> ${data.designLevel || 'No especificado'}</p>
-              <p><strong>Urgencia:</strong> ${data.urgency || 'No especificado'}</p>
-              <p><strong>Funcionalidades:</strong> ${data.features?.join(', ') || 'Ninguna especial'}</p>
-              <p><strong>Integraciones:</strong> ${data.integrations?.join(', ') || 'Ninguna especial'}</p>
-              <p><strong>Método actual clientes:</strong> ${data.currentClientMethod || 'No especificado'}</p>
-            </div>
-
-            <div style="background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); color: white; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px;">
-              <h3 style="margin: 0 0 10px 0;">🎯 Acciones Recomendadas</h3>
-              <p style="margin: 0 0 15px 0;">Cliente con proyecto de $${data.calculatedResults?.developmentCost?.toLocaleString() || '0'} y ROI de ${data.calculatedResults?.roi || 'N/A'}%</p>
-              <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                <a href="mailto:${data.email}?subject=Propuesta de desarrollo web para ${data.company}&body=Hola, vi tu cálculo de desarrollo web y me gustaría enviarte una propuesta detallada." 
-                   style="background: white; color: #1d4ed8; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-                  📧 Enviar Propuesta
-                </a>
-                <a href="https://wa.me/+542995414422?text=Hola! Quiero contactar el lead de ${data.company} que calculó un proyecto web de $${data.calculatedResults?.developmentCost?.toLocaleString() || '0'}"
-                   style="background: rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-                  💬 WhatsApp
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      `
+      from: process.env.ZOHO_USER,
+      to: process.env.TO_EMAIL,
+      subject: `Nuevo Lead de Desarrollo Web: ${data.company}`,
+      html: emailBody,
     };
 
-    await transporter.sendMail(mailOptions);
+    await sendEmail(mailOptions);
 
     return {
       statusCode: 200,
-      headers,
       body: JSON.stringify({
         success: true,
-        message: 'Lead de desarrollo web procesado exitosamente'
-      })
+        message: 'Email sent successfully!',
+      }),
     };
-
   } catch (error) {
     console.error('Error enviando Web lead:', error);
-    
     return {
       statusCode: 500,
-      headers,
       body: JSON.stringify({
         success: false,
-        error: 'Error procesando lead de desarrollo web'
-      })
+        message: 'Error procesando lead de desarrollo web',
+        error: error.message,
+      }),
     };
   }
 };
