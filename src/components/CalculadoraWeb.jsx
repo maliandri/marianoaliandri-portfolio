@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 import { emailService } from '../utils/emailService';
 
 function WebCalculator() {
@@ -212,7 +213,7 @@ function WebCalculator() {
     setEmailStatus({ loading: false, sent: false, error: null });
   };
 
-  const sendWebLeadData = async () => {
+ const sendWebLeadData = async () => {
     setEmailStatus({ loading: true, sent: false, error: null });
 
     try {
@@ -220,32 +221,27 @@ function WebCalculator() {
         ...formData,
         calculatedResults: results,
         timestamp: new Date().toISOString(),
-        source: 'Web Development Calculator'
+        source: 'Web Development Calculator',
       };
 
       console.log('Web Lead generado:', leadData);
 
-      // Enviar email real (necesitaremos crear nueva función)
       const response = await emailService.sendWebLead(leadData);
-      
+
       if (response.success) {
         setEmailStatus({ loading: false, sent: true, error: null });
-        
-        // Guardar en localStorage como backup
         const leads = JSON.parse(localStorage.getItem('web_leads') || '[]');
         leads.push(leadData);
         localStorage.setItem('web_leads', JSON.stringify(leads));
-        
         alert(`¡Gracias ${formData.company}! Te enviaré una propuesta detallada en las próximas 24 horas.`);
       }
     } catch (error) {
       console.error('Error enviando Web lead:', error);
-      setEmailStatus({ 
-        loading: false, 
-        sent: false, 
-        error: 'Error enviando información. Intenta por WhatsApp.' 
+      setEmailStatus({
+        loading: false,
+        sent: false,
+        error: 'Error enviando información. Intenta por WhatsApp.',
       });
-      
       alert('Error enviando información. Te contacto por WhatsApp para enviarte la propuesta.');
     }
   };
