@@ -1,8 +1,11 @@
+// src/components/Calculadora.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { emailService } from '../utils/emailService';
+import { EmailService } from '../utils/emailService'; // Importa la clase completa
 
+function WebCalculator() {
+  const emailService = new EmailService(); // Crea una nueva instancia de la clase
+}
 function WebCalculator() {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);

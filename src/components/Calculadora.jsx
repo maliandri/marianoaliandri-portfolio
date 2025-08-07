@@ -1,6 +1,12 @@
+// src/components/Calculadora.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { emailService } from '../utils/emailService';
+import { EmailService } from '../utils/emailService'; // Importa la clase completa
+
+function ROICalculator() {
+  const emailService = new EmailService(); // Crea una nueva instancia de la clase
+  // ... tu código
+}
 
 function ROICalculator() {
   const [isOpen, setIsOpen] = useState(false);
