@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "rm -rf node_modules && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "framer-motion": "^12.23.12",
-    "nodemailer": "^7.0.5",
+    "nodemailer": "^6.9.14",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-intersection-observer": "^9.16.0"
