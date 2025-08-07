@@ -60,7 +60,8 @@ const createTransporter = () => {
     passConfigured: !!process.env.ZOHO_PASS
   });
 
-  return nodemailer.createTransporter({
+  // ¡CORREGIDO! Era createTransport, no createTransporter
+  return nodemailer.createTransport({
     host: 'smtp.zoho.com',
     port: 587,
     secure: false, // true para 465, false para otros puertos
@@ -189,6 +190,6 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log('Environment variables:');
   console.log('ZOHO_USER:', process.env.ZOHO_USER ? 'Configurado ✓' : 'No configurado ✗');
-  console.log('ZOHO_PASS:', process.env.ZOHO_PASS ? 'Configurado ✓' : 'No configurado ✗');
+  console.log('ZOHO_PASS:', process.env.ZOHO_PASS ? 'Configurado' : 'No configurado ✗');
   console.log('TO_EMAIL:', process.env.TO_EMAIL || 'Usando ZOHO_USER por defecto');
 });
