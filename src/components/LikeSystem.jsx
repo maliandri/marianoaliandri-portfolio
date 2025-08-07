@@ -1,4 +1,3 @@
-// LikeSystem.jsx - Versión con contador global
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
@@ -7,37 +6,45 @@ function LikeSystem() {
   const [dislikes, setDislikes] = useState(0);
   const [userVote, setUserVote] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [useLocalStorage, setUseLocalStorage] = useState(false);
 
-  // API endpoint (usando countapi.xyz como ejemplo)
-  const API_BASE = 'https://api.countapi.xyz';
-  const NAMESPACE = 'portfolio-mariano';
-
-  // Cargar datos globales al iniciar
+  // Cargar datos al iniciar
   useEffect(() => {
-    loadGlobalCounts();
+    loadCounts();
     loadUserVote();
   }, []);
 
-  const loadGlobalCounts = async () => {
+  const loadCounts = async () => {
     try {
-      // Obtener contadores globales
+      // Intentar cargar desde countapi.xyz
       const [likesResponse, dislikesResponse] = await Promise.all([
-        fetch(`${API_BASE}/get/${NAMESPACE}/likes`),
-        fetch(`${API_BASE}/get/${NAMESPACE}/dislikes`)
+        fetch(`https://api.countapi.xyz/get/portfolio-mariano/likes`),
+        fetch(`https://api.countapi.xyz/get/portfolio-mariano/dislikes`)
       ]);
 
-      const likesData = await likesResponse.json();
-      const dislikesData = await dislikesResponse.json();
+      if (likesResponse.ok && dislikesResponse.ok) {
+        const likesData = await likesResponse.json();
+        const dislikesData = await dislikesResponse.json();
 
-      setLikes(likesData.value || 0);
-      setDislikes(dislikesData.value || 0);
+        setLikes(likesData.value || 0);
+        setDislikes(dislikesData.value || 0);
+        
+        // Guardar también en localStorage como backup
+        localStorage.setItem('siteLikes', (likesData.value || 0).toString());
+        localStorage.setItem('siteDislikes', (dislikesData.value || 0).toString());
+      } else {
+        throw new Error('API not available');
+      }
     } catch (error) {
-      console.error('Error loading global counts:', error);
-      // Fallback a localStorage si falla la API
+      console.log('Usando localStorage como fallback para likes');
+      setUseLocalStorage(true);
+      
+      // Fallback a localStorage
       const savedLikes = localStorage.getItem('siteLikes');
       const savedDislikes = localStorage.getItem('siteDislikes');
-      if (savedLikes) setLikes(parseInt(savedLikes));
-      if (savedDislikes) setDislikes(parseInt(savedDislikes));
+      
+      setLikes(savedLikes ? parseInt(savedLikes) : 0);
+      setDislikes(savedDislikes ? parseInt(savedDislikes) : 0);
     } finally {
       setLoading(false);
     }
@@ -48,64 +55,77 @@ function LikeSystem() {
     if (savedUserVote) setUserVote(savedUserVote);
   };
 
+  const updateLocalStorage = (newLikes, newDislikes) => {
+    localStorage.setItem('siteLikes', newLikes.toString());
+    localStorage.setItem('siteDislikes', newDislikes.toString());
+  };
+
   const handleVote = async (voteType) => {
     if (loading) return;
 
     setLoading(true);
     
     try {
+      let newLikes = likes;
+      let newDislikes = dislikes;
       let newUserVote = voteType;
 
-      // Si el usuario ya votó lo mismo, quitar el voto
+      // Lógica de votación
       if (userVote === voteType) {
+        // Quitar voto
         newUserVote = null;
-        // Decrementar contador global
         if (voteType === 'like') {
-          await fetch(`${API_BASE}/hit/${NAMESPACE}/likes/-1`);
-          setLikes(prev => Math.max(0, prev - 1));
+          newLikes = Math.max(0, likes - 1);
         } else {
-          await fetch(`${API_BASE}/hit/${NAMESPACE}/dislikes/-1`);
-          setDislikes(prev => Math.max(0, prev - 1));
+          newDislikes = Math.max(0, dislikes - 1);
         }
-      }
-      // Si cambió su voto
-      else if (userVote && userVote !== voteType) {
+      } else if (userVote && userVote !== voteType) {
+        // Cambiar voto
         if (userVote === 'like') {
-          // Quitar like, agregar dislike
-          await Promise.all([
-            fetch(`${API_BASE}/hit/${NAMESPACE}/likes/-1`),
-            fetch(`${API_BASE}/hit/${NAMESPACE}/dislikes/1`)
-          ]);
-          setLikes(prev => Math.max(0, prev - 1));
-          setDislikes(prev => prev + 1);
+          newLikes = Math.max(0, likes - 1);
+          newDislikes = dislikes + 1;
         } else {
-          // Quitar dislike, agregar like
-          await Promise.all([
-            fetch(`${API_BASE}/hit/${NAMESPACE}/dislikes/-1`),
-            fetch(`${API_BASE}/hit/${NAMESPACE}/likes/1`)
-          ]);
-          setDislikes(prev => Math.max(0, prev - 1));
-          setLikes(prev => prev + 1);
+          newDislikes = Math.max(0, dislikes - 1);
+          newLikes = likes + 1;
         }
-      }
-      // Nuevo voto
-      else {
+      } else {
+        // Nuevo voto
         if (voteType === 'like') {
-          await fetch(`${API_BASE}/hit/${NAMESPACE}/likes/1`);
-          setLikes(prev => prev + 1);
+          newLikes = likes + 1;
         } else {
-          await fetch(`${API_BASE}/hit/${NAMESPACE}/dislikes/1`);
-          setDislikes(prev => prev + 1);
+          newDislikes = dislikes + 1;
         }
       }
 
-      // Guardar voto del usuario localmente
+      // Actualizar estado local inmediatamente
+      setLikes(newLikes);
+      setDislikes(newDislikes);
       setUserVote(newUserVote);
+      
+      // Guardar en localStorage
+      updateLocalStorage(newLikes, newDislikes);
       localStorage.setItem('userVote', newUserVote || '');
+
+      // Intentar actualizar API si está disponible
+      if (!useLocalStorage) {
+        try {
+          // Solo intentar si la API está funcionando
+          const change = newUserVote === voteType ? 1 : (userVote === voteType ? -1 : 0);
+          if (change !== 0) {
+            if (voteType === 'like') {
+              await fetch(`https://api.countapi.xyz/hit/portfolio-mariano/likes/${change}`);
+            } else {
+              await fetch(`https://api.countapi.xyz/hit/portfolio-mariano/dislikes/${change}`);
+            }
+          }
+        } catch (error) {
+          console.log('API no disponible, usando solo localStorage');
+          setUseLocalStorage(true);
+        }
+      }
 
     } catch (error) {
       console.error('Error updating vote:', error);
-      // Mostrar mensaje de error o usar fallback
     } finally {
       setLoading(false);
     }
@@ -170,7 +190,7 @@ function LikeSystem() {
         <span className="font-medium">{loading ? '...' : dislikes}</span>
       </motion.button>
 
-      {/* Indicador de total global */}
+      {/* Indicador de estado */}
       {!loading && (likes > 0 || dislikes > 0) && (
         <motion.div
           className="text-xs text-gray-500 dark:text-gray-400 text-center bg-white dark:bg-gray-800 px-2 py-1 rounded-full border border-gray-200 dark:border-gray-700"
@@ -178,7 +198,7 @@ function LikeSystem() {
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
         >
-          Global: {likes + dislikes} votos
+          {useLocalStorage ? 'Local' : 'Global'}: {likes + dislikes} votos
         </motion.div>
       )}
     </motion.div>
