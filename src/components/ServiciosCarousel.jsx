@@ -13,7 +13,6 @@ function ServiciosCarousel() {
       icon: "📊",
       color: "from-blue-500 to-indigo-600",
       features: ["Dashboards Interactivos", "KPIs Personalizados", "Automatización de Reportes", "Integración de Fuentes"],
-      precio: "Desde $800 USD"
     },
     {
       id: 2,
@@ -21,8 +20,7 @@ function ServiciosCarousel() {
       descripcion: "Optimizo tus procesos con macros, Power Query y Power Pivot. Convierte hojas de cálculo en herramientas poderosas de análisis.",
       icon: "📈",
       color: "from-green-500 to-emerald-600",
-      features: ["Macros Avanzadas", "Power Query ETL", "Power Pivot", "Dashboards Dinámicos"],
-      precio: "Desde $500 USD"
+     features: ["Macros Avanzadas", "Power Query ETL", "Power Pivot", "Dashboards Dinámicos"],
     },
     {
       id: 3,
@@ -31,7 +29,6 @@ function ServiciosCarousel() {
       icon: "🐍",
       color: "from-purple-500 to-violet-600",
       features: ["Web Scraping", "APIs Personalizadas", "Automatización", "Análisis Estadístico"],
-      precio: "Desde $600 USD"
     },
     {
       id: 4,
@@ -40,7 +37,6 @@ function ServiciosCarousel() {
       icon: "🌐",
       color: "from-orange-500 to-red-600",
       features: ["Sitios Responsivos", "E-commerce", "SEO Optimizado", "Análisis de Conversión"],
-      precio: "Desde $1,200 USD"
     },
     {
       id: 5,
@@ -49,7 +45,6 @@ function ServiciosCarousel() {
       icon: "🎯",
       color: "from-teal-500 to-cyan-600",
       features: ["Auditoría de Procesos", "Arquitectura de Datos", "KPIs Estratégicos", "Roadmap de BI"],
-      precio: "Desde $1,500 USD"
     },
     {
       id: 6,
@@ -58,7 +53,6 @@ function ServiciosCarousel() {
       icon: "🎓",
       color: "from-pink-500 to-rose-600",
       features: ["Workshops Personalizados", "Power BI Training", "Excel Avanzado", "Mentoring 1:1"],
-      precio: "Desde $400 USD"
     }
   ];
 
