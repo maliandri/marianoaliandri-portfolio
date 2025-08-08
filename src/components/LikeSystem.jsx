@@ -1,76 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { FirebaseAnalyticsService } from '../utils/firebaseservice';
 
-function LikeSystem() {
+function LikeSystemV2() {
   const [likes, setLikes] = useState(0);
   const [dislikes, setDislikes] = useState(0);
   const [userVote, setUserVote] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [useLocalStorage, setUseLocalStorage] = useState(false);
+  const [firebaseService] = useState(() => new FirebaseAnalyticsService());
 
   // Cargar datos al iniciar
   useEffect(() => {
-    loadCounts();
-    loadUserVote();
+    initializeData();
   }, []);
 
-  const loadCounts = async () => {
+  const initializeData = async () => {
     try {
-      // Intentar cargar desde countapi.xyz
-      const [likesResponse, dislikesResponse] = await Promise.all([
-        fetch(`https://api.countapi.xyz/get/portfolio-mariano/likes`),
-        fetch(`https://api.countapi.xyz/get/portfolio-mariano/dislikes`)
+      setLoading(true);
+      
+      // Cargar estadísticas y voto del usuario en paralelo
+      const [stats, userVoteData] = await Promise.all([
+        firebaseService.getStats(),
+        firebaseService.getUserVote()
       ]);
 
-      if (likesResponse.ok && dislikesResponse.ok) {
-        const likesData = await likesResponse.json();
-        const dislikesData = await dislikesResponse.json();
+      setLikes(stats.likes || 0);
+      setDislikes(stats.dislikes || 0);
+      setUserVote(userVoteData);
 
-        setLikes(likesData.value || 0);
-        setDislikes(dislikesData.value || 0);
-        
-        // Guardar también en localStorage como backup
-        localStorage.setItem('siteLikes', (likesData.value || 0).toString());
-        localStorage.setItem('siteDislikes', (dislikesData.value || 0).toString());
-      } else {
-        throw new Error('API not available');
-      }
     } catch (error) {
-      console.log('Usando localStorage como fallback para likes');
-      setUseLocalStorage(true);
-      
-      // Fallback a localStorage
-      const savedLikes = localStorage.getItem('siteLikes');
-      const savedDislikes = localStorage.getItem('siteDislikes');
-      
-      setLikes(savedLikes ? parseInt(savedLikes) : 0);
-      setDislikes(savedDislikes ? parseInt(savedDislikes) : 0);
+      console.error('Error inicializando datos:', error);
+      // Fallback a localStorage si Firebase falla
+      await fallbackToLocalStorage();
     } finally {
       setLoading(false);
     }
   };
 
-  const loadUserVote = () => {
+  const fallbackToLocalStorage = async () => {
+    const savedLikes = localStorage.getItem('siteLikes');
+    const savedDislikes = localStorage.getItem('siteDislikes');
     const savedUserVote = localStorage.getItem('userVote');
-    if (savedUserVote) setUserVote(savedUserVote);
-  };
-
-  const updateLocalStorage = (newLikes, newDislikes) => {
-    localStorage.setItem('siteLikes', newLikes.toString());
-    localStorage.setItem('siteDislikes', newDislikes.toString());
+    
+    setLikes(savedLikes ? parseInt(savedLikes) : 0);
+    setDislikes(savedDislikes ? parseInt(savedDislikes) : 0);
+    setUserVote(savedUserVote || null);
   };
 
   const handleVote = async (voteType) => {
     if (loading) return;
 
-    setLoading(true);
-    
+    const previousVote = userVote;
+    const previousLikes = likes;
+    const previousDislikes = dislikes;
+
     try {
+      setLoading(true);
+
+      // Actualizar UI optimísticamente
+      let newUserVote = voteType;
       let newLikes = likes;
       let newDislikes = dislikes;
-      let newUserVote = voteType;
 
-      // Lógica de votación
       if (userVote === voteType) {
         // Quitar voto
         newUserVote = null;
@@ -97,35 +88,42 @@ function LikeSystem() {
         }
       }
 
-      // Actualizar estado local inmediatamente
+      // Actualizar UI inmediatamente
+      setUserVote(newUserVote);
       setLikes(newLikes);
       setDislikes(newDislikes);
-      setUserVote(newUserVote);
-      
-      // Guardar en localStorage
-      updateLocalStorage(newLikes, newDislikes);
-      localStorage.setItem('userVote', newUserVote || '');
 
-      // Intentar actualizar API si está disponible
-      if (!useLocalStorage) {
-        try {
-          // Solo intentar si la API está funcionando
-          const change = newUserVote === voteType ? 1 : (userVote === voteType ? -1 : 0);
-          if (change !== 0) {
-            if (voteType === 'like') {
-              await fetch(`https://api.countapi.xyz/hit/portfolio-mariano/likes/${change}`);
-            } else {
-              await fetch(`https://api.countapi.xyz/hit/portfolio-mariano/dislikes/${change}`);
-            }
-          }
-        } catch (error) {
-          console.log('API no disponible, usando solo localStorage');
-          setUseLocalStorage(true);
+      // Intentar guardar en Firebase
+      try {
+        const result = await firebaseService.handleVote(voteType);
+        
+        // Si Firebase devuelve resultado diferente, corregir
+        if (result !== newUserVote) {
+          setUserVote(result);
         }
+
+        // Recargar stats para asegurar sincronización
+        const updatedStats = await firebaseService.getStats();
+        setLikes(updatedStats.likes || 0);
+        setDislikes(updatedStats.dislikes || 0);
+
+      } catch (firebaseError) {
+        console.error('Error con Firebase, usando localStorage:', firebaseError);
+        
+        // Fallback: guardar en localStorage
+        localStorage.setItem('siteLikes', newLikes.toString());
+        localStorage.setItem('siteDislikes', newDislikes.toString());
+        localStorage.setItem('userVote', newUserVote || '');
       }
 
     } catch (error) {
-      console.error('Error updating vote:', error);
+      console.error('Error general en votación:', error);
+      
+      // Revertir cambios en caso de error
+      setUserVote(previousVote);
+      setLikes(previousLikes);
+      setDislikes(previousDislikes);
+      
     } finally {
       setLoading(false);
     }
@@ -198,11 +196,11 @@ function LikeSystem() {
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
         >
-          {useLocalStorage ? 'Local' : 'Global'}: {likes + dislikes} votos
+          🌍 Global: {likes + dislikes} votos
         </motion.div>
       )}
     </motion.div>
   );
 }
 
-export default LikeSystem;
+export default LikeSystemV2;

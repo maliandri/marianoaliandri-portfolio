@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { FirebaseAnalyticsService } from '../utils/firebaseservice';
 
-function DashboardStats() {
-  const [visits, setVisits] = useState(0);
-  const [likes, setLikes] = useState(0);
-  const [dislikes, setDislikes] = useState(0);
+function DashboardStatsV2() {
+  const [stats, setStats] = useState({
+    totalVisits: 0,
+    uniqueVisitors: 0,
+    likes: 0,
+    dislikes: 0
+  });
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isVisible, setIsVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [firebaseService] = useState(() => new FirebaseAnalyticsService());
 
   // Actualizar el reloj cada segundo
   useEffect(() => {
@@ -17,50 +23,61 @@ function DashboardStats() {
     return () => clearInterval(timer);
   }, []);
 
-  // Cargar y actualizar estadísticas
+  // Registrar visita y cargar estadísticas al iniciar
   useEffect(() => {
-    // Incrementar visitas
+    initializeAnalytics();
+  }, []);
+
+  const initializeAnalytics = async () => {
+    try {
+      setLoading(true);
+      
+      // Registrar la visita
+      await firebaseService.recordVisit();
+      
+      // Cargar estadísticas actuales
+      const currentStats = await firebaseService.getStats();
+      setStats(currentStats);
+
+      // Suscribirse a actualizaciones en tiempo real (opcional)
+      const unsubscribe = firebaseService.subscribeToStats((updatedStats) => {
+        setStats(updatedStats);
+      });
+
+      // Cleanup subscription on unmount
+      return () => {
+        if (typeof unsubscribe === 'function') {
+          unsubscribe();
+        }
+      };
+
+    } catch (error) {
+      console.error('Error inicializando analytics:', error);
+      
+      // Fallback a localStorage
+      await fallbackToLocalStorage();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fallbackToLocalStorage = async () => {
+    // Incrementar visitas locales
     const savedVisits = localStorage.getItem('siteVisits');
     const newVisits = savedVisits ? parseInt(savedVisits) + 1 : 1;
-    setVisits(newVisits);
     localStorage.setItem('siteVisits', newVisits.toString());
 
-    // Cargar likes y dislikes
+    // Cargar datos locales
     const savedLikes = localStorage.getItem('siteLikes');
     const savedDislikes = localStorage.getItem('siteDislikes');
     
-    if (savedLikes) setLikes(parseInt(savedLikes));
-    if (savedDislikes) setDislikes(parseInt(savedDislikes));
-
-    // Escuchar cambios en localStorage para likes/dislikes
-    const handleStorageChange = () => {
-      const newLikes = localStorage.getItem('siteLikes');
-      const newDislikes = localStorage.getItem('siteDislikes');
-      
-      if (newLikes) setLikes(parseInt(newLikes));
-      if (newDislikes) setDislikes(parseInt(newDislikes));
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    
-    // También escuchar cambios locales
-    const checkForChanges = setInterval(() => {
-      const newLikes = localStorage.getItem('siteLikes');
-      const newDislikes = localStorage.getItem('siteDislikes');
-      
-      if (newLikes && parseInt(newLikes) !== likes) {
-        setLikes(parseInt(newLikes));
-      }
-      if (newDislikes && parseInt(newDislikes) !== dislikes) {
-        setDislikes(parseInt(newDislikes));
-      }
-    }, 1000);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(checkForChanges);
-    };
-  }, []);
+    setStats({
+      totalVisits: newVisits,
+      uniqueVisitors: newVisits, // En localStorage no distinguimos
+      likes: savedLikes ? parseInt(savedLikes) : 0,
+      dislikes: savedDislikes ? parseInt(savedDislikes) : 0
+    });
+  };
 
   const formatTime = (date) => {
     return date.toLocaleTimeString('es-ES', {
@@ -80,9 +97,18 @@ function DashboardStats() {
   };
 
   const calculateSatisfaction = () => {
-    const total = likes + dislikes;
+    const total = stats.likes + stats.dislikes;
     if (total === 0) return 0;
-    return Math.round((likes / total) * 100);
+    return Math.round((stats.likes / total) * 100);
+  };
+
+  const formatNumber = (num) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
   };
 
   return (
@@ -130,9 +156,23 @@ function DashboardStats() {
           </div>
         </div>
 
+        {/* Indicador de conexión */}
+        <div className="flex items-center justify-center mb-4">
+          <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs ${
+            loading 
+              ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400'
+              : 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              loading ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
+            }`}></div>
+            {loading ? 'Conectando...' : '🌍 Base de datos global'}
+          </div>
+        </div>
+
         {/* Estadísticas */}
         <div className="space-y-4">
-          {/* Visitas */}
+          {/* Visitas Totales */}
           <motion.div
             className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl"
             initial={{ opacity: 0, y: 20 }}
@@ -148,8 +188,34 @@ function DashboardStats() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Visitas</div>
-                  <div className="text-xl font-bold text-gray-900 dark:text-gray-100">{visits}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Visitas Totales</div>
+                  <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    {loading ? '...' : formatNumber(stats.totalVisits)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Visitantes Únicos */}
+          <motion.div
+            className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 dark:bg-purple-800 rounded-lg">
+                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Visitantes Únicos</div>
+                  <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    {loading ? '...' : formatNumber(stats.uniqueVisitors)}
+                  </div>
                 </div>
               </div>
             </div>
@@ -171,7 +237,9 @@ function DashboardStats() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Me gusta</div>
-                  <div className="text-xl font-bold text-gray-900 dark:text-gray-100">{likes}</div>
+                  <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    {loading ? '...' : formatNumber(stats.likes)}
+                  </div>
                 </div>
               </div>
             </div>
@@ -182,7 +250,7 @@ function DashboardStats() {
             className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.25 }}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -193,7 +261,9 @@ function DashboardStats() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">No me gusta</div>
-                  <div className="text-xl font-bold text-gray-900 dark:text-gray-100">{dislikes}</div>
+                  <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    {loading ? '...' : formatNumber(stats.dislikes)}
+                  </div>
                 </div>
               </div>
             </div>
@@ -201,27 +271,29 @@ function DashboardStats() {
 
           {/* Satisfacción */}
           <motion.div
-            className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl"
+            className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.3 }}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 dark:bg-purple-800 rounded-lg">
-                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clipRule="evenodd" />
+                <div className="p-2 bg-orange-100 dark:bg-orange-800 rounded-lg">
+                  <svg className="w-5 h-5 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Satisfacción</div>
-                  <div className="text-xl font-bold text-gray-900 dark:text-gray-100">{calculateSatisfaction()}%</div>
+                  <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    {loading ? '...' : calculateSatisfaction()}%
+                  </div>
                 </div>
               </div>
             </div>
             <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <motion.div
-                className="bg-purple-600 dark:bg-purple-400 h-2 rounded-full"
+                className="bg-orange-600 dark:bg-orange-400 h-2 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${calculateSatisfaction()}%` }}
                 transition={{ duration: 1, delay: 0.5 }}
@@ -229,9 +301,22 @@ function DashboardStats() {
             </div>
           </motion.div>
         </div>
+
+        {/* Footer del dashboard */}
+        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              Datos actualizados en tiempo real
+            </div>
+            <div className="mt-1">
+              {loading ? 'Sincronizando...' : 'Conectado a Firebase'}
+            </div>
+          </div>
+        </div>
       </motion.div>
     </>
   );
 }
 
-export default DashboardStats;
+export default DashboardStatsV2;
