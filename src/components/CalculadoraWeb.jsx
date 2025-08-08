@@ -49,13 +49,13 @@ function WebCalculator() {
   ];
 
   const websiteTypes = [
-    { value: 'landing', label: 'Landing Page', baseCost: 800, multiplier: 1.0 },
-    { value: 'business', label: 'Sitio Web Empresarial', baseCost: 2000, multiplier: 1.2 },
-    { value: 'ecommerce', label: 'E-commerce', baseCost: 4000, multiplier: 1.8 },
+    { value: 'landing', label: 'Landing Page', baseCost: 400, multiplier: 1.0 },
+    { value: 'business', label: 'Sitio Web Empresarial', baseCost: 1000, multiplier: 1.2 },
+    { value: 'ecommerce', label: 'E-commerce', baseCost: 2000, multiplier: 1.8 },
     { value: 'portfolio', label: 'Portfolio/Catálogo', baseCost: 1200, multiplier: 1.1 },
     { value: 'blog', label: 'Blog/Noticias', baseCost: 1500, multiplier: 1.3 },
     { value: 'webapp', label: 'Aplicación Web', baseCost: 6000, multiplier: 2.5 },
-    { value: 'membership', label: 'Sitio de Membresías', baseCost: 3500, multiplier: 2.0 }
+    { value: 'membership', label: 'Sitio de Membresías', baseCost: 2500, multiplier: 2.0 }
   ];
 
   const pageRanges = [
@@ -68,15 +68,15 @@ function WebCalculator() {
 
   const availableFeatures = [
     { value: 'contact-form', label: 'Formularios de Contacto', cost: 200 },
-    { value: 'booking', label: 'Sistema de Reservas', cost: 800 },
-    { value: 'payments', label: 'Pagos Online', cost: 600 },
-    { value: 'user-login', label: 'Login de Usuarios', cost: 500 },
+    { value: 'booking', label: 'Sistema de Reservas', cost: 600 },
+    { value: 'payments', label: 'Pagos Online', cost: 500 },
+    { value: 'user-login', label: 'Login de Usuarios', cost: 400 },
     { value: 'search', label: 'Búsqueda Avanzada', cost: 400 },
     { value: 'chat', label: 'Chat en Vivo', cost: 300 },
-    { value: 'multilang', label: 'Multi-idioma', cost: 700 },
+    { value: 'multilang', label: 'Multi-idioma', cost: 350 },
     { value: 'analytics', label: 'Analytics Avanzado', cost: 250 },
-    { value: 'inventory', label: 'Gestión de Inventario', cost: 1200 },
-    { value: 'crm', label: 'Integración CRM', cost: 600 }
+    { value: 'inventory', label: 'Gestión de Inventario', cost: 700 },
+    { value: 'crm', label: 'Integración CRM', cost: 200 }
   ];
 
   const designLevels = [
@@ -90,8 +90,8 @@ function WebCalculator() {
     { value: 'social-media', label: 'Redes Sociales', cost: 150 },
     { value: 'google-ads', label: 'Google Ads & Analytics', cost: 300 },
     { value: 'erp', label: 'Sistema ERP', cost: 1000 },
-    { value: 'accounting', label: 'Software Contable', cost: 600 },
-    { value: 'shipping', label: 'Sistemas de Envío', cost: 400 }
+    { value: 'accounting', label: 'Software Contable', cost: 800 },
+    { value: 'shipping', label: 'Sistemas de Envío', cost: 500 }
   ];
 
   const calculateWebProject = () => {
