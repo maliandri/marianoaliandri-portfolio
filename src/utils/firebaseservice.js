@@ -1,9 +1,9 @@
 // src/utils/firebaseService.js
 
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set, get, increment, serverTimestamp } from 'firebase/database';
+import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, serverTimestamp, onSnapshot } from 'firebase/firestore';
 
-// 🔥 CONFIGURACIÓN DE FIREBASE - MARIANO ALIANDRI (COMPLETA)
+// 🔥 CONFIGURACIÓN DE FIREBASE - MARIANO ALIANDRI (FIRESTORE)
 const firebaseConfig = {
   apiKey: "AIzaSyDRyVEpQm6e_kFTw5PO3UhXZjLBw75SiLU",
   authDomain: "marianoaliandri-3b135.firebaseapp.com",
@@ -15,15 +15,15 @@ const firebaseConfig = {
   measurementId: "G-58KFTQRM7Z"
 };
 
-// Inicializar Firebase
+// Inicializar Firebase con Firestore
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+const db = getFirestore(app);
 
-// Clase para manejar analytics de tu portfolio
+// Clase para manejar analytics de tu portfolio con Firestore
 export class FirebaseAnalyticsService {
   constructor() {
-    this.database = database;
-    console.log('🔥 Firebase inicializado para Portfolio Mariano Aliandri');
+    this.db = db;
+    console.log('🔥 Firebase Firestore inicializado para Portfolio Mariano Aliandri');
   }
 
   // Generar ID único para cada visitante
@@ -44,36 +44,59 @@ export class FirebaseAnalyticsService {
       
       console.log('📊 Registrando visita...', visitId);
       
-      // Incrementar visitas totales
-      await set(ref(this.database, 'portfolioStats/totalVisits'), increment(1));
+      // Referencia al documento de estadísticas
+      const statsRef = doc(this.db, 'analytics', 'stats');
       
-      // Registrar visita diaria
-      await set(ref(this.database, `portfolioStats/dailyVisits/${today}`), increment(1));
+      // Obtener estadísticas actuales
+      const statsDoc = await getDoc(statsRef);
+      
+      if (statsDoc.exists()) {
+        // Incrementar visitas totales
+        await updateDoc(statsRef, {
+          totalVisits: increment(1)
+        });
+      } else {
+        // Crear documento inicial
+        await setDoc(statsRef, {
+          totalVisits: 1,
+          uniqueVisitors: 0,
+          likes: 0,
+          dislikes: 0
+        });
+      }
       
       // Verificar si es visitante único
-      const visitorRef = ref(this.database, `portfolioVisitors/${visitId}`);
-      const snapshot = await get(visitorRef);
+      const visitorRef = doc(this.db, 'visitors', visitId);
+      const visitorDoc = await getDoc(visitorRef);
       
-      if (!snapshot.exists()) {
+      if (!visitorDoc.exists()) {
         // Nuevo visitante
-        await set(visitorRef, {
+        await setDoc(visitorRef, {
           firstVisit: serverTimestamp(),
           visitCount: 1,
           lastVisit: serverTimestamp(),
-          userAgent: navigator.userAgent.substring(0, 100) // Info del navegador
+          userAgent: navigator.userAgent.substring(0, 100),
+          date: today
         });
-        await set(ref(this.database, 'portfolioStats/uniqueVisitors'), increment(1));
+        
+        // Incrementar visitantes únicos
+        await updateDoc(statsRef, {
+          uniqueVisitors: increment(1)
+        });
         console.log('✨ Nuevo visitante registrado');
       } else {
         // Visitante que regresa
-        await set(ref(this.database, `portfolioVisitors/${visitId}/visitCount`), increment(1));
-        await set(ref(this.database, `portfolioVisitors/${visitId}/lastVisit`), serverTimestamp());
+        await updateDoc(visitorRef, {
+          visitCount: increment(1),
+          lastVisit: serverTimestamp()
+        });
         console.log('🔄 Visitante recurrente');
       }
 
-      console.log('✅ Visita registrada correctamente en Firebase');
+      console.log('✅ Visita registrada correctamente en Firestore');
     } catch (error) {
       console.error('❌ Error registrando visita:', error);
+      throw error;
     }
   }
 
@@ -81,24 +104,29 @@ export class FirebaseAnalyticsService {
   async handleVote(voteType) {
     try {
       const userId = this.getVisitorId();
-      const userVoteRef = ref(this.database, `portfolioVotes/${userId}`);
-      const snapshot = await get(userVoteRef);
+      const userVoteRef = doc(this.db, 'userVotes', userId);
+      const statsRef = doc(this.db, 'analytics', 'stats');
       
-      let previousVote = snapshot.exists() ? snapshot.val().type : null;
+      const userVoteDoc = await getDoc(userVoteRef);
+      let previousVote = userVoteDoc.exists() ? userVoteDoc.data().type : null;
       
       console.log(`🗳️ Procesando voto: ${voteType}, anterior: ${previousVote}`);
       
       if (previousVote === voteType) {
         // Quitar voto
-        await set(userVoteRef, null);
-        await set(ref(this.database, `portfolioStats/${voteType}s`), increment(-1));
+        await setDoc(userVoteRef, { type: null, timestamp: serverTimestamp() });
+        await updateDoc(statsRef, {
+          [voteType === 'like' ? 'likes' : 'dislikes']: increment(-1)
+        });
         console.log(`❌ Voto ${voteType} removido`);
         return null;
       } else if (previousVote && previousVote !== voteType) {
         // Cambiar voto
-        await set(ref(this.database, `portfolioStats/${previousVote}s`), increment(-1));
-        await set(ref(this.database, `portfolioStats/${voteType}s`), increment(1));
-        await set(userVoteRef, { 
+        await updateDoc(statsRef, {
+          [previousVote === 'like' ? 'likes' : 'dislikes']: increment(-1),
+          [voteType === 'like' ? 'likes' : 'dislikes']: increment(1)
+        });
+        await setDoc(userVoteRef, { 
           type: voteType, 
           timestamp: serverTimestamp(),
           previousVote: previousVote 
@@ -107,8 +135,10 @@ export class FirebaseAnalyticsService {
         return voteType;
       } else {
         // Nuevo voto
-        await set(ref(this.database, `portfolioStats/${voteType}s`), increment(1));
-        await set(userVoteRef, { 
+        await updateDoc(statsRef, {
+          [voteType === 'like' ? 'likes' : 'dislikes']: increment(1)
+        });
+        await setDoc(userVoteRef, { 
           type: voteType, 
           timestamp: serverTimestamp() 
         });
@@ -124,11 +154,11 @@ export class FirebaseAnalyticsService {
   // Obtener estadísticas del portfolio
   async getStats() {
     try {
-      const statsRef = ref(this.database, 'portfolioStats');
-      const snapshot = await get(statsRef);
+      const statsRef = doc(this.db, 'analytics', 'stats');
+      const statsDoc = await getDoc(statsRef);
       
-      if (snapshot.exists()) {
-        const data = snapshot.val();
+      if (statsDoc.exists()) {
+        const data = statsDoc.data();
         console.log('📊 Estadísticas cargadas:', data);
         return {
           totalVisits: data.totalVisits || 0,
@@ -138,6 +168,13 @@ export class FirebaseAnalyticsService {
         };
       } else {
         console.log('📊 No hay estadísticas aún, inicializando...');
+        // Crear documento inicial
+        await setDoc(statsRef, {
+          totalVisits: 0,
+          uniqueVisitors: 0,
+          likes: 0,
+          dislikes: 0
+        });
         return {
           totalVisits: 0,
           uniqueVisitors: 0,
@@ -160,10 +197,10 @@ export class FirebaseAnalyticsService {
   async getUserVote() {
     try {
       const userId = this.getVisitorId();
-      const userVoteRef = ref(this.database, `portfolioVotes/${userId}`);
-      const snapshot = await get(userVoteRef);
+      const userVoteRef = doc(this.db, 'userVotes', userId);
+      const userVoteDoc = await getDoc(userVoteRef);
       
-      const vote = snapshot.exists() ? snapshot.val().type : null;
+      const vote = userVoteDoc.exists() ? userVoteDoc.data().type : null;
       console.log('🗳️ Voto del usuario:', vote);
       return vote;
     } catch (error) {
@@ -172,18 +209,47 @@ export class FirebaseAnalyticsService {
     }
   }
 
+  // Suscribirse a cambios en tiempo real de estadísticas
+  subscribeToStats(callback) {
+    try {
+      const statsRef = doc(this.db, 'analytics', 'stats');
+      
+      const unsubscribe = onSnapshot(statsRef, (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          const stats = {
+            totalVisits: data.totalVisits || 0,
+            uniqueVisitors: data.uniqueVisitors || 0,
+            likes: data.likes || 0,
+            dislikes: data.dislikes || 0
+          };
+          console.log('📊 Estadísticas actualizadas en tiempo real:', stats);
+          callback(stats);
+        }
+      }, (error) => {
+        console.error('❌ Error en suscripción a estadísticas:', error);
+      });
+
+      return unsubscribe;
+    } catch (error) {
+      console.error('❌ Error creando suscripción:', error);
+      return () => {}; // Función vacía de cleanup
+    }
+  }
+
   // Registrar evento de calculadora ROI
   async trackROICalculation(company, result) {
     try {
-      const eventRef = ref(this.database, `portfolioEvents/roiCalculations/${Date.now()}`);
-      await set(eventRef, {
+      const eventRef = doc(this.db, 'events', `roi_${Date.now()}`);
+      await setDoc(eventRef, {
+        type: 'roi_calculation',
         company: company,
         roi: result.roi,
         savings: result.annualSavings,
         timestamp: serverTimestamp(),
         visitorId: this.getVisitorId()
       });
-      console.log('📊 Calculación ROI registrada');
+      console.log('📊 Calculación ROI registrada en Firestore');
     } catch (error) {
       console.error('❌ Error registrando evento ROI:', error);
     }
@@ -192,19 +258,21 @@ export class FirebaseAnalyticsService {
   // Registrar evento de calculadora Web
   async trackWebCalculation(company, result) {
     try {
-      const eventRef = ref(this.database, `portfolioEvents/webCalculations/${Date.now()}`);
-      await set(eventRef, {
+      const eventRef = doc(this.db, 'events', `web_${Date.now()}`);
+      await setDoc(eventRef, {
+        type: 'web_calculation',
         company: company,
         cost: result.developmentCost,
         roi: result.roi,
         timestamp: serverTimestamp(),
         visitorId: this.getVisitorId()
       });
-      console.log('🌐 Calculación Web registrada');
+      console.log('🌐 Calculación Web registrada en Firestore');
     } catch (error) {
       console.error('❌ Error registrando evento Web:', error);
     }
   }
 }
+
 // Crear instancia global
 export const firebaseAnalytics = new FirebaseAnalyticsService();
