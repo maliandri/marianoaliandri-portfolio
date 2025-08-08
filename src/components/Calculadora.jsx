@@ -22,6 +22,71 @@ function ROICalculator() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [emailStatus, setEmailStatus] = useState({ loading: false, sent: false, error: null });
+  
+  // Estados para validación
+  const [emailValidation, setEmailValidation] = useState({
+    isValid: false,
+    message: '',
+    touched: false
+  });
+
+  // Función de validación de email mejorada
+  const validateEmail = (email) => {
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    
+    if (!email) {
+      return { isValid: false, message: '' };
+    }
+    
+    if (!emailRegex.test(email)) {
+      return { isValid: false, message: 'Formato de email inválido' };
+    }
+
+    // Validaciones adicionales
+    if (email.length > 254) {
+      return { isValid: false, message: 'Email demasiado largo' };
+    }
+
+    // Verificar dominio común (opcional)
+    const domain = email.split('@')[1];
+    if (domain && domain.length < 2) {
+      return { isValid: false, message: 'Dominio inválido' };
+    }
+
+    // Lista de dominios temporales/desechables (básica)
+    const disposableEmails = [
+      '10minutemail.com', 'tempmail.org', 'guerrillamail.com', 
+      'mailinator.com', 'temp-mail.org', 'throwaway.email'
+    ];
+    
+    if (disposableEmails.some(disposable => domain?.toLowerCase().includes(disposable))) {
+      return { isValid: false, message: 'Por favor usa un email corporativo válido' };
+    }
+
+    return { isValid: true, message: 'Email válido' };
+  };
+
+  // Función de validación en tiempo real
+  const handleEmailChange = (email) => {
+    setFormData(prev => ({ ...prev, email }));
+    
+    if (emailValidation.touched) {
+      const validation = validateEmail(email);
+      setEmailValidation({
+        ...validation,
+        touched: true
+      });
+    }
+  };
+
+  // Función cuando el campo pierde el foco
+  const handleEmailBlur = () => {
+    const validation = validateEmail(formData.email);
+    setEmailValidation({
+      ...validation,
+      touched: true
+    });
+  };
 
   const sectors = [
     { value: 'retail', label: 'Retail/Comercio', factor: 1.2 },
@@ -137,9 +202,18 @@ function ROICalculator() {
     });
     setResults(null);
     setEmailStatus({ loading: false, sent: false, error: null });
+    setEmailValidation({ isValid: false, message: '', touched: false });
   };
 
   const sendLeadData = async () => {
+    // Validar email antes de enviar
+    const emailValid = validateEmail(formData.email);
+    if (!emailValid.isValid) {
+      setEmailValidation({ ...emailValid, touched: true });
+      alert('Por favor, ingresa un email válido antes de continuar.');
+      return;
+    }
+
     setEmailStatus({ loading: true, sent: false, error: null });
 
     try {
@@ -186,6 +260,14 @@ function ROICalculator() {
       maximumFractionDigits: 0,
     }).format(amount);
   };
+
+  // Verificar si el paso 1 está completo con email válido
+  const isStep1Valid = formData.company && 
+                      formData.email && 
+                      emailValidation.isValid && 
+                      formData.sector && 
+                      formData.employees && 
+                      formData.monthlyRevenue;
 
   return (
     <>
@@ -293,13 +375,48 @@ function ROICalculator() {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Email Corporativo *
                         </label>
-                        <input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
-                          placeholder="tu@empresa.com"
-                        />
+                        <div className="relative">
+                          <input
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => handleEmailChange(e.target.value)}
+                            onBlur={handleEmailBlur}
+                            className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:border-green-500 dark:bg-gray-700 dark:text-white transition-colors ${
+                              emailValidation.touched
+                                ? emailValidation.isValid
+                                  ? 'border-green-500 dark:border-green-500'
+                                  : 'border-red-500 dark:border-red-500'
+                                : 'border-gray-300 dark:border-gray-600'
+                            }`}
+                            placeholder="tu@empresa.com"
+                          />
+                          {/* Icono de validación */}
+                          {emailValidation.touched && (
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                              {emailValidation.isValid ? (
+                                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                              ) : (
+                                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        {/* Mensaje de validación */}
+                        {emailValidation.touched && emailValidation.message && (
+                          <motion.p
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`text-xs mt-1 ${
+                              emailValidation.isValid ? 'text-green-600' : 'text-red-600'
+                            }`}
+                          >
+                            {emailValidation.message}
+                          </motion.p>
+                        )}
                       </div>
 
                       <div>
@@ -373,10 +490,10 @@ function ROICalculator() {
                     <div className="flex justify-end pt-6">
                       <motion.button
                         onClick={() => setStep(2)}
-                        disabled={!formData.company || !formData.email || !formData.sector || !formData.employees || !formData.monthlyRevenue}
+                        disabled={!isStep1Valid}
                         className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover={{ scale: isStep1Valid ? 1.02 : 1 }}
+                        whileTap={{ scale: isStep1Valid ? 0.98 : 1 }}
                       >
                         Siguiente →
                       </motion.button>
@@ -384,7 +501,8 @@ function ROICalculator() {
                   </motion.div>
                 )}
 
-                {/* Paso 2: Situación actual */}
+                {/* Resto del componente permanece igual... */}
+                {/* Paso 2 y 3 sin cambios */}
                 {step === 2 && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
