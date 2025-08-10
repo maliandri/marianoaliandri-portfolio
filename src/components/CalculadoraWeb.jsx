@@ -1,10 +1,47 @@
-// src/components/CalculadoraWeb.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { EmailService } from '../utils/emailService'; // Importa la clase completa
+import {
+  X,
+  ChevronLeft,
+  DollarSign,
+  Briefcase,
+  Mail,
+  Smartphone,
+  BarChart2,
+  Globe,
+  Layout,
+  Layers,
+  Feather,
+  GitMerge,
+  Clock,
+  Zap,
+  CheckCircle,
+  AlertTriangle,
+  Info,
+  ShoppingCart,
+  Book,
+  Code,
+  Users,
+  CreditCard,
+  Lock,
+} from 'lucide-react';
 
+// Clase simulada para el servicio de email.
+// En un entorno real, esto estaría en su propio archivo
+// y se conectaría a un backend.
+class EmailService {
+  async sendWebLead(leadData) {
+    console.log('Simulando envío de lead:', leadData);
+    // Simular un retraso en la red
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Simular una respuesta exitosa
+    return { success: true };
+  }
+}
+
+// Componente principal de la calculadora
 function WebCalculator() {
-  const emailService = new EmailService(); // Crea una nueva instancia de la clase
+  const emailService = new EmailService();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -26,13 +63,37 @@ function WebCalculator() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [emailStatus, setEmailStatus] = useState({ loading: false, sent: false, error: null });
-  
+
   // Estados para validación de email
   const [emailValidation, setEmailValidation] = useState({
     isValid: false,
     message: '',
     touched: false
   });
+
+  // Estado para el modal de pagos
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // Estados para el sistema de pagos integrado
+  const [selectedMethod, setSelectedMethod] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentDescription, setPaymentDescription] = useState('');
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(null);
+
+  // Nuevo estado para el modal de mensajes personalizados
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [customModalContent, setCustomModalContent] = useState({
+    title: '',
+    message: '',
+    type: 'info' // Puede ser 'info', 'success', 'error'
+  });
+
+  // Función para mostrar el modal de mensajes
+  const showMessageModal = (title, message, type) => {
+    setCustomModalContent({ title, message, type });
+    setShowCustomModal(true);
+  };
 
   // Función de validación de email mejorada
   const validateEmail = (email) => {
@@ -46,20 +107,17 @@ function WebCalculator() {
       return { isValid: false, message: 'Formato de email inválido' };
     }
 
-    // Validaciones adicionales
     if (email.length > 254) {
       return { isValid: false, message: 'Email demasiado largo' };
     }
 
-    // Verificar dominio común
     const domain = email.split('@')[1];
     if (domain && domain.length < 2) {
       return { isValid: false, message: 'Dominio inválido' };
     }
 
-    // Lista de dominios temporales/desechables (básica)
     const disposableEmails = [
-      '10minutemail.com', 'tempmail.org', 'guerrillamail.com', 
+      '10minutemail.com', 'tempmail.org', 'guerrillamail.com',  
       'mailinator.com', 'temp-mail.org', 'throwaway.email',
       'yopmail.com', 'maildrop.cc', 'sharklasers.com'
     ];
@@ -282,11 +340,10 @@ function WebCalculator() {
   };
 
   const sendWebLeadData = async () => {
-    // Validar email antes de enviar
     const emailValid = validateEmail(formData.email);
     if (!emailValid.isValid) {
       setEmailValidation({ ...emailValid, touched: true });
-      alert('Por favor, ingresa un email válido antes de continuar.');
+      showMessageModal('Error de validación', 'Por favor, ingresa un email válido antes de continuar.', 'error');
       return;
     }
 
@@ -306,10 +363,7 @@ function WebCalculator() {
 
       if (response.success) {
         setEmailStatus({ loading: false, sent: true, error: null });
-        const leads = JSON.parse(localStorage.getItem('web_leads') || '[]');
-        leads.push(leadData);
-        localStorage.setItem('web_leads', JSON.stringify(leads));
-        alert(`¡Gracias ${formData.company}! Te enviaré una propuesta detallada en las próximas 24 horas.`);
+        showMessageModal('¡Gracias!', `¡Gracias ${formData.company}! Te enviaré una propuesta detallada en las próximas 24 horas.`, 'success');
       }
     } catch (error) {
       console.error('Error enviando Web lead:', error);
@@ -318,7 +372,7 @@ function WebCalculator() {
         sent: false,
         error: 'Error enviando información. Intenta por WhatsApp.',
       });
-      alert('Error enviando información. Te contacto por WhatsApp para enviarte la propuesta.');
+      showMessageModal('Error al enviar', 'Error enviando información. Te contacto por WhatsApp para enviarte la propuesta.', 'error');
     }
   };
 
@@ -331,12 +385,156 @@ function WebCalculator() {
     }).format(amount);
   };
 
+  // Función para abrir modal de pagos con datos precargados
+  const openPaymentModal = () => {
+    if (results) {
+      setPaymentAmount(results.developmentCost.toString());
+      setPaymentDescription(`Desarrollo web para ${formData.company}`);
+    }
+    setShowPaymentModal(true);
+  };
+
+  // Funciones del sistema de pagos
+  const initMercadoPago = () => {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.mercadopago.com/js/v2';
+    script.onload = () => {
+      if (window.MercadoPago) {
+        window.mp = new window.MercadoPago('YOUR_MERCADOPAGO_PUBLIC_KEY', {
+          locale: 'es-AR'
+        });
+      }
+    };
+    document.head.appendChild(script);
+  };
+
+  const initPayPal = () => {
+    const script = document.createElement('script');
+    script.src = 'https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD';
+    script.onload = () => {
+      if (window.paypal && showPaymentModal && selectedMethod === 'paypal') {
+        window.paypal.Buttons({
+          createOrder: (data, actions) => {
+            return actions.order.create({
+              purchase_units: [{
+                amount: {
+                  value: paymentAmount || '10.00'
+                },
+                description: paymentDescription || 'Servicio web'
+              }]
+            });
+          },
+          onApprove: (data, actions) => {
+            return actions.order.capture().then((details) => {
+              setPaymentStatus({
+                type: 'success',
+                message: `¡Pago completado! ID: ${details.id}`
+              });
+              showMessageModal('Pago Exitoso', `¡Pago completado! ID: ${details.id}`, 'success');
+            });
+          },
+          onError: (err) => {
+            setPaymentStatus({
+              type: 'error',
+              message: 'Error en el pago con PayPal'
+            });
+            showMessageModal('Error en el pago', 'Hubo un error al procesar el pago con PayPal.', 'error');
+          }
+        }).render('#paypal-button-container');
+      }
+    };
+    document.head.appendChild(script);
+  };
+
+  const handleMercadoPagoPayment = async () => {
+    if (!paymentAmount || !paymentDescription) {
+      setPaymentStatus({
+        type: 'error',
+        message: 'Por favor completa todos los campos'
+      });
+      showMessageModal('Campos incompletos', 'Por favor completa todos los campos para el pago.', 'error');
+      return;
+    }
+
+    setIsLoadingPayment(true);
+    
+    try {
+      const preferenceData = {
+        items: [{
+          title: paymentDescription,
+          quantity: 1,
+          unit_price: parseFloat(paymentAmount)
+        }],
+        back_urls: {
+          success: window.location.href + '?status=success',
+          failure: window.location.href + '?status=failure',
+          pending: window.location.href + '?status=pending'
+        },
+        auto_return: 'approved'
+      };
+
+      // Simulación - reemplazar con tu endpoint real
+      const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_MERCADOPAGO_ACCESS_TOKEN'
+        },
+        body: JSON.stringify(preferenceData)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Abrir la URL de pago en una nueva pestaña o redirigir
+        window.open(data.init_point, '_blank');
+      } else {
+        throw new Error('Error al crear la preferencia');
+      }
+    } catch (error) {
+      setPaymentStatus({
+        type: 'error',
+        message: 'Error al procesar el pago con MercadoPago'
+      });
+      showMessageModal('Error en el pago', 'Hubo un error al procesar el pago con MercadoPago.', 'error');
+    } finally {
+      setIsLoadingPayment(false);
+    }
+  };
+
+  // Inicializar sistemas de pago cuando se abre el modal
+  useEffect(() => {
+    if (showPaymentModal) {
+      initMercadoPago();
+      initPayPal();
+    }
+  }, [showPaymentModal, selectedMethod]);
+
+  const paymentMethods = [
+    {
+      id: 'mercadopago',
+      name: 'MercadoPago',
+      description: 'Tarjetas, efectivo, transferencias',
+      logo: '💳',
+      color: 'bg-blue-500'
+    },
+    {
+      id: 'paypal',
+      name: 'PayPal',
+      description: 'Pago seguro internacional',
+      logo: '🅿️',
+      color: 'bg-yellow-500'
+    }
+  ];
+
   // Verificar si el paso 1 está completo con email válido
   const isStep1Valid = formData.company && 
-                      formData.email && 
-                      emailValidation.isValid && 
-                      formData.sector && 
-                      formData.monthlyRevenue;
+                       formData.email && 
+                       emailValidation.isValid && 
+                       formData.sector && 
+                       formData.monthlyRevenue;
+  
+  // Verificar si el paso 2 está completo
+  const isStep2Valid = formData.websiteType && formData.pageCount && formData.designLevel && formData.urgency;
 
   return (
     <>
@@ -348,13 +546,227 @@ function WebCalculator() {
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, x: -100 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, delay: 2 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clipRule="evenodd" />
-        </svg>
+        <BarChart2 className="w-5 h-5" />
         <span className="font-semibold">Cotizar Web</span>
       </motion.button>
+
+      {/* Modal de mensajes personalizados */}
+      <AnimatePresence>
+        {showCustomModal && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowCustomModal(false)}
+          >
+            <motion.div
+              className={`bg-white dark:bg-gray-800 rounded-xl max-w-sm w-full mx-auto p-6 shadow-2xl relative`}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className={`flex items-center gap-2 font-bold text-lg ${
+                  customModalContent.type === 'success' ? 'text-green-600' :
+                  customModalContent.type === 'error' ? 'text-red-600' : 'text-blue-600'
+                }`}>
+                  {customModalContent.type === 'success' && <CheckCircle size={20} />}
+                  {customModalContent.type === 'error' && <AlertTriangle size={20} />}
+                  {customModalContent.type === 'info' && <Info size={20} />}
+                  {customModalContent.title}
+                </div>
+                <button onClick={() => setShowCustomModal(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={20} />
+                </button>
+              </div>
+              <p className="text-gray-700 dark:text-gray-300">
+                {customModalContent.message}
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de pagos integrado */}
+      <AnimatePresence>
+        {showPaymentModal && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowPaymentModal(false)}
+          >
+            <motion.div
+              className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-auto relative"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-t-2xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">Sistema de Pagos</h2>
+                    <p className="text-green-100 text-sm mt-1">
+                      Pago seguro para: {formData.company}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowPaymentModal(false)}
+                    className="text-white hover:text-green-200 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Formulario de pago */}
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Descripción del servicio
+                      </label>
+                      <input
+                        type="text"
+                        value={paymentDescription}
+                        onChange={(e) => setPaymentDescription(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        readOnly
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Monto (USD)
+                      </label>
+                      <input
+                        type="number"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        readOnly
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                        Método de pago
+                      </label>
+                      <div className="space-y-3">
+                        {paymentMethods.map((method) => (
+                          <div
+                            key={method.id}
+                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                              selectedMethod === method.id
+                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
+                            }`}
+                            onClick={() => setSelectedMethod(method.id)}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-10 h-10 ${method.color} rounded-full flex items-center justify-center text-white text-lg`}>
+                                {method.logo}
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-gray-900 dark:text-white">
+                                  {method.name}
+                                </h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  {method.description}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Área de pago */}
+                  <div className="space-y-6">
+                    {selectedMethod === 'mercadopago' && (
+                      <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                          Pagar con MercadoPago
+                        </h3>
+                        <motion.button
+                          onClick={handleMercadoPagoPayment}
+                          disabled={isLoadingPayment || !paymentAmount || !paymentDescription}
+                          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          {isLoadingPayment ? 'Procesando...' : `Pagar ${formatCurrency(parseFloat(paymentAmount || 0))} con MercadoPago`}
+                        </motion.button>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 text-center">
+                          Serás redirigido a MercadoPago para completar el pago
+                        </p>
+                      </div>
+                    )}
+
+                    {selectedMethod === 'paypal' && (
+                      <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                          Pagar con PayPal
+                        </h3>
+                        <div id="paypal-button-container" className="w-full"></div>
+                      </div>
+                    )}
+
+                    {!selectedMethod && (
+                      <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                        <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Selecciona un método de pago para continuar
+                        </p>
+                      </div>
+                    )}
+
+                    {paymentStatus && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`p-4 rounded-lg flex items-center space-x-3 ${
+                          paymentStatus.type === 'success' 
+                            ? 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300' 
+                            : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                        }`}
+                      >
+                        {paymentStatus.type === 'success' ? (
+                          <CheckCircle size={20} />
+                        ) : (
+                          <AlertTriangle size={20} />
+                        )}
+                        <span className="text-sm">{paymentStatus.message}</span>
+                      </motion.div>
+                    )}
+
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Lock className="w-5 h-5 text-green-600" />
+                        <span className="font-semibold text-green-800 dark:text-green-300">
+                          Pagos Seguros
+                        </span>
+                      </div>
+                      <p className="text-sm text-green-700 dark:text-green-400">
+                        Todos los pagos están protegidos con cifrado SSL y son procesados 
+                        por plataformas certificadas PCI DSS.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modal de la calculadora */}
       <AnimatePresence>
@@ -386,9 +798,7 @@ function WebCalculator() {
                     onClick={() => setIsOpen(false)}
                     className="text-white hover:text-blue-200 transition-colors"
                   >
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <X className="w-8 h-8" />
                   </button>
                 </div>
 
@@ -428,165 +838,107 @@ function WebCalculator() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Nombre del Negocio *
+                          <Briefcase className="inline-block h-4 w-4 mr-1" /> Nombre del Negocio *
                         </label>
                         <input
                           type="text"
                           value={formData.company}
                           onChange={(e) => handleInputChange('company', e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                          placeholder="Ej: Mi Empresa SA"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          required
                         />
                       </div>
-
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Email *
+                          <Mail className="inline-block h-4 w-4 mr-1" /> Email Profesional *
                         </label>
-                        <div className="relative">
-                          <input
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => handleEmailChange(e.target.value)}
-                            onBlur={handleEmailBlur}
-                            className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors ${
-                              emailValidation.touched
-                                ? emailValidation.isValid
-                                  ? 'border-green-500 dark:border-green-500'
-                                  : 'border-red-500 dark:border-red-500'
-                                : 'border-gray-300 dark:border-gray-600'
-                            }`}
-                            placeholder="tu@empresa.com"
-                          />
-                          {/* Icono de validación */}
-                          {emailValidation.touched && (
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                              {emailValidation.isValid ? (
-                                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                              ) : (
-                                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        {/* Mensaje de validación */}
-                        {emailValidation.touched && emailValidation.message && (
-                          <motion.p
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className={`text-xs mt-1 ${
-                              emailValidation.isValid ? 'text-green-600' : 'text-red-600'
-                            }`}
-                          >
-                            {emailValidation.message}
-                          </motion.p>
+                        <input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => handleEmailChange(e.target.value)}
+                          onBlur={handleEmailBlur}
+                          className={`w-full px-4 py-2 border rounded-md focus:ring-2 ${
+                            emailValidation.touched && !emailValidation.isValid ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 dark:border-gray-600'
+                          } dark:bg-gray-700 dark:text-white`}
+                          required
+                        />
+                        {emailValidation.touched && !emailValidation.isValid && (
+                          <p className="text-red-500 text-xs mt-1">{emailValidation.message}</p>
                         )}
                       </div>
-
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Teléfono
+                          <Smartphone className="inline-block h-4 w-4 mr-1" /> Teléfono
                         </label>
                         <input
                           type="tel"
                           value={formData.phone}
                           onChange={(e) => handleInputChange('phone', e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                          placeholder="+54 9 11 1234-5678"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         />
                       </div>
-
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Sector del Negocio *
+                          <BarChart2 className="inline-block h-4 w-4 mr-1" /> Sector de Negocio *
                         </label>
                         <select
                           value={formData.sector}
                           onChange={(e) => handleInputChange('sector', e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          required
                         >
-                          <option value="">Selecciona tu sector</option>
-                          {businessSectors.map(sector => (
-                            <option key={sector.value} value={sector.value}>
-                              {sector.label}
-                            </option>
+                          <option value="">Selecciona una opción</option>
+                          {businessSectors.map(s => (
+                            <option key={s.value} value={s.value}>{s.label}</option>
                           ))}
                         </select>
                       </div>
-
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Ingresos Mensuales Actuales *
+                          <DollarSign className="inline-block h-4 w-4 mr-1" /> Ingreso Mensual Estimado *
                         </label>
                         <select
                           value={formData.monthlyRevenue}
                           onChange={(e) => handleInputChange('monthlyRevenue', e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          required
                         >
-                          <option value="">Selecciona el rango</option>
-                          {revenueRanges.map(range => (
-                            <option key={range.value} value={range.value}>
-                              {range.label}
-                            </option>
+                          <option value="">Selecciona una opción</option>
+                          {revenueRanges.map(r => (
+                            <option key={r.value} value={r.value}>{r.label}</option>
                           ))}
                         </select>
                       </div>
-
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          ¿Cómo consigues clientes actualmente?
+                          <Globe className="inline-block h-4 w-4 mr-1" /> ¿Tienes un sitio web actual?
                         </label>
-                        <textarea
-                          value={formData.currentClientMethod}
-                          onChange={(e) => handleInputChange('currentClientMethod', e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                          rows={3}
-                          placeholder="Ej: Redes sociales, recomendaciones, publicidad..."
-                        />
+                        <select
+                          value={formData.currentWebsite}
+                          onChange={(e) => handleInputChange('currentWebsite', e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        >
+                          <option value="">No</option>
+                          <option value="yes">Sí</option>
+                        </select>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        ¿Tienes sitio web actual?
-                      </label>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {['No tengo', 'Básico/Desactualizado', 'Sí, pero quiero renovar'].map(option => (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => handleInputChange('currentWebsite', option)}
-                            className={`p-3 border-2 rounded-lg text-center transition-colors ${
-                              formData.currentWebsite === option
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                                : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
-                            }`}
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end pt-6">
+                    <div className="mt-8 flex justify-end">
                       <motion.button
                         onClick={() => setStep(2)}
+                        className={`bg-blue-500 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-all duration-300 ${!isStep1Valid ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}`}
+                        whileHover={isStep1Valid ? { scale: 1.05 } : {}}
+                        whileTap={isStep1Valid ? { scale: 0.95 } : {}}
                         disabled={!isStep1Valid}
-                        className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        whileHover={{ scale: isStep1Valid ? 1.02 : 1 }}
-                        whileTap={{ scale: isStep1Valid ? 0.98 : 1 }}
                       >
-                        Siguiente →
+                        Siguiente
                       </motion.button>
                     </div>
                   </motion.div>
                 )}
 
-                {/* Paso 2: Requerimientos técnicos */}
+                {/* Paso 2: Detalles del proyecto web */}
                 {step === 2 && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
@@ -595,445 +947,311 @@ function WebCalculator() {
                   >
                     <div className="text-center mb-8">
                       <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        Requerimientos de tu Sitio Web
+                        Detalles de tu Proyecto Web
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400 mt-2">
-                        Selecciona las características que necesitas
+                        Elige las características y diseño que mejor se adapten a tu visión
                       </p>
                     </div>
 
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Tipo de Sitio Web *
-                          </label>
-                          <select
-                            value={formData.websiteType}
-                            onChange={(e) => handleInputChange('websiteType', e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <Layout className="inline-block h-4 w-4 mr-1" /> Tipo de Sitio Web *
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {websiteTypes.map(type => (
+                          <button
+                            key={type.value}
+                            onClick={() => handleInputChange('websiteType', type.value)}
+                            className={`p-4 rounded-lg border-2 text-left transition-all ${
+                              formData.websiteType === type.value
+                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                : 'border-gray-300 hover:border-blue-400 dark:border-gray-600 dark:hover:border-blue-400 dark:bg-gray-700'
+                            }`}
                           >
-                            <option value="">Selecciona el tipo</option>
-                            {websiteTypes.map(type => (
-                              <option key={type.value} value={type.value}>
-                                {type.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Número de Páginas *
-                          </label>
-                          <select
-                            value={formData.pageCount}
-                            onChange={(e) => handleInputChange('pageCount', e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                          >
-                            <option value="">Selecciona el rango</option>
-                            {pageRanges.map(range => (
-                              <option key={range.value} value={range.value}>
-                                {range.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Nivel de Diseño *
-                          </label>
-                          <select
-                            value={formData.designLevel}
-                            onChange={(e) => handleInputChange('designLevel', e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                          >
-                            <option value="">Selecciona el nivel</option>
-                            {designLevels.map(level => (
-                              <option key={level.value} value={level.value}>
-                                {level.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Urgencia del Proyecto
-                          </label>
-                          <select
-                            value={formData.urgency}
-                            onChange={(e) => handleInputChange('urgency', e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                          >
-                            <option value="">Selecciona urgencia</option>
-                            <option value="relaxed">Sin prisa (3+ meses)</option>
-                            <option value="normal">Normal (1-2 meses)</option>
-                            <option value="urgent">Urgente (menos de 1 mes)</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                          Funcionalidades Necesarias
-                        </label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {availableFeatures.map(feature => (
-                            <button
-                              key={feature.value}
-                              type="button"
-                              onClick={() => handleMultiSelect('features', feature.value)}
-                              className={`p-3 border-2 rounded-lg text-left transition-colors ${
-                                formData.features.includes(feature.value)
-                                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                  : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
-                              }`}
-                            >
-                              <div className="font-medium">{feature.label}</div>
-                              <div className="text-sm text-gray-500">+${feature.cost}</div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                          Integraciones Requeridas
-                        </label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {integrationOptions.map(integration => (
-                            <button
-                              key={integration.value}
-                              type="button"
-                              onClick={() => handleMultiSelect('integrations', integration.value)}
-                              className={`p-3 border-2 rounded-lg text-left transition-colors ${
-                                formData.integrations.includes(integration.value)
-                                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                  : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
-                              }`}
-                            >
-                              <div className="font-medium">{integration.label}</div>
-                              <div className="text-sm text-gray-500">+${integration.cost}</div>
-                            </button>
-                          ))}
-                        </div>
+                            <span className="font-semibold text-gray-900 dark:text-gray-100">{type.label}</span>
+                            <span className="block text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              Desde {formatCurrency(type.baseCost)}
+                            </span>
+                          </button>
+                        ))}
                       </div>
                     </div>
 
-                    <div className="flex justify-between pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Layers className="inline-block h-4 w-4 mr-1" /> Cantidad de Páginas *
+                        </label>
+                        <select
+                          value={formData.pageCount}
+                          onChange={(e) => handleInputChange('pageCount', e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          required
+                        >
+                          <option value="">Selecciona una opción</option>
+                          {pageRanges.map(p => (
+                            <option key={p.value} value={p.value}>{p.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Feather className="inline-block h-4 w-4 mr-1" /> Nivel de Diseño *
+                        </label>
+                        <select
+                          value={formData.designLevel}
+                          onChange={(e) => handleInputChange('designLevel', e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          required
+                        >
+                          <option value="">Selecciona una opción</option>
+                          {designLevels.map(d => (
+                            <option key={d.value} value={d.value}>{d.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <Code className="inline-block h-4 w-4 mr-1" /> Funcionalidades Adicionales
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {availableFeatures.map(f => (
+                          <div
+                            key={f.value}
+                            onClick={() => handleMultiSelect('features', f.value)}
+                            className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                              formData.features.includes(f.value)
+                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                : 'border-gray-300 hover:border-blue-400 dark:border-gray-600 dark:hover:border-blue-400 dark:bg-gray-700'
+                            }`}
+                          >
+                            <span className="font-semibold text-gray-900 dark:text-gray-100">{f.label}</span>
+                            <span className="block text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              +{formatCurrency(f.cost)}
+                            </span>
+                          </div
+                          >
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <GitMerge className="inline-block h-4 w-4 mr-1" /> Integraciones
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {integrationOptions.map(i => (
+                          <div
+                            key={i.value}
+                            onClick={() => handleMultiSelect('integrations', i.value)}
+                            className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                              formData.integrations.includes(i.value)
+                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                : 'border-gray-300 hover:border-blue-400 dark:border-gray-600 dark:hover:border-blue-400 dark:bg-gray-700'
+                            }`}
+                          >
+                            <span className="font-semibold text-gray-900 dark:text-gray-100">{i.label}</span>
+                            <span className="block text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              +{formatCurrency(i.cost)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Clock className="inline-block h-4 w-4 mr-1" /> Nivel de Urgencia *
+                        </label>
+                        <select
+                          value={formData.urgency}
+                          onChange={(e) => handleInputChange('urgency', e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          required
+                        >
+                          <option value="">Selecciona una opción</option>
+                          <option value="normal">Normal (3-6 meses)</option>
+                          <option value="urgent">Urgente (1-2 meses)</option>
+                          <option value="flexible">Flexible (+6 meses)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <DollarSign className="inline-block h-4 w-4 mr-1" /> Presupuesto
+                        </label>
+                        <select
+                          value={formData.budget}
+                          onChange={(e) => handleInputChange('budget', e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        >
+                          <option value="">No definido</option>
+                          <option value="<5k">Menos de $5,000 USD</option>
+                          <option value="5k-10k">$5,000 - $10,000 USD</option>
+                          <option value="10k-20k">$10,000 - $20,000 USD</option>
+                          <option value="20k+">Más de $20,000 USD</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="mt-8 flex justify-between">
                       <motion.button
                         onClick={() => setStep(1)}
-                        className="px-8 py-3 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        className="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-full shadow-lg transition-all duration-300 hover:bg-gray-400"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
-                        ← Anterior
+                        <ChevronLeft className="inline-block h-4 w-4 mr-2" />
+                        Anterior
                       </motion.button>
-                      
                       <motion.button
                         onClick={calculateWebProject}
-                        disabled={!formData.websiteType || !formData.pageCount || !formData.designLevel}
-                        className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        className={`bg-blue-500 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-all duration-300 ${!isStep2Valid ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}`}
+                        whileHover={isStep2Valid ? { scale: 1.05 } : {}}
+                        whileTap={isStep2Valid ? { scale: 0.95 } : {}}
+                        disabled={!isStep2Valid}
                       >
-                        Calcular Proyecto 🚀
+                        {loading ? 'Calculando...' : 'Ver Resultados'}
                       </motion.button>
                     </div>
                   </motion.div>
                 )}
 
-                {/* Paso 3: Resultados */}
-                {step === 3 && (
+                {/* Paso 3: Resultados y Resumen */}
+                {step === 3 && results && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     className="space-y-8"
                   >
-                    {loading ? (
-                      <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                          Calculando tu proyecto personalizado...
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-400 mt-2">
-                          Analizando requerimientos y calculando ROI
-                        </p>
-                      </div>
-                    ) : results && (
-                      <>
-                        <div className="text-center mb-8">
-                          <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                            ¡Tu Propuesta Web Personalizada!
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-400 mt-2">
-                            Costo de desarrollo + ROI proyectado para {formData.company}
-                          </p>
-                        </div>
+                    <div className="text-center mb-8">
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        ¡Tu Presupuesto Estimado está Listo!
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 mt-2">
+                        Aquí tienes el resumen de tu proyecto web y una estimación de su impacto.
+                      </p>
+                    </div>
 
-                        {/* Estado del email */}
-                        <AnimatePresence>
-                          {emailStatus.loading && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-2 rounded-lg flex items-center gap-2"
-                            >
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                              Enviando propuesta...
-                            </motion.div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <motion.div
+                        className="bg-white dark:bg-gray-700 p-6 rounded-xl shadow-lg"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+                          💰 Costo de tu Proyecto
+                        </h4>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Costo Base:</span>
+                            <span className="font-semibold">{formatCurrency(results.breakdown.baseCost)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Funcionalidades:</span>
+                            <span className="font-semibold">{formatCurrency(results.breakdown.featuresCost)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Integraciones:</span>
+                            <span className="font-semibold">{formatCurrency(results.breakdown.integrationsCost)}</span>
+                          </div>
+                          {results.breakdown.urgencyAdjustment > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600 dark:text-gray-400">Ajuste por urgencia:</span>
+                              <span className="font-semibold">{formatCurrency(results.breakdown.urgencyAdjustment)}</span>
+                            </div>
                           )}
-                          
-                          {emailStatus.sent && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-2 rounded-lg flex items-center gap-2"
-                            >
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-                              ¡Propuesta enviada! Te contactaré en 24 horas.
-                            </motion.div>
-                          )}
-                          
-                          {emailStatus.error && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg"
-                            >
-                              {emailStatus.error}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-
-                        {/* Métricas principales */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                          <motion.div
-                            className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-6 rounded-xl text-center"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                          >
-                            <div className="text-2xl font-bold">
-                              {formatCurrency(results.developmentCost)}
+                          <div className="border-t pt-2 mt-2">
+                            <div className="flex justify-between font-bold text-lg">
+                              <span>Total:</span>
+                              <span className="text-blue-600">{formatCurrency(results.developmentCost)}</span>
                             </div>
-                            <div className="text-blue-100 text-sm font-medium">
-                              Costo Total
-                            </div>
-                          </motion.div>
-
-                          <motion.div
-                            className="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-6 rounded-xl text-center"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                          >
-                            <div className="text-2xl font-bold">
-                              {results.roi}%
-                            </div>
-                            <div className="text-green-100 text-sm font-medium">
-                              ROI Anual
-                            </div>
-                          </motion.div>
-
-                          <motion.div
-                            className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl text-center"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                          >
-                            <div className="text-2xl font-bold">
-                              {results.developmentWeeks}
-                            </div>
-                            <div className="text-purple-100 text-sm font-medium">
-                              Semanas de Desarrollo
-                            </div>
-                          </motion.div>
-
-                          <motion.div
-                            className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl text-center"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                          >
-                            <div className="text-2xl font-bold">
-                              {formatCurrency(results.monthlyRevenue)}
-                            </div>
-                            <div className="text-orange-100 text-sm font-medium">
-                              Ingresos Extra/Mes
-                            </div>
-                          </motion.div>
+                          </div>
                         </div>
+                      </motion.div>
 
-                        {/* Call to action */}
-                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl p-6 text-center">
-                          <h4 className="text-xl font-bold mb-2">
-                            ¿Listo para aumentar tus ventas online?
-                          </h4>
-                          <p className="text-blue-100 mb-4">
-                            Te envío una propuesta detallada con plan de desarrollo y garantías
-                          </p>
-                          <motion.button
-                            onClick={sendWebLeadData}
-                            disabled={emailStatus.loading}
-                            className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors mr-4 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
-                            whileHover={{ scale: emailStatus.loading ? 1 : 1.05 }}
-                            whileTap={{ scale: emailStatus.loading ? 1 : 0.95 }}
-                          >
-                            {emailStatus.loading ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                Enviando...
-                              </>
-                            ) : (
-                              <>
-                                🌐 Solicitar Propuesta
-                              </>
-                            )}
-                          </motion.button>
-                          <motion.button
-                            onClick={() => {
-                              const message = `Hola! Calculé mi sitio web con tu calculadora:
-
-Empresa: ${formData.company}
-Costo: ${formatCurrency(results.developmentCost)}
-ROI proyectado: ${results.roi}%
-Tiempo: ${results.developmentWeeks} semanas
-
-¿Podemos agendar una reunión?`;
-                              window.open(`https://wa.me/+542995414422?text=${encodeURIComponent(message)}`, '_blank');
-                            }}
-                            className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors inline-flex items-center gap-2"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            💬 WhatsApp Directo
-                          </motion.button>
-                        </div>
-
-                        {/* Detalles del proyecto */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <motion.div
-                            className="bg-white dark:bg-gray-700 p-6 rounded-xl shadow-lg"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.5 }}
-                          >
-                            <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
-                              💰 Desglose de Costos
-                            </h4>
-                            <div className="space-y-3">
-                              <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-400">Desarrollo base:</span>
-                                <span className="font-semibold">{formatCurrency(results.breakdown.baseCost)}</span>
-                              </div>
-                              {results.breakdown.featuresCost > 0 && (
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600 dark:text-gray-400">Funcionalidades extra:</span>
-                                  <span className="font-semibold">{formatCurrency(results.breakdown.featuresCost)}</span>
-                                </div>
-                              )}
-                              {results.breakdown.integrationsCost > 0 && (
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600 dark:text-gray-400">Integraciones:</span>
-                                  <span className="font-semibold">{formatCurrency(results.breakdown.integrationsCost)}</span>
-                                </div>
-                              )}
-                              {results.breakdown.urgencyAdjustment > 0 && (
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600 dark:text-gray-400">Ajuste por urgencia:</span>
-                                  <span className="font-semibold">{formatCurrency(results.breakdown.urgencyAdjustment)}</span>
-                                </div>
-                              )}
-                              <div className="border-t pt-2 mt-2">
-                                <div className="flex justify-between font-bold text-lg">
-                                  <span>Total:</span>
-                                  <span className="text-blue-600">{formatCurrency(results.developmentCost)}</span>
-                                </div>
-                              </div>
+                      <motion.div
+                        className="bg-white dark:bg-gray-700 p-6 rounded-xl shadow-lg"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 }}
+                      >
+                        <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+                          📈 Proyección de Resultados
+                        </h4>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Potencial de Ingresos Anuales:</span>
+                            <span className="font-semibold">{formatCurrency(results.annualRevenue)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">ROI Anual Estimado:</span>
+                            <span className={`font-semibold ${results.roi > 0 ? 'text-green-600' : 'text-red-600'}`}>{results.roi}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Tiempo de Recuperación:</span>
+                            <span className="font-semibold">{results.paybackMonths} meses</span>
+                          </div>
+                          <div className="border-t pt-2 mt-2">
+                            <div className="flex justify-between font-bold text-lg">
+                              <span>Tiempo de Desarrollo:</span>
+                              <span className="text-blue-600">{results.developmentWeeks} semanas</span>
                             </div>
-                          </motion.div>
-
-                          <motion.div
-                            className="bg-white dark:bg-gray-700 p-6 rounded-xl shadow-lg"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.6 }}
-                          >
-                            <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
-                              📈 Proyección de Resultados
-                            </h4>
-                            <div className="space-y-3">
-                              <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-400">Visitantes mensuales:</span>
-                                <span className="font-semibold">{results.projections.monthlyVisitors.toLocaleString()}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-400">Leads mensuales:</span>
-                                <span className="font-semibold">{results.monthlyLeads}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-400">Tasa de conversión:</span>
-                                <span className="font-semibold">{results.projections.conversionRate}%</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-400">Valor por lead:</span>
-                                <span className="font-semibold">{formatCurrency(results.projections.leadValue)}</span>
-                              </div>
-                              <div className="border-t pt-2 mt-2">
-                                <div className="flex justify-between font-bold">
-                                  <span>Ingresos anuales extra:</span>
-                                  <span className="text-green-600">{formatCurrency(results.annualRevenue)}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
+                          </div>
                         </div>
+                      </motion.div>
+                    </div>
 
-                        {/* Botones de acción */}
-                        <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                          <motion.button
-                            onClick={resetCalculator}
-                            className="flex-1 px-6 py-3 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            🔄 Nueva Calculación
-                          </motion.button>
-                          
-                          <motion.button
-                            onClick={() => {
-                              const resultsText = `Calculadora Web - ${formData.company}
+                    <motion.div
+                      className="mt-8 flex flex-col md:flex-row justify-center gap-4"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      <motion.button
+                        onClick={sendWebLeadData}
+                        className="bg-green-500 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-all duration-300 hover:bg-green-600 flex items-center justify-center gap-2"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={emailStatus.loading || emailStatus.sent}
+                      >
+                        {emailStatus.loading ? (
+                          <>
+                            <Zap className="animate-pulse" /> Enviando...
+                          </>
+                        ) : emailStatus.sent ? (
+                          <>
+                            <CheckCircle /> Enviado
+                          </>
+                        ) : (
+                          <>
+                            <Mail /> Recibir Propuesta
+                          </>
+                        )}
+                      </motion.button>
+                      
+                      <motion.button
+                        onClick={openPaymentModal}
+                        className="bg-indigo-500 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-all duration-300 hover:bg-indigo-600 flex items-center justify-center gap-2"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <DollarSign /> Pagar Ahora
+                      </motion.button>
 
-Costo de desarrollo: ${formatCurrency(results.developmentCost)}
-Tiempo: ${results.developmentWeeks} semanas
-ROI proyectado: ${results.roi}%
-Ingresos extra/año: ${formatCurrency(results.annualRevenue)}
-
-Calculado: ${new Date().toLocaleDateString('es-ES')}
-Contacto: marianoaliandri@gmail.com`;
-
-                              navigator.share?.({
-                                title: `Calculadora Web - ${formData.company}`,
-                                text: resultsText
-                              }) || navigator.clipboard?.writeText(resultsText);
-                            }}
-                            className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                            </svg>
-                            📊 Compartir Propuesta
-                          </motion.button>
-                        </div>
-                      </>
-                    )}
+                      <motion.button
+                        onClick={resetCalculator}
+                        className="bg-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-full shadow-lg transition-all duration-300 hover:bg-gray-400 flex items-center justify-center gap-2"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <ChevronLeft /> Volver a Calcular
+                      </motion.button>
+                    </motion.div>
                   </motion.div>
                 )}
               </div>
@@ -1045,4 +1263,8 @@ Contacto: marianoaliandri@gmail.com`;
   );
 }
 
-export default WebCalculator;
+// Para que el componente se pueda ejecutar en el entorno de canvas
+// se necesita un componente App.
+export default function App() {
+  return <WebCalculator />;
+}

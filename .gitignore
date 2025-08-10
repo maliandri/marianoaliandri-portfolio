@@ -39,5 +39,5 @@ pids
 
 # Vite cache
 .vite/
-# Local Netlify folder
-.netlify
+
+# 
