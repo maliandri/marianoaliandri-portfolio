@@ -20,12 +20,13 @@
   "author": "Mariano Aliandri",
   "license": "MIT",
   "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "mercadopago": "^2.8.0",
     "node-fetch": "^3.3.2",
-    "nodemailer": "^6.9.14"
+    "nodemailer": "^6.10.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

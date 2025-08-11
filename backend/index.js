@@ -2,29 +2,45 @@ const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 const path = require('path');
-
-// Cargar variables de entorno
+const fs = require('fs');
+const bodyParser = require('body-parser');
+const fetch = require('node-fetch');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-// Si no se cargan del .env, usar valores directos (TEMPORAL)
-if (!process.env.ZOHO_USER) {
-    process.env.ZOHO_USER = 'tupaginaweb@marianoaliandri.com.ar';
-    process.env.ZOHO_PASS = 'wNbidCYn8ZjV';
-    process.env.TO_EMAIL = 'tupaginaweb@marianoaliandri.com.ar';
-    process.env.MP_ACCESS_TOKEN = 'TAPP_USR-3855389865496676-080907-0626d04a2576ab86f776472712b20283-80550955';
-    process.env.PAYPAL_CLIENT_ID = 'AQkOz-Aq6Kq4GalFF4bdMl-p1SPXLycWyBt7anHrlpUses9gYcxt_7i4IJznnilKMOSHrSyh1omD5Av-';
-    process.env.PAYPAL_CLIENT_SECRET = 'EE-G8QFDLcykUXd69dr-Lze3niZF5dvmohkz7VD9UYY--MlCeZ9hEm1RukHABHWV_10abpLPyiqGsCUU';
+// ==================== CONFIGURACIÓN BACKEND_URL PARA NGROK ====================
+if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NGROK_URL) {
+        process.env.BACKEND_URL = process.env.NGROK_URL;
+        console.log(`🌐 Usando NGROK_URL para BACKEND_URL: ${process.env.BACKEND_URL}`);
+    } else {
+        console.warn('⚠️ NGROK_URL no está configurado en .env, se usará localhost');
+        process.env.BACKEND_URL = 'http://localhost:4000';
+    }
+}
+
+// Verificar que las variables de entorno estén configuradas
+if (!process.env.ZOHO_USER || !process.env.ZOHO_PASS) {
+    console.error('❌ FALTAN CREDENCIALES DE EMAIL: ZOHO_USER y ZOHO_PASS requeridas en .env');
+}
+
+if (!process.env.MP_ACCESS_TOKEN) {
+    console.warn('⚠️ MP_ACCESS_TOKEN no configurado - MercadoPago será deshabilitado');
+}
+
+if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
+    console.warn('⚠️ PAYPAL_CLIENT_ID o PAYPAL_CLIENT_SECRET no configurados - PayPal será deshabilitado');
 }
 
 const app = express();
+const PORT = process.env.PORT || 4000;
 
 // ==================== CONFIGURACIÓN CORS ====================
-
 const allowedOrigins = [
     'https://marianoaliandri.netlify.app',
     'https://marianoaliandri.com.ar',
     'http://localhost:5173',
     'http://localhost:3000',
+    'http://localhost:4000',
     'http://localhost:4173'
 ];
 
@@ -45,12 +61,13 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(bodyParser.json());
 
 // ==================== CONFIGURACIÓN DE SERVICIOS ====================
 
 // Nodemailer
 const createTransporter = () => {
-    return nodemailer.createTransport({
+    return nodemailer.createTransporter({
         host: 'smtp.zoho.com',
         port: 587,
         secure: false,
@@ -83,7 +100,7 @@ if (process.env.MP_ACCESS_TOKEN) {
         paymentClient = new Payment(client);
         console.log('✅ MercadoPago configurado correctamente');
     } catch (error) {
-        console.warn('⚠️ Error al configurar MercadoPago. Asegúrate de haber instalado `mercadopago`.');
+        console.warn('⚠️ Error al configurar MercadoPago:', error.message);
     }
 } else {
     console.log('⚠️ MP_ACCESS_TOKEN no configurado - MercadoPago deshabilitado');
@@ -108,7 +125,7 @@ if (process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET) {
         );
         console.log('✅ PayPal configurado correctamente');
     } catch (error) {
-        console.warn('⚠️ Error al configurar PayPal. Asegúrate de haber instalado `@paypal/checkout-server-sdk`.');
+        console.warn('⚠️ Error al configurar PayPal:', error.message);
     }
 } else {
     console.log('⚠️ PAYPAL_CLIENT_ID o PAYPAL_CLIENT_SECRET no configurados - PayPal deshabilitado');
@@ -145,7 +162,7 @@ app.post('/api/send-roi-lead', async (req, res) => {
         };
 
         await transporter.sendMail(mailOptions);
-        console.log(`✅ Email ROI enviado a ${leadData.email}`);
+        console.log(`✅ Email ROI enviado para ${leadData.company}`);
         res.status(200).json({ success: true, message: 'Email sent successfully!' });
 
     } catch (error) {
@@ -183,7 +200,7 @@ app.post('/api/send-web-lead', async (req, res) => {
         };
 
         await transporter.sendMail(mailOptions);
-        console.log(`✅ Email Web enviado a ${leadData.email}`);
+        console.log(`✅ Email Web enviado para ${leadData.company}`);
         res.status(200).json({ success: true, message: 'Email sent successfully!' });
 
     } catch (error) {
@@ -197,7 +214,15 @@ app.post('/api/send-web-lead', async (req, res) => {
 app.post('/api/create-web-payment', async (req, res) => {
     const { projectData, clientData, amount, paymentType = 'full' } = req.body;
 
+    console.log('💰 Datos recibidos para crear pago:', {
+        projectData,
+        clientData,
+        amount,
+        paymentType
+    });
+
     if (!preferenceClient) {
+        console.error('❌ MercadoPago no configurado');
         return res.status(500).json({ error: 'MercadoPago no está configurado' });
     }
 
@@ -236,9 +261,9 @@ app.post('/api/create-web-payment', async (req, res) => {
             items: [{
                 id: `web_project_${Date.now()}`,
                 title: title,
-                unit_price: finalAmount, // Ya convertido a ARS
+                unit_price: finalAmount,
                 quantity: 1,
-                currency_id: currency    // ARS para MercadoPago
+                currency_id: currency
             }],
             payer: {
                 name: clientData.company,
@@ -250,11 +275,11 @@ app.post('/api/create-web-payment', async (req, res) => {
                 company: clientData.company,
                 paymentType: paymentType,
                 projectData: projectData,
-                originalAmountUSD: amount,  // Guardar monto original
+                originalAmountUSD: amount,
                 convertedAmountARS: finalAmount,
                 timestamp: new Date().toISOString()
             }),
-            notification_url: `${process.env.BACKEND_URL || 'http://localhost:4000'}/api/webhook/mercadopago`,
+            notification_url: `${process.env.BACKEND_URL}/api/webhook/mercadopago`,
             back_urls: {
                 success: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment-success?type=web&payment=${paymentType}`,
                 failure: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment-failure?type=web`,
@@ -262,6 +287,8 @@ app.post('/api/create-web-payment', async (req, res) => {
             },
             auto_return: 'approved'
         };
+
+        console.log('🔧 Creando preferencia con datos:', preferenceData);
 
         const response = await preferenceClient.create({ body: preferenceData });
         
@@ -359,87 +386,6 @@ app.post('/api/create-paypal-payment', async (req, res) => {
     }
 });
 
-app.post('/api/send-transfer-instructions', async (req, res) => {
-    const { customer, transferData, projectDetails } = req.body;
-    
-    if (!customer?.email || !transferData?.amount) {
-        return res.status(400).json({ error: 'Faltan datos requeridos: email del cliente o monto de transferencia.' });
-    }
-
-    if (!process.env.ZOHO_USER || !process.env.ZOHO_PASS) {
-        return res.status(500).json({ success: false, error: 'Configuración de email no disponible' });
-    }
-
-    try {
-        const transporter = createTransporter();
-        const emailContent = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #3B82F6;">💳 Instrucciones de Transferencia Bancaria</h2>
-                <p>Hola ${customer.company},</p>
-                <p>Hemos recibido tu solicitud de pago y aquí tienes los detalles para realizar la transferencia.</p>
-                
-                <div style="background: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb;">
-                    <h3>Detalles del Pago</h3>
-                    <p><strong>Proyecto para:</strong> ${customer.company}</p>
-                    <p><strong>Monto a pagar:</strong> <strong style="font-size: 1.2em;">$${transferData.amount} ${transferData.currency}</strong></p>
-                    <p><strong>Referencia de Pago:</strong> <code style="background: #e5e7eb; padding: 4px 8px; border-radius: 4px; font-weight: bold;">${transferData.reference}</code></p>
-                </div>
-                
-                <h3>Datos Bancarios:</h3>
-                ${transferData.accounts?.USD ? `
-                <div style="background: white; border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">
-                    <h4>💵 Cuenta en Dólares (USD)</h4>
-                    <p><strong>Banco:</strong> ${transferData.accounts.USD.bank}</p>
-                    <p><strong>Beneficiario:</strong> ${transferData.accounts.USD.beneficiary}</p>
-                    <p><strong>Cuenta:</strong> ${transferData.accounts.USD.account}</p>
-                    <p><strong>SWIFT:</strong> ${transferData.accounts.USD.swift}</p>
-                </div>
-                ` : ''}
-                
-                ${transferData.accounts?.ARS ? `
-                <div style="background: white; border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">
-                    <h4>🇦🇷 Cuenta en Pesos (ARS)</h4>
-                    <p><strong>Banco:</strong> ${transferData.accounts.ARS.bank}</p>
-                    <p><strong>Beneficiario:</strong> ${transferData.accounts.ARS.beneficiary}</p>
-                    <p><strong>CBU:</strong> ${transferData.accounts.ARS.cbu}</p>
-                    <p><strong>Alias:</strong> ${transferData.accounts.ARS.alias}</p>
-                </div>
-                ` : ''}
-                
-                <div style="background: #FEF3CD; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #fcd34d;">
-                    <h4 style="color: #9A3412; margin-top: 0;">⚠️ Importante:</h4>
-                    <ul>
-                        <li><strong>Recuerda incluir la referencia de pago:</strong> <code style="background: #e5e7eb; padding: 2px 4px; border-radius: 4px;">${transferData.reference}</code></li>
-                        <li><strong>Envía el comprobante a:</strong> <a href="mailto:${process.env.TO_EMAIL}" style="color: #3B82F6;">${process.env.TO_EMAIL}</a></li>
-                        <li>Procesaremos tu pago en un plazo de 24-48 horas.</li>
-                    </ul>
-                </div>
-                
-                <p>Muchas gracias,</p>
-                <p>Mariano Aliandri</p>
-            </div>
-        `;
-
-        await transporter.sendMail({
-            from: process.env.ZOHO_USER,
-            to: customer.email,
-            cc: process.env.TO_EMAIL || process.env.ZOHO_USER,
-            subject: `💳 Instrucciones de Pago - ${customer.company}`,
-            html: emailContent
-        });
-
-        res.json({
-            success: true,
-            reference: transferData.reference,
-            message: 'Instrucciones de transferencia enviadas exitosamente'
-        });
-
-    } catch (error) {
-        console.error('❌ Error enviando instrucciones de transferencia:', error);
-        res.status(500).json({ success: false, error: 'Error al enviar instrucciones de transferencia' });
-    }
-});
-
 // ==================== WEBHOOKS ====================
 
 app.post('/api/webhook/mercadopago', async (req, res) => {
@@ -464,7 +410,7 @@ app.post('/api/webhook/mercadopago', async (req, res) => {
                             from: process.env.ZOHO_USER,
                             to: process.env.TO_EMAIL || process.env.ZOHO_USER,
                             subject: `💰 PAGO CONFIRMADO - ${externalReference.company || 'Cliente'}`,
-                            text: `Pago confirmado por $${paymentResponse.transaction_amount} USD para el proyecto de ${externalReference.company || 'Cliente'}.`
+                            text: `Pago confirmado por $${paymentResponse.transaction_amount} para el proyecto de ${externalReference.company || 'Cliente'}.`
                         });
                     }
                 } catch (parseError) {
@@ -495,6 +441,8 @@ app.get('/api/test', (req, res) => {
     });
 });
 
+// ==================== MIDDLEWARE DE MANEJO DE ERRORES ====================
+
 app.use((err, req, res, next) => {
     console.error('❌ Error del servidor:', err);
     res.status(500).json({ success: false, error: 'Error interno del servidor' });
@@ -504,7 +452,8 @@ app.use((req, res) => {
     res.status(404).json({ success: false, error: 'Ruta no encontrada' });
 });
 
-const PORT = process.env.PORT || 4000;
+// ==================== INICIO DEL SERVIDOR ====================
+
 app.listen(PORT, () => {
     console.log(`🚀 Servidor en funcionamiento en el puerto ${PORT}`);
     console.log('Estado de variables de entorno:');
