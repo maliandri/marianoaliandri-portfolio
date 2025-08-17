@@ -1,7 +1,16 @@
 // src/utils/firebaseService.js
-
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, serverTimestamp, onSnapshot } from 'firebase/firestore';
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  increment,
+  serverTimestamp,
+  onSnapshot,
+  runTransaction
+} from 'firebase/firestore';
 
 // 🔥 CONFIGURACIÓN DE FIREBASE - MARIANO ALIANDRI (FIRESTORE)
 const firebaseConfig = {
@@ -36,27 +45,42 @@ export class FirebaseAnalyticsService {
     return visitorId;
   }
 
+  // Asegura que exista el documento de estadísticas
+  async ensureStatsDoc() {
+    const statsRef = doc(this.db, 'analytics', 'stats');
+    const snap = await getDoc(statsRef);
+    if (!snap.exists()) {
+      await setDoc(
+        statsRef,
+        { totalVisits: 0, uniqueVisitors: 0, likes: 0, dislikes: 0 },
+        { merge: true }
+      );
+    }
+  }
+
   // Registrar una visita al portfolio
   async recordVisit() {
     try {
       const visitId = this.getVisitorId();
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-      
+
+      await this.ensureStatsDoc();
+
       console.log('📊 Registrando visita...', visitId);
-      
+
       // Referencia al documento de estadísticas
       const statsRef = doc(this.db, 'analytics', 'stats');
-      
+
       // Obtener estadísticas actuales
       const statsDoc = await getDoc(statsRef);
-      
+
       if (statsDoc.exists()) {
         // Incrementar visitas totales
         await updateDoc(statsRef, {
           totalVisits: increment(1)
         });
       } else {
-        // Crear documento inicial
+        // Crear documento inicial (backup si otro cliente aún no lo creó)
         await setDoc(statsRef, {
           totalVisits: 1,
           uniqueVisitors: 0,
@@ -64,11 +88,11 @@ export class FirebaseAnalyticsService {
           dislikes: 0
         });
       }
-      
+
       // Verificar si es visitante único
       const visitorRef = doc(this.db, 'visitors', visitId);
       const visitorDoc = await getDoc(visitorRef);
-      
+
       if (!visitorDoc.exists()) {
         // Nuevo visitante
         await setDoc(visitorRef, {
@@ -78,7 +102,7 @@ export class FirebaseAnalyticsService {
           userAgent: navigator.userAgent.substring(0, 100),
           date: today
         });
-        
+
         // Incrementar visitantes únicos
         await updateDoc(statsRef, {
           uniqueVisitors: increment(1)
@@ -100,53 +124,76 @@ export class FirebaseAnalyticsService {
     }
   }
 
-  // Manejar likes y dislikes del portfolio
+  // Manejar likes y dislikes del portfolio (ATÓMICO con transacciones)
   async handleVote(voteType) {
     try {
       const userId = this.getVisitorId();
       const userVoteRef = doc(this.db, 'userVotes', userId);
       const statsRef = doc(this.db, 'analytics', 'stats');
-      
-      const userVoteDoc = await getDoc(userVoteRef);
-      let previousVote = userVoteDoc.exists() ? userVoteDoc.data().type : null;
-      
-      console.log(`🗳️ Procesando voto: ${voteType}, anterior: ${previousVote}`);
-      
-      if (previousVote === voteType) {
-        // Quitar voto
-        await setDoc(userVoteRef, { type: null, timestamp: serverTimestamp() });
-        await updateDoc(statsRef, {
-          [voteType === 'like' ? 'likes' : 'dislikes']: increment(-1)
-        });
-        console.log(`❌ Voto ${voteType} removido`);
-        return null;
-      } else if (previousVote && previousVote !== voteType) {
-        // Cambiar voto
-        await updateDoc(statsRef, {
-          [previousVote === 'like' ? 'likes' : 'dislikes']: increment(-1),
-          [voteType === 'like' ? 'likes' : 'dislikes']: increment(1)
-        });
-        await setDoc(userVoteRef, { 
-          type: voteType, 
-          timestamp: serverTimestamp(),
-          previousVote: previousVote 
-        });
-        console.log(`🔄 Voto cambiado de ${previousVote} a ${voteType}`);
-        return voteType;
-      } else {
-        // Nuevo voto
-        await updateDoc(statsRef, {
-          [voteType === 'like' ? 'likes' : 'dislikes']: increment(1)
-        });
-        await setDoc(userVoteRef, { 
-          type: voteType, 
-          timestamp: serverTimestamp() 
-        });
-        console.log(`✨ Nuevo voto: ${voteType}`);
-        return voteType;
-      }
+
+      // Asegurar doc de estadísticas
+      await this.ensureStatsDoc();
+
+      let resultType = null;
+
+      await runTransaction(this.db, async (tx) => {
+        const [voteSnap, statsSnap] = await Promise.all([
+          tx.get(userVoteRef),
+          tx.get(statsRef)
+        ]);
+
+        if (!statsSnap.exists()) {
+          tx.set(statsRef, { totalVisits: 0, uniqueVisitors: 0, likes: 0, dislikes: 0 });
+        }
+
+        const prev = voteSnap.exists() ? (voteSnap.data().type || null) : null;
+
+        // Quitar el mismo voto
+        if (prev === voteType) {
+          resultType = null;
+          tx.set(
+            userVoteRef,
+            { type: null, timestamp: serverTimestamp() },
+            { merge: true }
+          );
+          if (voteType === 'like') tx.update(statsRef, { likes: increment(-1) });
+          else tx.update(statsRef, { dislikes: increment(-1) });
+          return;
+        }
+
+        // Cambiar voto (like -> dislike o viceversa)
+        if (prev && prev !== voteType) {
+          if (prev === 'like') {
+            tx.update(statsRef, { likes: increment(-1), dislikes: increment(1) });
+          } else {
+            tx.update(statsRef, { dislikes: increment(-1), likes: increment(1) });
+          }
+          tx.set(
+            userVoteRef,
+            { type: voteType, timestamp: serverTimestamp(), previousVote: prev },
+            { merge: true }
+          );
+          resultType = voteType;
+          return;
+        }
+
+        // Voto nuevo
+        if (!prev) {
+          if (voteType === 'like') tx.update(statsRef, { likes: increment(1) });
+          else tx.update(statsRef, { dislikes: increment(1) });
+          tx.set(
+            userVoteRef,
+            { type: voteType, timestamp: serverTimestamp() },
+            { merge: true }
+          );
+          resultType = voteType;
+        }
+      });
+
+      console.log(`✅ Voto aplicado:`, resultType);
+      return resultType;
     } catch (error) {
-      console.error('❌ Error en votación:', error);
+      console.error('❌ Error en votación (tx):', error);
       throw error;
     }
   }
@@ -156,7 +203,7 @@ export class FirebaseAnalyticsService {
     try {
       const statsRef = doc(this.db, 'analytics', 'stats');
       const statsDoc = await getDoc(statsRef);
-      
+
       if (statsDoc.exists()) {
         const data = statsDoc.data();
         console.log('📊 Estadísticas cargadas:', data);
@@ -199,7 +246,7 @@ export class FirebaseAnalyticsService {
       const userId = this.getVisitorId();
       const userVoteRef = doc(this.db, 'userVotes', userId);
       const userVoteDoc = await getDoc(userVoteRef);
-      
+
       const vote = userVoteDoc.exists() ? userVoteDoc.data().type : null;
       console.log('🗳️ Voto del usuario:', vote);
       return vote;
@@ -213,27 +260,31 @@ export class FirebaseAnalyticsService {
   subscribeToStats(callback) {
     try {
       const statsRef = doc(this.db, 'analytics', 'stats');
-      
-      const unsubscribe = onSnapshot(statsRef, (doc) => {
-        if (doc.exists()) {
-          const data = doc.data();
-          const stats = {
-            totalVisits: data.totalVisits || 0,
-            uniqueVisitors: data.uniqueVisitors || 0,
-            likes: data.likes || 0,
-            dislikes: data.dislikes || 0
-          };
-          console.log('📊 Estadísticas actualizadas en tiempo real:', stats);
-          callback(stats);
+
+      const unsubscribe = onSnapshot(
+        statsRef,
+        (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            const stats = {
+              totalVisits: data.totalVisits || 0,
+              uniqueVisitors: data.uniqueVisitors || 0,
+              likes: data.likes || 0,
+              dislikes: data.dislikes || 0
+            };
+            console.log('📊 Estadísticas actualizadas en tiempo real:', stats);
+            callback(stats);
+          }
+        },
+        (error) => {
+          console.error('❌ Error en suscripción a estadísticas:', error);
         }
-      }, (error) => {
-        console.error('❌ Error en suscripción a estadísticas:', error);
-      });
+      );
 
       return unsubscribe;
     } catch (error) {
       console.error('❌ Error creando suscripción:', error);
-      return () => {}; // Función vacía de cleanup
+      return () => {}; // cleanup vacío
     }
   }
 
