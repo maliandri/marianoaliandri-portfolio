@@ -40,11 +40,12 @@ function ROICalculator() {
     touched: false
   });
 
+  // ↑ AUMENTADO el límite de longitud a 320
   const validateEmail = (email) => {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     if (!email) return { isValid: false, message: '' };
     if (!emailRegex.test(email)) return { isValid: false, message: 'Formato de email inválido' };
-    if (email.length > 254) return { isValid: false, message: 'Email demasiado largo' };
+    if (email.length > 320) return { isValid: false, message: 'Email demasiado largo' };
     const domain = email.split('@')[1];
     if (domain && domain.length < 2) return { isValid: false, message: 'Dominio inválido' };
     const disposableEmails = ['10minutemail.com','tempmail.org','guerrillamail.com','mailinator.com','temp-mail.org','throwaway.email','yopmail.com','maildrop.cc','sharklasers.com'];
@@ -59,6 +60,32 @@ function ROICalculator() {
     if (emailValidation.touched) setEmailValidation({ ...validateEmail(email), touched: true });
   };
   const handleEmailBlur = () => setEmailValidation({ ...validateEmail(formData.email), touched: true });
+
+  // ===== Deep-link: abrir automáticamente con #roi / ?tool=roi / /calculadora-roi
+  useEffect(() => {
+    const path = window.location.pathname || '';
+    const q = new URLSearchParams(window.location.search);
+    const hash = (window.location.hash || '').replace('#', '');
+    if (hash === 'roi' || q.get('tool') === 'roi' || path.includes('/calculadora-roi')) {
+      setIsOpen(true);
+    }
+  }, []);
+
+  // ===== Sincronizar URL al abrir/cerrar (sin recargar)
+  const openWithUrl = () => {
+    setIsOpen(true);
+    const url = new URL(window.location.href);
+    url.hash = 'roi';
+    url.searchParams.set('tool', 'roi');
+    window.history.replaceState({}, '', url.toString());
+  };
+  const closeAndCleanUrl = () => {
+    setIsOpen(false);
+    const url = new URL(window.location.href);
+    if (url.hash === '#roi') url.hash = '';
+    if (url.searchParams.get('tool') === 'roi') url.searchParams.delete('tool');
+    window.history.replaceState({}, '', url.toString());
+  };
 
   // ===== Datos base
   const sectors = [
@@ -181,6 +208,7 @@ function ROICalculator() {
     setEmailStatus({ loading: false, sent: false, error: null });
     setEmailValidation({ isValid: false, message: '', touched: false });
     setFx({ rate: null, source: null, loading: false, error: null });
+    closeAndCleanUrl(); // limpiar URL también al resetear
   };
 
   const sendLeadData = async () => {
@@ -224,7 +252,7 @@ function ROICalculator() {
     <>
       {/* Botón flotante */}
       <motion.button
-        onClick={() => setIsOpen(true)}
+        onClick={openWithUrl}
         className="fixed bottom-6 left-6 z-40 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -245,7 +273,7 @@ function ROICalculator() {
           <motion.div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={() => setIsOpen(false)}
+            onClick={closeAndCleanUrl}
           >
             <motion.div
               className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-auto relative"
@@ -259,7 +287,7 @@ function ROICalculator() {
                     <h2 className="text-2xl font-bold">Calculadora de ROI</h2>
                     <p className="text-green-100 mt-1">Descubre cuánto puedes ahorrar con análisis de datos</p>
                   </div>
-                  <button onClick={() => setIsOpen(false)} className="text-white hover:text-green-200 transition-colors">
+                  <button onClick={closeAndCleanUrl} className="text-white hover:text-green-200 transition-colors">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -288,7 +316,14 @@ function ROICalculator() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre de la Empresa *</label>
-                        <input type="text" value={formData.company} onChange={(e) => handleInputChange('company', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" placeholder="Ej: Mi Empresa SA" />
+                        <input
+                          type="text"
+                          value={formData.company}
+                          onChange={(e) => handleInputChange('company', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                          placeholder="Ej: Mi Empresa SA"
+                          maxLength={120} // permite más caracteres razonables para el nombre
+                        />
                       </div>
 
                       <div>
@@ -305,6 +340,7 @@ function ROICalculator() {
                                 : 'border-gray-300 dark:border-gray-600'
                             }`}
                             placeholder="tu@empresa.com"
+                            maxLength={320}
                           />
                           {emailValidation.touched && (
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -329,7 +365,14 @@ function ROICalculator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Teléfono</label>
-                        <input type="tel" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" placeholder="+54 9 11 1234-5678" />
+                        <input
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                          placeholder="+54 9 11 1234-5678"
+                          maxLength={40}
+                        />
                       </div>
 
                       <div>
@@ -382,7 +425,14 @@ function ROICalculator() {
                     <div className="space-y-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Herramientas actuales</label>
-                        <textarea value={formData.currentDataTools} onChange={(e) => handleInputChange('currentDataTools', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white" rows={3} placeholder="Ej: Excel, Google Sheets, proceso manual..." />
+                        <textarea
+                          value={formData.currentDataTools}
+                          onChange={(e) => handleInputChange('currentDataTools', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                          rows={3}
+                          placeholder="Ej: Excel, Google Sheets, proceso manual..."
+                          maxLength={1000} // más caracteres
+                        />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -441,7 +491,7 @@ function ROICalculator() {
                             <div className="text-blue-100 text-sm font-medium">ROI Anual</div>
                           </div>
 
-                          <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl text-center">
+                          <div className="bg-gradient-to-br from紫-500 to-purple-600 text-white p-6 rounded-xl text-center">
                             <div className="text-2xl font-bold">{formatUSD(results.monthlySavings)}</div>
                             <div className="text-purple-100 text-sm font-medium">Ahorro Mensual</div>
                             {fx.rate && <div className="mt-1 text-xs text-purple-100">≈ {formatARS(Math.round(results.monthlySavings * fx.rate))}</div>}

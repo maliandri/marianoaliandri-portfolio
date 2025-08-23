@@ -33,13 +33,13 @@ function WebCalculator() {
   const [emailStatus, setEmailStatus] = useState({ loading: false, sent: false, error: null });
   const [fx, setFx] = useState({ rate: null, source: null, loading: false, error: null });
 
-  // Validación email
+  // ===== Validación email (límite aumentado a 320)
   const [emailValidation, setEmailValidation] = useState({ isValid: false, message: '', touched: false });
   const validateEmail = (email) => {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     if (!email) return { isValid: false, message: '' };
     if (!emailRegex.test(email)) return { isValid: false, message: 'Formato de email inválido' };
-    if (email.length > 254) return { isValid: false, message: 'Email demasiado largo' };
+    if (email.length > 320) return { isValid: false, message: 'Email demasiado largo' };
     const domain = email.split('@')[1];
     if (domain && domain.length < 2) return { isValid: false, message: 'Dominio inválido' };
     const disposableEmails = ['10minutemail.com','tempmail.org','guerrillamail.com','mailinator.com','temp-mail.org','throwaway.email','yopmail.com','maildrop.cc','sharklasers.com'];
@@ -51,7 +51,33 @@ function WebCalculator() {
   const handleEmailChange = (email) => { setFormData(p => ({ ...p, email })); if (emailValidation.touched) setEmailValidation({ ...validateEmail(email), touched: true }); };
   const handleEmailBlur = () => setEmailValidation({ ...validateEmail(formData.email), touched: true });
 
-  // Datos
+  // ===== Deep-link: abrir automáticamente con #web / ?tool=web / /calculadora-web
+  useEffect(() => {
+    const path = window.location.pathname || '';
+    const q = new URLSearchParams(window.location.search);
+    const hash = (window.location.hash || '').replace('#', '');
+    if (hash === 'web' || q.get('tool') === 'web' || path.includes('/calculadora-web')) {
+      setIsOpen(true);
+    }
+  }, []);
+
+  // ===== Sincronizar URL al abrir/cerrar (sin recargar)
+  const openWithUrl = () => {
+    setIsOpen(true);
+    const url = new URL(window.location.href);
+    url.hash = 'web';
+    url.searchParams.set('tool', 'web');
+    window.history.replaceState({}, '', url.toString());
+  };
+  const closeAndCleanUrl = () => {
+    setIsOpen(false);
+    const url = new URL(window.location.href);
+    if (url.hash === '#web') url.hash = '';
+    if (url.searchParams.get('tool') === 'web') url.searchParams.delete('tool');
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  // ===== Datos
   const businessSectors = [
     { value: 'retail', label: 'Retail/Comercio', leadValue: 150, conversionRate: 0.03 },
     { value: 'services', label: 'Servicios Profesionales', leadValue: 500, conversionRate: 0.05 },
@@ -236,6 +262,7 @@ function WebCalculator() {
     setEmailStatus({ loading: false, sent: false, error: null });
     setEmailValidation({ isValid: false, message: '', touched: false });
     setFx({ rate: null, source: null, loading: false, error: null });
+    closeAndCleanUrl(); // limpiar URL también al resetear
   };
 
   const sendWebLeadData = async () => {
@@ -285,7 +312,7 @@ function WebCalculator() {
     <>
       {/* Botón flotante */}
       <motion.button
-        onClick={() => setIsOpen(true)}
+        onClick={openWithUrl}
         className="fixed bottom-20 left-6 z-40 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
         whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }}
@@ -300,8 +327,16 @@ function WebCalculator() {
       {/* Modal */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsOpen(false)}>
-            <motion.div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-auto relative" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }} onClick={(e) => e.stopPropagation()}>
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={closeAndCleanUrl}
+          >
+            <motion.div
+              className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-auto relative"
+              initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Header */}
               <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-t-2xl">
                 <div className="flex items-center justify-between">
@@ -309,7 +344,7 @@ function WebCalculator() {
                     <h2 className="text-2xl font-bold">Calculadora de Desarrollo Web</h2>
                     <p className="text-blue-100 mt-1">Descubre el costo y ROI de tu nuevo sitio web</p>
                   </div>
-                  <button onClick={() => setIsOpen(false)} className="text-white hover:text-blue-200 transition-colors">
+                  <button onClick={closeAndCleanUrl} className="text-white hover:text-blue-200 transition-colors">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -336,7 +371,14 @@ function WebCalculator() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre del Negocio *</label>
-                        <input type="text" value={formData.company} onChange={(e) => handleInputChange('company', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" placeholder="Ej: Mi Empresa SA" />
+                        <input
+                          type="text"
+                          value={formData.company}
+                          onChange={(e) => handleInputChange('company', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                          placeholder="Ej: Mi Empresa SA"
+                          maxLength={120}
+                        />
                       </div>
 
                       <div>
@@ -353,6 +395,7 @@ function WebCalculator() {
                                 : 'border-gray-300 dark:border-gray-600'
                             }`}
                             placeholder="tu@empresa.com"
+                            maxLength={320}
                           />
                           {emailValidation.touched && (
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -371,7 +414,14 @@ function WebCalculator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Teléfono</label>
-                        <input type="tel" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" placeholder="+54 9 11 1234-5678" />
+                        <input
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                          placeholder="+54 9 11 1234-5678"
+                          maxLength={40}
+                        />
                       </div>
 
                       <div>
@@ -392,7 +442,14 @@ function WebCalculator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">¿Cómo consigues clientes actualmente?</label>
-                        <textarea value={formData.currentClientMethod} onChange={(e) => handleInputChange('currentClientMethod', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" rows={3} placeholder="Ej: Redes sociales, recomendaciones, publicidad..." />
+                        <textarea
+                          value={formData.currentClientMethod}
+                          onChange={(e) => handleInputChange('currentClientMethod', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                          rows={3}
+                          placeholder="Ej: Redes sociales, recomendaciones, publicidad..."
+                          maxLength={1000}
+                        />
                       </div>
                     </div>
 
@@ -400,7 +457,12 @@ function WebCalculator() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">¿Tienes sitio web actual?</label>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {['No tengo', 'Básico/Desactualizado', 'Sí, pero quiero renovar'].map(option => (
-                          <button key={option} type="button" onClick={() => handleInputChange('currentWebsite', option)} className={`p-3 border-2 rounded-lg text-center transition-colors ${formData.currentWebsite === option ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'}`}>
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => handleInputChange('currentWebsite', option)}
+                            className={`p-3 border-2 rounded-lg text-center transition-colors ${formData.currentWebsite === option ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'}`}
+                          >
                             {option}
                           </button>
                         ))}
@@ -408,7 +470,13 @@ function WebCalculator() {
                     </div>
 
                     <div className="flex justify-end pt-6">
-                      <motion.button onClick={() => setStep(2)} disabled={!isStep1Valid} className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: isStep1Valid ? 1.02 : 1 }} whileTap={{ scale: isStep1Valid ? 0.98 : 1 }}>
+                      <motion.button
+                        onClick={() => setStep(2)}
+                        disabled={!isStep1Valid}
+                        className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        whileHover={{ scale: isStep1Valid ? 1.02 : 1 }}
+                        whileTap={{ scale: isStep1Valid ? 0.98 : 1 }}
+                      >
                         Siguiente →
                       </motion.button>
                     </div>
@@ -442,7 +510,7 @@ function WebCalculator() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nivel de Diseño *</label>
+                          <label className="block text sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nivel de Diseño *</label>
                           <select value={formData.designLevel} onChange={(e) => handleInputChange('designLevel', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
                             <option value="">Selecciona el nivel</option>
                             {designLevels.map(level => (<option key={level.value} value={level.value}>{level.label}</option>))}
@@ -645,3 +713,4 @@ function WebCalculator() {
 }
 
 export default WebCalculator;
+
