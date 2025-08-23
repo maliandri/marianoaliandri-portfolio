@@ -1,3 +1,4 @@
+// src/components/ServiciosCarousel.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,6 +14,7 @@ function ServiciosCarousel() {
       icon: "📊",
       color: "from-blue-500 to-indigo-600",
       features: ["Dashboards Interactivos", "KPIs Personalizados", "Automatización de Reportes", "Integración de Fuentes"],
+      // precio: "$1.200"
     },
     {
       id: 2,
@@ -20,7 +22,8 @@ function ServiciosCarousel() {
       descripcion: "Optimizo tus procesos con macros, Power Query y Power Pivot. Convierte hojas de cálculo en herramientas poderosas de análisis.",
       icon: "📈",
       color: "from-green-500 to-emerald-600",
-     features: ["Macros Avanzadas", "Power Query ETL", "Power Pivot", "Dashboards Dinámicos"],
+      features: ["Macros Avanzadas", "Power Query ETL", "Power Pivot", "Dashboards Dinámicos"],
+      // precio: "$600"
     },
     {
       id: 3,
@@ -29,6 +32,7 @@ function ServiciosCarousel() {
       icon: "🐍",
       color: "from-purple-500 to-violet-600",
       features: ["Web Scraping", "APIs Personalizadas", "Automatización", "Análisis Estadístico"],
+      // precio: "$900"
     },
     {
       id: 4,
@@ -37,6 +41,7 @@ function ServiciosCarousel() {
       icon: "🌐",
       color: "from-orange-500 to-red-600",
       features: ["Sitios Responsivos", "E-commerce", "SEO Optimizado", "Análisis de Conversión"],
+      // precio: "Desde $1.500"
     },
     {
       id: 5,
@@ -45,6 +50,7 @@ function ServiciosCarousel() {
       icon: "🎯",
       color: "from-teal-500 to-cyan-600",
       features: ["Auditoría de Procesos", "Arquitectura de Datos", "KPIs Estratégicos", "Roadmap de BI"],
+      // precio: "A convenir"
     },
     {
       id: 6,
@@ -53,19 +59,18 @@ function ServiciosCarousel() {
       icon: "🎓",
       color: "from-pink-500 to-rose-600",
       features: ["Workshops Personalizados", "Power BI Training", "Excel Avanzado", "Mentoring 1:1"],
+      // precio: "$300"
     }
   ];
 
   // Auto-play del carrusel
   useEffect(() => {
     if (!isAutoPlaying) return;
-
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => 
+      setCurrentIndex((prevIndex) =>
         prevIndex === servicios.length - 1 ? 0 : prevIndex + 1
       );
     }, 5000);
-
     return () => clearInterval(interval);
   }, [isAutoPlaying, servicios.length]);
 
@@ -154,10 +159,10 @@ function ServiciosCarousel() {
             className="absolute inset-0"
           >
             <div className={`h-full bg-gradient-to-br ${currentService.color} rounded-2xl p-6 md:p-8 text-white relative overflow-hidden`}>
-              {/* Decoración de fondo */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-y-16 translate-x-16"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
-              
+              {/* Decoración de fondo (no interactiva) */}
+              <div className="pointer-events-none absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="pointer-events-none absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
+
               <div className="relative z-10 h-full flex flex-col">
                 {/* Header del servicio */}
                 <div className="flex items-start gap-4 mb-6">
@@ -170,10 +175,13 @@ function ServiciosCarousel() {
                       {currentService.descripcion}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm opacity-75">Desde</div>
-                    <div className="text-xl font-bold">{currentService.precio}</div>
-                  </div>
+                  {/* Precio opcional: solo se muestra si existe */}
+                  {currentService.precio && (
+                    <div className="text-right">
+                      <div className="text-sm opacity-75">Desde</div>
+                      <div className="text-xl font-bold">{currentService.precio}</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Features */}
@@ -189,7 +197,11 @@ function ServiciosCarousel() {
                         transition={{ delay: 0.1 * index }}
                       >
                         <svg className="w-4 h-4 text-green-300" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                         {feature}
                       </motion.div>
@@ -200,7 +212,14 @@ function ServiciosCarousel() {
                 {/* CTA */}
                 <div className="flex gap-3 mt-6">
                   <motion.button
-                    onClick={() => window.open(`https://wa.me/+542995414422?text=Hola! Me interesa el servicio de ${currentService.titulo}. ¿Podemos agendar una consulta?`, '_blank')}
+                    onClick={() =>
+                      window.open(
+                        `https://wa.me/+542995414422?text=${encodeURIComponent(
+                          `Hola! Me interesa el servicio de ${currentService.titulo}. ¿Podemos agendar una consulta?`
+                        )}`,
+                        '_blank'
+                      )
+                    }
                     className="bg-white text-gray-900 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex-1"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -209,7 +228,7 @@ function ServiciosCarousel() {
                   </motion.button>
                   <motion.button
                     onClick={() => {
-                      // Aquí podrías abrir tu calculadora ROI o redirigir a más info
+                      // Lugar para abrir una calculadora o ampliar info
                       console.log("Más información sobre", currentService.titulo);
                     }}
                     className="bg-transparent border-2 border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors"
@@ -224,19 +243,21 @@ function ServiciosCarousel() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Botones de navegación */}
+        {/* Botones de navegación (reposicionados hacia los bordes) */}
         <button
           onClick={() => paginate(-1)}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          aria-label="Anterior"
+          className="absolute -left-10 md:-left-14 top-1/2 -translate-y-1/2 z-10 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        
+
         <button
           onClick={() => paginate(1)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          aria-label="Siguiente"
+          className="absolute -right-10 md:-right-14 top-1/2 -translate-y-1/2 z-10 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -251,10 +272,11 @@ function ServiciosCarousel() {
             key={index}
             onClick={() => goToSlide(index)}
             className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index === currentIndex 
-                ? 'bg-indigo-600 scale-125' 
+              index === currentIndex
+                ? 'bg-indigo-600 scale-125'
                 : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
             }`}
+            aria-label={`Ir al slide ${index + 1}`}
           />
         ))}
       </div>
@@ -275,6 +297,7 @@ function ServiciosCarousel() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * index }}
+            aria-label={`Seleccionar ${servicio.titulo}`}
           >
             <div className="text-2xl mb-1">{servicio.icon}</div>
             <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
