@@ -1,9 +1,19 @@
-// backend/index.js — Backend limpio + OG share
+// backend/index.js — Backend limpio + OG share + ATS
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+
+// === ATS: dependencias para subir/leer CV y matchear skills
+const path = require('path');
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
+const upload = multer({ storage: multer.memoryStorage() }); // no guardamos archivos en disco
+
+// utils ATS (creá los archivos utils/atsKeywords.cjs y utils/textUtils.cjs como te pasé)
+const { loadAtsDictionary, rankProfessionsForText } = require('./utils/atsKeywords.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -114,9 +124,9 @@ app.get('/share/web-proposal', (req, res) => {
   const w   = Number(req.query.w || 0);
 
   const fmtUSD = new Intl.NumberFormat('en-US',{ style:'currency', currency:'USD', maximumFractionDigits:0 }).format(usd || 0);
-  const fmtARS = ars ? new Intl.NumberFormat('es-AR',{ style:'currency', currency:'ARS', maximumFractionDigits:0 }).format(ars) : '';
+  const fmtARSs = ars ? new Intl.NumberFormat('es-AR',{ style:'currency', currency:'ARS', maximumFractionDigits:0 }).format(ars) : '';
   const title  = `Propuesta Web para ${c}`;
-  const desc   = `Costo estimado ${fmtUSD}${fmtARS ? ` (~ ${fmtARS})` : ''} · ROI ${roi}% · ${w} semanas`;
+  const desc   = `Costo estimado ${fmtUSD}${fmtARSs ? ` (~ ${fmtARSs})` : ''} · ROI ${roi}% · ${w} semanas`;
 
   const pageUrl = `${BACKEND_URL || ''}/share/web-proposal?` + new URLSearchParams({
     c, usd:String(usd||0), ars:String(ars||0), roi:String(roi||0), w:String(w||0)
@@ -166,6 +176,84 @@ app.get('/api/test', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: { zohoUser: process.env.ZOHO_USER ? 'Configurado ✓' : 'No configurado ✗', BACKEND_URL, FRONTEND_URL }
   });
+});
+
+// ======== ATS: carga de diccionario (CSV en /data) =========
+let ATS_DICT = [];
+(async () => {
+  try {
+    ATS_DICT = await loadAtsDictionary();
+    console.log(`📚 ATS_DICT cargado: ${ATS_DICT.length} profesiones`);
+  } catch (e) {
+    console.error('❌ Error cargando diccionario ATS:', e.message);
+  }
+})();
+
+// ======== ATS: endpoints =========
+
+// Health extendido con info del ATS
+app.get('/api/health', (_, res) => {
+  res.json({
+    ok: true,
+    atsDictSize: ATS_DICT.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Matcheo por texto crudo (sin archivo)
+app.post('/api/ats-match', (req, res) => {
+  try {
+    const { text = '', topN = 5, target } = req.body || {};
+    if (!text.trim()) return res.status(400).json({ ok:false, error:'text requerido' });
+    if (!ATS_DICT.length) return res.status(503).json({ ok:false, error:'Diccionario ATS no cargado' });
+
+    const ranked = rankProfessionsForText(text, ATS_DICT, { topN: Number(topN) || 5, target });
+    res.json({ ok:true, topN: Number(topN)||5, target: target||null, results: ranked });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok:false, error:'Error en ats-match' });
+  }
+});
+
+// Análisis de CV (PDF/DOCX) — no persiste archivos
+app.post('/api/analyze-cv', upload.single('cv'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ ok:false, error:'Falta archivo "cv"' });
+    if (!ATS_DICT.length) return res.status(503).json({ ok:false, error:'Diccionario ATS no cargado' });
+
+    let text = '';
+    const name = (req.file.originalname || '').toLowerCase();
+
+    if (name.endsWith('.pdf')) {
+      const data = await pdfParse(req.file.buffer);
+      text = data.text || '';
+    } else if (name.endsWith('.docx')) {
+      const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+      text = result.value || '';
+    } else {
+      return res.status(400).json({ ok:false, error:'Formato no soportado. Use PDF o DOCX.' });
+    }
+
+    if (!text.trim()) {
+      return res.status(422).json({ ok:false, error:'No se pudo extraer texto. Si es un PDF escaneado, requiere OCR.' });
+    }
+
+    const topN = Number(req.body.topN || 5);
+    const target = req.body.target || undefined;
+    const ranked = rankProfessionsForText(text, ATS_DICT, { topN, target });
+
+    res.json({
+      ok:true,
+      file: req.file.originalname,
+      bytes: req.file.size,
+      topN,
+      target: target || null,
+      results: ranked
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok:false, error:'Error procesando CV' });
+  }
 });
 
 // ===== Errores

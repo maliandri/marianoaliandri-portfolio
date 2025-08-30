@@ -1,8 +1,7 @@
-// src/App.jsx
 import React from "react";
 import { motion } from "framer-motion";
 
-// ==== tus secciones/compuestos existentes (ajustá paths si difieren) ====
+// Secciones existentes
 import Hero from "./components/Hero.jsx";
 import ServiciosCarousel from "./components/ServiciosCarousel.jsx";
 import Skills from "./components/Skills.jsx";
@@ -12,9 +11,12 @@ import LikeSystem from "./components/LikeSystem.jsx";
 import DashboardStats from "./components/DashboardStats.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 
-// ==== calculadoras ====
+// Calculadoras
 import ROICalculator from "./components/Calculadora.jsx";
 import WebCalculator from "./components/CalculadoraWeb.jsx";
+
+// 🔴 ATS (botón flotante + modal)
+import CVATSUploader from "./components/CVATSUploader.jsx";
 
 import "./index.css";
 
@@ -25,11 +27,10 @@ export default function App() {
       <DashboardStats />
       <LikeSystem />
 
-      {/* Botones flotantes + modales (adentro de cada componente) */}
+      {/* Botones/Modales flotantes */}
       <ROICalculator />
+      <CVATSUploader />
       <WebCalculator />
-
-      {/* Chatbot si lo estás usando */}
       <AIChatBot />
 
       {/* Contenido principal */}
