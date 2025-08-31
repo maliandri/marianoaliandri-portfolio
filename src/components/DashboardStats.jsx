@@ -116,7 +116,7 @@ function DashboardStatsV2() {
       {/* Botón para mostrar/ocultar dashboard */}
       <motion.button
         onClick={() => setIsVisible(!isVisible)}
-        className="fixed top-6 left-6 z-50 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300"
+        className="fixed top-6 left-6 z-60 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         initial={{ opacity: 0, scale: 0 }}
@@ -130,7 +130,7 @@ function DashboardStatsV2() {
 
       {/* Dashboard */}
       <motion.div
-        className={`fixed top-20 left-6 z-40 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 ${
+        className={`fixed top-20 left-6 z-50 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 ${
           isVisible ? 'pointer-events-auto' : 'pointer-events-none'
         }`}
         initial={{ opacity: 0, x: -100, scale: 0.8 }}
