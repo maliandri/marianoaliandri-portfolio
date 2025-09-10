@@ -50,7 +50,7 @@ export default function DashboardStats() {
 
   return (
     <>
-      {/* Botón (sin fixed): igual estilo que los otros */}
+      {/* Botón igual estilo que los otros */}
       <button
         onClick={() => setOpen(true)}
         className="flex items-center gap-2 px-4 py-3 rounded-full shadow-lg bg-violet-600 hover:bg-violet-700 text-white"
@@ -64,12 +64,13 @@ export default function DashboardStats() {
         <span className="font-semibold">Estadísticas</span>
       </button>
 
-      {/* Modal centrado */}
+      {/* Modal */}
       {open && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
           <motion.div
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-5 w-80 max-w-md border border-gray-200 dark:border-gray-700"
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
           >
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">Estadísticas</h2>
@@ -94,7 +95,9 @@ export default function DashboardStats() {
                 <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                   <motion.div
                     className="bg-orange-600 dark:bg-orange-400 h-1.5 rounded-full"
-                    initial={{ width: 0 }} animate={{ width: `${pct()}%` }} transition={{ duration: 0.6 }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${pct()}%` }}
+                    transition={{ duration: 0.6 }}
                   />
                 </div>
               </div>
