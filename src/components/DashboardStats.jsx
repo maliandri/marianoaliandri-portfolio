@@ -1,3 +1,4 @@
+// src/components/DashboardStats.jsx
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FirebaseAnalyticsService } from "../utils/firebaseservice";
@@ -9,11 +10,13 @@ export default function DashboardStats() {
   const [loading, setLoading] = useState(true);
   const [firebaseService] = useState(() => new FirebaseAnalyticsService());
 
+  // reloj
   useEffect(() => {
     const t = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
+  // stats
   useEffect(() => {
     let cleanup;
     (async () => {
@@ -46,14 +49,25 @@ export default function DashboardStats() {
     const t = stats.likes + stats.dislikes;
     return t === 0 ? 0 : Math.round((stats.likes / t) * 100);
   };
-  const fmt = (n) => (n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + "M" : n >= 1000 ? (n / 1000).toFixed(1) + "K" : n.toString());
+  const fmt = (n) =>
+    n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + "M" : n >= 1000 ? (n / 1000).toFixed(1) + "K" : n.toString();
 
   return (
     <>
-      {/* Botón igual estilo que los otros */}
-      <button
+      {/* Botón flotante de Estadísticas (arriba del ATS) */}
+      <motion.button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-3 rounded-full shadow-lg bg-violet-600 hover:bg-violet-700 text-white"
+        className="
+          fixed left-6 bottom-56 sm:bottom-60 z-50
+          bg-violet-600 hover:bg-violet-700 text-white
+          px-6 py-3 rounded-full shadow-lg hover:shadow-xl
+          transition-all duration-300 flex items-center gap-2
+        "
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        initial={{ opacity: 0, x: -100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 1.3 }}
         aria-label="Estadísticas"
         title="Estadísticas"
       >
@@ -62,9 +76,9 @@ export default function DashboardStats() {
           <path d="M9 7a1 1 0 00-1 1v7h2V8a1 1 0 00-1-1zm4-3a1 1 0 00-1 1v10h2V5a1 1 0 00-1-1zm4 6a1 1 0 00-1 1v4h2v-4a1 1 0 00-1-1z" />
         </svg>
         <span className="font-semibold">Estadísticas</span>
-      </button>
+      </motion.button>
 
-      {/* Modal */}
+      {/* Modal centrado */}
       {open && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
           <motion.div
@@ -82,7 +96,9 @@ export default function DashboardStats() {
               </button>
             </div>
 
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{currentTime.toLocaleString("es-ES")}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+              {currentTime.toLocaleString("es-ES")}
+            </p>
 
             <div className="space-y-2">
               <Item label="Visitas Totales" value={loading ? "…" : fmt(stats.totalVisits)} color="blue" />
