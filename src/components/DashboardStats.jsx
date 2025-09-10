@@ -58,7 +58,7 @@ export default function DashboardStats() {
       <motion.button
         onClick={() => setOpen(true)}
         className="
-          fixed left-6 bottom-56 sm:bottom-60 z-50
+          fixed left-6 bottom-48 sm:bottom-60 z-50
           bg-violet-600 hover:bg-violet-700 text-white
           px-6 py-3 rounded-full shadow-lg hover:shadow-xl
           transition-all duration-300 flex items-center gap-2
@@ -69,7 +69,7 @@ export default function DashboardStats() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 1.3 }}
         aria-label="Estadísticas"
-        title="Estadísticas"
+        title="Estadísticas WEB"
       >
         <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
           <path d="M3 3a1 1 0 000 2h1v10a1 1 0 001 1h11a1 1 0 100-2H6V3a1 1 0 00-1-1H3z" />
