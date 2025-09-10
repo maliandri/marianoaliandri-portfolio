@@ -313,7 +313,7 @@ function WebCalculator() {
       {/* Botón flotante */}
       <motion.button
         onClick={openWithUrl}
-        className="fixed bottom-20 left-6 z-40 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+        className="fixed bottom-40  left-6 z-40 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
         whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 2 }}
