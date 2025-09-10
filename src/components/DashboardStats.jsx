@@ -57,12 +57,7 @@ export default function DashboardStats() {
       {/* Botón flotante de Estadísticas (arriba del ATS) */}
       <motion.button
         onClick={() => setOpen(true)}
-        className="
-          fixed left-6 bottom-48 sm:bottom-60 z-50
-          bg-violet-600 hover:bg-violet-700 text-white
-          px-6 py-3 rounded-full shadow-lg hover:shadow-xl
-          transition-all duration-300 flex items-center gap-2
-        "
+        className= "fixed bottom-52 left-6 z-40 bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"    
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, x: -100 }}

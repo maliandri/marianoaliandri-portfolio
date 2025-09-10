@@ -130,7 +130,7 @@ export default function CVATSUploader() {
       {/* Botón flotante */}
       <motion.button
         onClick={openWithUrl}
-        className="fixed bottom-34 left-6 z-40 bg-gradient-to-r from-red-600 to-rose-600 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+        className="fixed bottom-36 left-6 z-40 bg-gradient-to-r from-red-600 to-rose-600 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, x: -100 }}
