@@ -1,4 +1,3 @@
-// src/components/DashboardStats.jsx
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FirebaseAnalyticsService } from "../utils/firebaseservice";
@@ -24,7 +23,7 @@ export default function DashboardStats() {
         const s = await firebaseService.getStats();
         setStats(s);
         cleanup = firebaseService.subscribeToStats((u) => setStats(u));
-      } catch (e) {
+      } catch {
         const savedVisits = localStorage.getItem("siteVisits");
         const newVisits = savedVisits ? parseInt(savedVisits) + 1 : 1;
         localStorage.setItem("siteVisits", String(newVisits));
@@ -51,9 +50,10 @@ export default function DashboardStats() {
 
   return (
     <>
+      {/* Botón (sin fixed): igual estilo que los otros */}
       <button
         onClick={() => setOpen(true)}
-        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-12 h-12 shadow-lg flex items-center justify-center"
+        className="flex items-center gap-2 px-4 py-3 rounded-full shadow-lg bg-violet-600 hover:bg-violet-700 text-white"
         aria-label="Estadísticas"
         title="Estadísticas"
       >
@@ -61,14 +61,15 @@ export default function DashboardStats() {
           <path d="M3 3a1 1 0 000 2h1v10a1 1 0 001 1h11a1 1 0 100-2H6V3a1 1 0 00-1-1H3z" />
           <path d="M9 7a1 1 0 00-1 1v7h2V8a1 1 0 00-1-1zm4-3a1 1 0 00-1 1v10h2V5a1 1 0 00-1-1zm4 6a1 1 0 00-1 1v4h2v-4a1 1 0 00-1-1z" />
         </svg>
+        <span className="font-semibold">Estadísticas</span>
       </button>
 
+      {/* Modal centrado */}
       {open && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
           <motion.div
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-5 w-80 max-w-md border border-gray-200 dark:border-gray-700"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           >
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">Estadísticas</h2>
@@ -79,6 +80,7 @@ export default function DashboardStats() {
                 Cerrar
               </button>
             </div>
+
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{currentTime.toLocaleString("es-ES")}</p>
 
             <div className="space-y-2">
@@ -92,9 +94,7 @@ export default function DashboardStats() {
                 <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                   <motion.div
                     className="bg-orange-600 dark:bg-orange-400 h-1.5 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct()}%` }}
-                    transition={{ duration: 0.6 }}
+                    initial={{ width: 0 }} animate={{ width: `${pct()}%` }} transition={{ duration: 0.6 }}
                   />
                 </div>
               </div>
@@ -133,4 +133,3 @@ function Item({ label, value, color }) {
     </div>
   );
 }
-
