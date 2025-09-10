@@ -11,12 +11,8 @@ import LikeSystem from "./components/LikeSystem.jsx";
 import DashboardStats from "./components/DashboardStats.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 
-// Calculadoras
-import ROICalculator from "./components/Calculadora.jsx";
-import WebCalculator from "./components/CalculadoraWeb.jsx";
-
-// 🔴 ATS (botón flotante + modal)
-import CVATSUploader from "./components/CVATSUploader.jsx";
+// Nuevo contenedor de acciones flotantes
+import FloatingActions from "./components/FloatingActions.jsx";
 
 import "./index.css";
 
@@ -27,10 +23,10 @@ export default function App() {
       <DashboardStats />
       <LikeSystem />
 
-      {/* Botones/Modales flotantes */}
-      <ROICalculator />
-      <CVATSUploader />
-      <WebCalculator />
+      {/* Botones/Modales flotantes agrupados */}
+      <FloatingActions />
+
+      {/* Chatbot flotante (si lo deseas separado) */}
       <AIChatBot />
 
       {/* Contenido principal */}
