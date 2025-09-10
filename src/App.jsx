@@ -8,10 +8,9 @@ import Skills from "./components/Skills.jsx";
 import Contact from "./components/Contact.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import LikeSystem from "./components/LikeSystem.jsx";
-import DashboardStats from "./components/DashboardStats.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 
-// Nuevo contenedor de acciones flotantes
+// Contenedor de acciones flotantes
 import FloatingActions from "./components/FloatingActions.jsx";
 
 import "./index.css";
@@ -20,13 +19,13 @@ export default function App() {
   return (
     <main className="font-sans min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500">
       <ThemeToggle />
-      <DashboardStats />
+      {/* ❌ Quitar DashboardStats aquí */}
       <LikeSystem />
 
       {/* Botones/Modales flotantes agrupados */}
       <FloatingActions />
 
-      {/* Chatbot flotante (si lo deseas separado) */}
+      {/* Chatbot flotante */}
       <AIChatBot />
 
       {/* Contenido principal */}
