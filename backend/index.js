@@ -1,4 +1,4 @@
-// backend/index.js — Backend limpio + OG share + ATS
+// backend/index.js — Backend limpio + OG share + ATS + BCRA/Stocks
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const express = require('express');
@@ -255,6 +255,94 @@ app.post('/api/analyze-cv', upload.single('cv'), async (req, res) => {
     res.status(500).json({ ok:false, error:'Error procesando CV' });
   }
 });
+
+/* =======================
+   BCRA + STOCKS (NUEVO)
+   ======================= */
+
+// fetch (Node <18) fallback a node-fetch
+const fetch = global.fetch || ((...a) => import('node-fetch').then(({ default: f }) => f(...a)));
+
+// Cache en memoria simple
+const CACHE = new Map();
+function cachedFetch(key, fetcher, ttlMs = 10 * 60 * 1000) {
+  const now = Date.now();
+  const hit = CACHE.get(key);
+  if (hit && (now - hit.t) < ttlMs) return Promise.resolve(hit.v);
+  return Promise.resolve(fetcher()).then(v => {
+    CACHE.set(key, { t: now, v });
+    return v;
+  });
+}
+
+// Base de BCRA v3.0 (Monetarias)
+const BCRA_BASE = 'https://api.bcra.gob.ar/estadisticas/v3.0';
+
+// Lista de variables monetarias
+app.get('/api/bcra/monetarias', async (req, res) => {
+  try {
+    const data = await cachedFetch('bcra_monetarias_list', async () => {
+      const r = await fetch(`${BCRA_BASE}/Monetarias`);
+      if (!r.ok) throw new Error(`BCRA Monetarias ${r.status}`);
+      return r.json();
+    }, 10 * 60 * 1000);
+    res.json(data);
+  } catch (e) {
+    console.error('BCRA monetarias error:', e);
+    res.status(502).json({ error: 'BCRA Monetarias no disponible' });
+  }
+});
+
+// Serie por idVariable con ?desde&hasta&limit&offset
+app.get('/api/bcra/monetarias/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const u = new URL(`${BCRA_BASE}/Monetarias/${id}`);
+    for (const k of ['desde','hasta','limit','offset']) {
+      if (req.query[k]) u.searchParams.set(k, req.query[k]);
+    }
+    const cacheKey = `bcra_monetarias_${id}_${u.search}`;
+    const data = await cachedFetch(cacheKey, async () => {
+      const r = await fetch(u);
+      if (!r.ok) throw new Error(`BCRA Serie ${r.status}`);
+      return r.json();
+    }, 5 * 60 * 1000);
+    res.json(data);
+  } catch (e) {
+    console.error('BCRA serie error:', e);
+    res.status(502).json({ error: 'Serie BCRA no disponible' });
+  }
+});
+
+// Stocks (Yahoo Finance chart v8; no oficial)
+app.get('/api/stocks/chart', async (req, res) => {
+  const symbol = (req.query.symbol || '^MERV').toString();
+  const range = (req.query.range || '6mo').toString();     // 1mo,3mo,6mo,1y,5y,max
+  const interval = (req.query.interval || '1d').toString(); // 1d,1wk,1mo
+
+  const key = `yf_${symbol}_${range}_${interval}`;
+  try {
+    const payload = await cachedFetch(key, async () => {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
+      const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }});
+      if (!r.ok) throw new Error(`Yahoo Finance ${r.status}`);
+      const j = await r.json();
+      const result = j?.chart?.result?.[0] || {};
+      const ts = result.timestamp || [];
+      const closes = result.indicators?.quote?.[0]?.close || [];
+      const points = ts.map((t,i)=>({ date: new Date(t*1000).toISOString().slice(0,10), close: closes[i] ?? null }));
+      return { symbol, range, interval, last: points.at(-1)?.close ?? null, points };
+    }, 5 * 60 * 1000);
+    res.json(payload);
+  } catch (e) {
+    console.error('Stocks error:', e);
+    res.status(502).json({ error: 'Mercado no disponible' });
+  }
+});
+
+/* =======================
+   FIN BCRA + STOCKS
+   ======================= */
 
 // ===== Errores
 app.use((err, req, res, next) => { console.error('❌ Error del servidor:', err); res.status(500).json({ success:false, error:'Error interno del servidor' }); });
