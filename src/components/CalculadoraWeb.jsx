@@ -1,16 +1,20 @@
 // src/components/CalculadoraWeb.jsx
+// ✨ VERSIÓN ADAPTADA PARA BADGE CENTRAL
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EmailService } from '../utils/emailService';
 import { ExchangeService, formatUSD, formatARS } from '../utils/exchangeService';
 import LinkedInShareButton from './LinkedInShareButton';
 
-function WebCalculator() {
+function WebCalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingButton = false }) {
   const emailService = new EmailService();
   const fxService = new ExchangeService();
 
-  const [isOpen, setIsOpen] = useState(false);
+  // 🔄 Estado híbrido: controlado por padre O interno
+  const [isOpenInternal, setIsOpenInternal] = useState(false);
+  const isOpen = isOpenProp !== undefined ? isOpenProp : isOpenInternal;
   const [step, setStep] = useState(1);
+
   const [formData, setFormData] = useState({
     company: '',
     email: '',
@@ -51,26 +55,34 @@ function WebCalculator() {
   const handleEmailChange = (email) => { setFormData(p => ({ ...p, email })); if (emailValidation.touched) setEmailValidation({ ...validateEmail(email), touched: true }); };
   const handleEmailBlur = () => setEmailValidation({ ...validateEmail(formData.email), touched: true });
 
-  // ===== Deep-link: abrir automáticamente con #web / ?tool=web / /calculadora-web
+  // ===== Deep-link: solo si NO está controlado por padre
   useEffect(() => {
+    if (isOpenProp !== undefined) return; // Controlado por padre, ignorar deep-links
+    
     const path = window.location.pathname || '';
     const q = new URLSearchParams(window.location.search);
     const hash = (window.location.hash || '').replace('#', '');
     if (hash === 'web' || q.get('tool') === 'web' || path.includes('/calculadora-web')) {
-      setIsOpen(true);
+      setIsOpenInternal(true);
     }
-  }, []);
+  }, [isOpenProp]);
 
-  // ===== Sincronizar URL al abrir/cerrar (sin recargar)
+  // ===== Funciones de apertura/cierre adaptadas
   const openWithUrl = () => {
-    setIsOpen(true);
+    if (onCloseProp) return; // Si está controlado por padre, no hacer nada
+    setIsOpenInternal(true);
     const url = new URL(window.location.href);
     url.hash = 'web';
     url.searchParams.set('tool', 'web');
     window.history.replaceState({}, '', url.toString());
   };
+
   const closeAndCleanUrl = () => {
-    setIsOpen(false);
+    if (onCloseProp) {
+      onCloseProp(); // Usar callback del padre
+    } else {
+      setIsOpenInternal(false); // Cerrar estado interno
+    }
     const url = new URL(window.location.href);
     if (url.hash === '#web') url.hash = '';
     if (url.searchParams.get('tool') === 'web') url.searchParams.delete('tool');
@@ -262,7 +274,7 @@ function WebCalculator() {
     setEmailStatus({ loading: false, sent: false, error: null });
     setEmailValidation({ isValid: false, message: '', touched: false });
     setFx({ rate: null, source: null, loading: false, error: null });
-    closeAndCleanUrl(); // limpiar URL también al resetear
+    closeAndCleanUrl();
   };
 
   const sendWebLeadData = async () => {
@@ -310,31 +322,39 @@ function WebCalculator() {
 
   return (
     <>
-      {/* Botón flotante */}
-      <motion.button
-        onClick={openWithUrl}
-        className="fixed bottom-40  left-6 z-40 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
-        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-        initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, delay: 2 }}
-      >
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clipRule="evenodd" />
-        </svg>
-        <span className="font-semibold">Cotizar Web</span>
-      </motion.button>
+      {/* 🎯 Botón flotante - SOLO SI NO ESTÁ CONTROLADO POR BADGE */}
+      {!hideFloatingButton && (
+        <motion.button
+          onClick={openWithUrl}
+          className="fixed bottom-40 left-6 z-40 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+          whileHover={{ scale: 1.05 }} 
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, x: -100 }} 
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 2 }}
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clipRule="evenodd" />
+          </svg>
+          <span className="font-semibold">Cotizar Web</span>
+        </motion.button>
+      )}
 
       {/* Modal */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
             onClick={closeAndCleanUrl}
           >
             <motion.div
               className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-auto relative"
-              initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.8, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              exit={{ scale: 0.8, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -510,7 +530,7 @@ function WebCalculator() {
                         </div>
 
                         <div>
-                          <label className="block text sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nivel de Diseño *</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nivel de Diseño *</label>
                           <select value={formData.designLevel} onChange={(e) => handleInputChange('designLevel', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
                             <option value="">Selecciona el nivel</option>
                             {designLevels.map(level => (<option key={level.value} value={level.value}>{level.label}</option>))}

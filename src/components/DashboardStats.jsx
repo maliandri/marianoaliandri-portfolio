@@ -1,22 +1,45 @@
 // src/components/DashboardStats.jsx
+// ✨ VERSIÓN ADAPTADA PARA BADGE CENTRAL
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FirebaseAnalyticsService } from "../utils/firebaseservice";
 
-export default function DashboardStats() {
-  const [stats, setStats] = useState({ totalVisits: 0, uniqueVisitors: 0, likes: 0, dislikes: 0 });
+export default function DashboardStats({ 
+  isOpen: isOpenProp, 
+  onClose: onCloseProp, 
+  hideFloatingButton = false 
+}) {
+  const [stats, setStats] = useState({ 
+    totalVisits: 0, 
+    uniqueVisitors: 0, 
+    likes: 0, 
+    dislikes: 0 
+  });
+  
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [firebaseService] = useState(() => new FirebaseAnalyticsService());
 
-  // reloj
+  // 🔄 Estado híbrido para el modal
+  const [openInternal, setOpenInternal] = useState(false);
+  const open = isOpenProp !== undefined ? isOpenProp : openInternal;
+  
+  // Función de setOpen adaptada
+  const setOpen = (value) => {
+    if (onCloseProp && !value) {
+      onCloseProp(); // Usar callback del padre
+    } else if (isOpenProp === undefined) {
+      setOpenInternal(value); // Usar estado interno
+    }
+  };
+
+  // ===== Reloj
   useEffect(() => {
     const t = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // stats
+  // ===== Stats de Firebase
   useEffect(() => {
     let cleanup;
     (async () => {
@@ -27,6 +50,7 @@ export default function DashboardStats() {
         setStats(s);
         cleanup = firebaseService.subscribeToStats((u) => setStats(u));
       } catch {
+        // Fallback a localStorage
         const savedVisits = localStorage.getItem("siteVisits");
         const newVisits = savedVisits ? parseInt(savedVisits) + 1 : 1;
         localStorage.setItem("siteVisits", String(newVisits));
@@ -45,33 +69,54 @@ export default function DashboardStats() {
     return () => typeof cleanup === "function" && cleanup();
   }, [firebaseService]);
 
+  // ===== Deep-link: solo si NO está controlado por padre
+  useEffect(() => {
+    if (isOpenProp !== undefined) return; // Controlado por padre
+    
+    const path = window.location.pathname || "";
+    const query = new URLSearchParams(window.location.search);
+    const hash = (window.location.hash || "").replace("#", "");
+    
+    if (hash === "stats" || query.get("tool") === "stats" || path.includes("/stats")) {
+      setOpenInternal(true);
+    }
+  }, [isOpenProp]);
+
+  // ===== Helpers
   const pct = () => {
     const t = stats.likes + stats.dislikes;
     return t === 0 ? 0 : Math.round((stats.likes / t) * 100);
   };
+  
   const fmt = (n) =>
-    n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + "M" : n >= 1000 ? (n / 1000).toFixed(1) + "K" : n.toString();
+    n >= 1_000_000 
+      ? (n / 1_000_000).toFixed(1) + "M" 
+      : n >= 1000 
+      ? (n / 1000).toFixed(1) + "K" 
+      : n.toString();
 
   return (
     <>
-      {/* Botón flotante de Estadísticas (arriba del ATS) */}
-      <motion.button
-        onClick={() => setOpen(true)}
-        className= "fixed bottom-72 left-6 z-40 bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"    
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ opacity: 0, x: -100 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, delay: 1.3 }}
-        aria-label="Estadísticas"
-        title="Estadísticas WEB"
-      >
-        <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-          <path d="M3 3a1 1 0 000 2h1v10a1 1 0 001 1h11a1 1 0 100-2H6V3a1 1 0 00-1-1H3z" />
-          <path d="M9 7a1 1 0 00-1 1v7h2V8a1 1 0 00-1-1zm4-3a1 1 0 00-1 1v10h2V5a1 1 0 00-1-1zm4 6a1 1 0 00-1 1v4h2v-4a1 1 0 00-1-1z" />
-        </svg>
-        <span className="font-semibold">Estadísticas</span>
-      </motion.button>
+      {/* 🎯 Botón flotante - SOLO SI NO ESTÁ CONTROLADO POR BADGE */}
+      {!hideFloatingButton && (
+        <motion.button
+          onClick={() => setOpen(true)}
+          className="fixed bottom-72 left-6 z-40 bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"    
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, x: -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 1.3 }}
+          aria-label="Estadísticas"
+          title="Estadísticas WEB"
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+            <path d="M3 3a1 1 0 000 2h1v10a1 1 0 001 1h11a1 1 0 100-2H6V3a1 1 0 00-1-1H3z" />
+            <path d="M9 7a1 1 0 00-1 1v7h2V8a1 1 0 00-1-1zm4-3a1 1 0 00-1 1v10h2V5a1 1 0 00-1-1zm4 6a1 1 0 00-1 1v4h2v-4a1 1 0 00-1-1z" />
+          </svg>
+          <span className="font-semibold">Estadísticas</span>
+        </motion.button>
+      )}
 
       {/* Modal centrado */}
       {open && (
@@ -80,29 +125,57 @@ export default function DashboardStats() {
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-5 w-80 max-w-md border border-gray-200 dark:border-gray-700"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
           >
+            {/* Header */}
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">Estadísticas</h2>
+              <h2 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                Estadísticas
+              </h2>
               <button
                 onClick={() => setOpen(false)}
-                className="text-sm px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+                className="text-sm px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
               >
                 Cerrar
               </button>
             </div>
 
+            {/* Reloj */}
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
               {currentTime.toLocaleString("es-ES")}
             </p>
 
+            {/* Stats */}
             <div className="space-y-2">
-              <Item label="Visitas Totales" value={loading ? "…" : fmt(stats.totalVisits)} color="blue" />
-              <Item label="Visitantes Únicos" value={loading ? "…" : fmt(stats.uniqueVisitors)} color="purple" />
-              <Item label="Me gusta" value={loading ? "…" : fmt(stats.likes)} color="green" />
-              <Item label="No me gusta" value={loading ? "…" : fmt(stats.dislikes)} color="red" />
+              <Item 
+                label="Visitas Totales" 
+                value={loading ? "…" : fmt(stats.totalVisits)} 
+                color="blue" 
+              />
+              <Item 
+                label="Visitantes Únicos" 
+                value={loading ? "…" : fmt(stats.uniqueVisitors)} 
+                color="purple" 
+              />
+              <Item 
+                label="Me gusta" 
+                value={loading ? "…" : fmt(stats.likes)} 
+                color="green" 
+              />
+              <Item 
+                label="No me gusta" 
+                value={loading ? "…" : fmt(stats.dislikes)} 
+                color="red" 
+              />
+              
+              {/* Barra de satisfacción */}
               <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-xl">
-                <div className="text-[11px] text-gray-600 dark:text-gray-400">Satisfacción</div>
-                <div className="text-base font-bold text-gray-900 dark:text-gray-100">{pct()}%</div>
+                <div className="text-[11px] text-gray-600 dark:text-gray-400">
+                  Satisfacción
+                </div>
+                <div className="text-base font-bold text-gray-900 dark:text-gray-100">
+                  {pct()}%
+                </div>
                 <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                   <motion.div
                     className="bg-orange-600 dark:bg-orange-400 h-1.5 rounded-full"
@@ -114,6 +187,7 @@ export default function DashboardStats() {
               </div>
             </div>
 
+            {/* Footer con estado de conexión */}
             <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 text-center">
               <div
                 className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full text-[11px] ${
@@ -122,7 +196,11 @@ export default function DashboardStats() {
                     : "bg-green-100/70 dark:bg-green-900/20 text-green-700 dark:text-green-400"
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full ${loading ? "bg-yellow-500 animate-pulse" : "bg-green-500"}`} />
+                <span 
+                  className={`w-2 h-2 rounded-full ${
+                    loading ? "bg-yellow-500 animate-pulse" : "bg-green-500"
+                  }`} 
+                />
                 {loading ? "Sincronizando…" : "Conectado a Firebase"}
               </div>
             </div>
@@ -133,6 +211,7 @@ export default function DashboardStats() {
   );
 }
 
+// Componente auxiliar para items de stats
 function Item({ label, value, color }) {
   const colorMap = {
     blue: "bg-blue-50 dark:bg-blue-900/20",
@@ -140,10 +219,15 @@ function Item({ label, value, color }) {
     green: "bg-green-50 dark:bg-green-900/20",
     red: "bg-red-50 dark:bg-red-900/20",
   };
+  
   return (
     <div className={`${colorMap[color]} p-3 rounded-xl`}>
-      <div className="text-[11px] text-gray-600 dark:text-gray-400">{label}</div>
-      <div className="text-base font-bold text-gray-900 dark:text-gray-100">{value}</div>
+      <div className="text-[11px] text-gray-600 dark:text-gray-400">
+        {label}
+      </div>
+      <div className="text-base font-bold text-gray-900 dark:text-gray-100">
+        {value}
+      </div>
     </div>
   );
 }
