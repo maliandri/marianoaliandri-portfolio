@@ -2,38 +2,138 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    
+    <!-- ========================================
+         FAVICONS (Generados por favicon.io)
+    ========================================= -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    
+    <!-- Theme Color (barra del navegador en móviles) -->
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="msapplication-TileColor" content="#4f46e5" />
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Portfolio profesional de Mariano Aliandri. Desarrollador Full Stack especializado en React, Next.js y tecnologías web modernas. Conoce mis proyectos y experiencia." />
-    <meta name="keywords" content="Mariano Aliandri, desarrollador full stack, React, Next.js, portfolio, web developer, JavaScript, desarrollador web" />
+    <!-- ========================================
+         SEO META TAGS
+    ========================================= -->
+    <meta name="description" content="Portfolio profesional de Mariano Aliandri. Desarrollador Full Stack especializado en React, Next.js, Python y análisis de datos. Power BI, Excel avanzado y consultoría BI." />
+    <meta name="keywords" content="Mariano Aliandri, desarrollador full stack, React, Next.js, portfolio, web developer, JavaScript, Python, análisis de datos, Power BI, Excel, consultoría BI, desarrollo web, Neuquén Argentina" />
     <meta name="author" content="Mariano Aliandri" />
     
-    <!-- Open Graph / Facebook -->
+    <!-- Robots & Crawling -->
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="googlebot" content="index, follow" />
+    
+    <!-- Geo localización -->
+    <meta name="geo.region" content="AR-NQN" />
+    <meta name="geo.placename" content="Neuquén, Argentina" />
+    
+    <!-- ========================================
+         OPEN GRAPH / FACEBOOK / LINKEDIN
+    ========================================= -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Mariano Aliandri | Portfolio" />
-    <meta property="og:description" content="Portfolio profesional de Mariano Aliandri. Desarrollador Full Stack especializado en React, Next.js y tecnologías web modernas." />
-    <meta property="og:image" content="/assets/image_12a02c-D4CCjDrI.jpg" />
+    <meta property="og:title" content="Mariano Aliandri | Portfolio - Desarrollador Full Stack" />
+    <meta property="og:description" content="Portfolio profesional de Mariano Aliandri. Desarrollador Full Stack especializado en React, Next.js, Python y análisis de datos con Power BI." />
+    <meta property="og:image" content="https://marianoaliandri.com.ar/og-image.jpg" />
+    <meta property="og:url" content="https://marianoaliandri.com.ar" />
+    <meta property="og:site_name" content="Mariano Aliandri Portfolio" />
+    <meta property="og:locale" content="es_AR" />
     
-    <!-- Twitter Card -->
+    <!-- ========================================
+         TWITTER CARD
+    ========================================= -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Mariano Aliandri | Portfolio" />
-    <meta name="twitter:description" content="Portfolio profesional de Mariano Aliandri. Desarrollador Full Stack especializado en React, Next.js y tecnologías web modernas." />
-    <meta name="twitter:image" content="/assets/image_12a02c-D4CCjDrI.jpg" />
+    <meta name="twitter:title" content="Mariano Aliandri | Portfolio - Desarrollador Full Stack" />
+    <meta name="twitter:description" content="Portfolio profesional de Mariano Aliandri. Desarrollador Full Stack especializado en React, Next.js, Python y análisis de datos." />
+    <meta name="twitter:image" content="https://marianoaliandri.com.ar/og-image.jpg" />
+    <meta name="twitter:site" content="@marianoaliandri" />
+    <meta name="twitter:creator" content="@marianoaliandri" />
     
-    <title>Mariano Aliandri | Portfolio - Desarrollador Full Stack</title>
+    <!-- ========================================
+         CANONICAL URL
+    ========================================= -->
+    <link rel="canonical" href="https://marianoaliandri.com.ar" />
     
+    <!-- ========================================
+         TITLE
+    ========================================= -->
+    <title>Mariano Aliandri | Portfolio - Desarrollador Full Stack & Analista de Datos</title>
+    
+    <!-- ========================================
+         LINKEDIN SDK
+    ========================================= -->
     <script src="https://platform.linkedin.com/in.js" type="text/javascript">lang: es_ES</script>
     
-    <!-- Google tag (gtag.js) -->
+    <!-- ========================================
+         GOOGLE ANALYTICS
+    ========================================= -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6ZB4P1VZJE"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-6ZB4P1VZJE');
+    </script>
+    
+    <!-- ========================================
+         STRUCTURED DATA (Schema.org)
+    ========================================= -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Mariano Aliandri",
+      "jobTitle": "Desarrollador Full Stack & Analista de Datos",
+      "url": "https://marianoaliandri.com.ar",
+      "sameAs": [
+        "https://www.linkedin.com/in/mariano-aliandri-816b4024/",
+        "https://github.com/maliandri"
+      ],
+      "email": "marianoaliandri@gmail.com",
+      "telephone": "+54-299-541-4422",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Neuquén",
+        "addressRegion": "NQN",
+        "addressCountry": "AR"
+      },
+      "knowsAbout": [
+        "React",
+        "Next.js",
+        "JavaScript",
+        "Python",
+        "Power BI",
+        "Excel",
+        "Análisis de Datos",
+        "Desarrollo Web"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "itemOffered": [
+          {
+            "@type": "Service",
+            "name": "Desarrollo Web",
+            "description": "Sitios web modernos y responsivos"
+          },
+          {
+            "@type": "Service",
+            "name": "Análisis de Datos",
+            "description": "Dashboards con Power BI y Excel avanzado"
+          },
+          {
+            "@type": "Service",
+            "name": "Consultoría BI",
+            "description": "Inteligencia empresarial y KPIs estratégicos"
+          }
+        ]
+      }
+    }
     </script>
   </head>
   <body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300">
