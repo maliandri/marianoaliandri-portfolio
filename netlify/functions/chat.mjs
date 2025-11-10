@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Configuración de CORS para permitir requests desde tu dominio
 const headers = {
@@ -8,7 +8,7 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // Manejar preflight requests
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -49,7 +49,7 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Inicializar Gemini 2.5 Flash (más rápido y eficiente)
+    // Inicializar Gemini 2.0 Flash (más rápido y eficiente)
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
@@ -120,6 +120,7 @@ INSTRUCCIONES:
 
   } catch (error) {
     console.error("Error en función chat:", error);
+    console.error("Stack trace:", error.stack);
 
     return {
       statusCode: 500,
