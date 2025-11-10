@@ -10,7 +10,4 @@
 
 [functions]
   node_bundler = "esbuild"
-
-[[functions]]
-  name = "chat"
-  included_files = ["netlify/functions/package.json"]
+  directory = "netlify/functions"
