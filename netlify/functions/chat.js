@@ -49,9 +49,9 @@ export const handler = async (event, context) => {
       };
     }
 
-    // Inicializar Gemini 2.0 Flash Live (ilimitado y más rápido)
+    // Inicializar Gemini 1.5 Pro (estable con buena cuota)
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-live" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
     // Contexto del sistema para Gemini
     const systemContext = `Eres el asistente virtual de Mariano Aliandri, un desarrollador Full Stack y Analista de Datos especializado en:
