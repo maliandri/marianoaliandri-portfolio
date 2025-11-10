@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { sendMessageToGemini, initializeChat } from '../utils/geminiHelper';
 
 function AIChatBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,7 +46,8 @@ function AIChatBot() {
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      // Mensaje de bienvenida
+      // Inicializar chat y mensaje de bienvenida
+      initializeChat();
       setTimeout(() => {
         addBotMessage(knowledgeBase.greetings[0]);
       }, 500);
@@ -84,56 +86,69 @@ function AIChatBot() {
     });
   };
 
-  const getResponse = (userInput) => {
+  // Función para llamar a la API de Gemini via helper
+  const getGeminiResponse = async (userInput) => {
+    try {
+      const response = await sendMessageToGemini(userInput, messages.slice(-10));
+      return response;
+    } catch (error) {
+      console.error('Error al obtener respuesta de Gemini:', error);
+      // Fallback a respuesta local en caso de error
+      return getFallbackResponse(userInput);
+    }
+  };
+
+  // Respuesta de fallback en caso de que falle Gemini
+  const getFallbackResponse = (userInput) => {
     const input = userInput.toLowerCase();
-    
+
     // Saludos
     if (input.match(/(hola|hello|hi|buenos días|buenas tardes|buenas noches)/)) {
       return knowledgeBase.greetings[Math.floor(Math.random() * knowledgeBase.greetings.length)];
     }
-    
+
     // Servicios específicos
     for (const [key, response] of Object.entries(knowledgeBase.services)) {
       if (input.includes(key) || input.includes(key.replace(' ', ''))) {
         return response;
       }
     }
-    
+
     // Precios
     if (input.match(/(precio|costo|cotización|presupuesto|cuánto|tarifa)/)) {
       return knowledgeBase.pricing;
     }
-    
+
     // Proceso
     if (input.match(/(proceso|cómo trabajas|metodología|pasos)/)) {
       return knowledgeBase.process;
     }
-    
+
     // Contacto
     if (input.match(/(contacto|teléfono|email|whatsapp|llamar)/)) {
       return knowledgeBase.contact;
     }
-    
+
     // Reunión/Agenda
     if (input.match(/(reunión|cita|agendar|meeting|horario|disponibilidad)/)) {
       return knowledgeBase.scheduling;
     }
-    
+
     // Experiencia
     if (input.match(/(experiencia|portfolio|trabajos|proyectos|clientes)/)) {
       return knowledgeBase.experience;
     }
-    
+
     // Agradecimientos
     if (input.match(/(gracias|thank you|perfecto|excelente|genial)/)) {
       return '¡De nada! ¿Hay algo más en lo que pueda ayudarte? Estoy aquí para resolver todas tus dudas sobre análisis de datos.';
     }
-    
+
     // Despedidas
     if (input.match(/(adiós|bye|nos vemos|hasta luego|chau)/)) {
       return '¡Hasta luego! No dudes en contactarme cuando necesites ayuda con análisis de datos. ¡Que tengas un excelente día!';
     }
-    
+
     // Respuesta por defecto con sugerencias
     return `Entiendo que preguntas sobre "${userInput}". Te puedo ayudar con:\n\n• Análisis de datos y Power BI\n• Consultoría en inteligencia empresarial\n• Automatización con Python y Excel\n• Precios y cotizaciones\n• Agendar una reunión gratuita\n\n¿Sobre cuál te gustaría saber más?`;
   };
@@ -147,10 +162,10 @@ function AIChatBot() {
     setShowQuickReplies(false);
 
     // Simular escritura del bot
-    await simulateTyping();
+    await simulateTyping(2000);
 
-    // Obtener y enviar respuesta
-    const response = getResponse(message);
+    // Obtener respuesta de Gemini (con fallback automático)
+    const response = await getGeminiResponse(message);
     addBotMessage(response);
 
     // Mostrar botones especiales según el contexto

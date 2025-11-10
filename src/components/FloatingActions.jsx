@@ -168,7 +168,7 @@ export default function FloatingActions() {
 
             {/* Panel */}
             <motion.div
-              className="fixed bottom-16 left-4 right-4 sm:bottom-24 sm:left-6 sm:right-auto z-[59] w-auto sm:w-80 max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-3rem)] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-purple-300 dark:border-purple-700 overflow-hidden"
+              className="fixed top-4 bottom-20 left-4 right-4 sm:top-auto sm:bottom-24 sm:left-6 sm:right-auto z-[59] w-auto sm:w-80 max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-3rem)] max-h-[calc(100vh-6rem)] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-purple-300 dark:border-purple-700 overflow-hidden flex flex-col"
               initial={{ scale: 0.8, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 50 }}
@@ -195,7 +195,7 @@ export default function FloatingActions() {
               </div>
 
               {/* Lista de herramientas */}
-              <div className="p-3 sm:p-4 space-y-2 max-h-[60vh] sm:max-h-[60vh] overflow-y-auto">
+              <div className="flex-1 p-3 sm:p-4 space-y-2 overflow-y-auto">
                 {tools.map((tool, i) => (
                   <motion.button
                     key={tool.id}
@@ -225,7 +225,7 @@ export default function FloatingActions() {
               </div>
 
               {/* Footer con contacto */}
-              <div className="p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/20 border-t border-purple-200 dark:border-purple-800">
+              <div className="flex-shrink-0 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/20 border-t border-purple-200 dark:border-purple-800">
                 <motion.div
                   className="mb-2 sm:mb-3 p-2 sm:p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800"
                   initial={{ opacity: 0 }}
