@@ -2,7 +2,6 @@
   "name": "netlify-functions",
   "version": "1.0.0",
   "description": "Netlify Functions for portfolio",
-  "type": "commonjs",
   "dependencies": {
     "@google/generative-ai": "^0.21.0"
   }
