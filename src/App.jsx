@@ -41,7 +41,7 @@ export default function App() {
         type="website"
       />
 
-      <main className="font-sans min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500">
+      <div className="font-sans min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500">
         <ThemeToggle />
         <LikeSystem />
 
@@ -52,13 +52,19 @@ export default function App() {
         <AIChatBot />
 
         {/* Contenido principal */}
-        <div className="max-w-5xl mx-auto p-4 space-y-20">
+        <main className="max-w-5xl mx-auto p-4 space-y-20">
           <Hero />
-          <ServiciosCarousel />
-          <Skills />
-          <Contact />
-        </div>
-      </main>
+          <section aria-label="Servicios profesionales">
+            <ServiciosCarousel />
+          </section>
+          <section aria-label="Habilidades técnicas">
+            <Skills />
+          </section>
+          <section aria-label="Información de contacto">
+            <Contact />
+          </section>
+        </main>
+      </div>
     </HelmetProvider>
   );
 }

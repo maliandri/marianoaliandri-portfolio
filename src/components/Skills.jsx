@@ -28,14 +28,15 @@ function Skills() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8 }}
+      aria-labelledby="skills-heading"
     >
-      <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-gray-50">
+      <h2 id="skills-heading" className="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-gray-50">
         Mis Habilidades
       </h2>
-      
-      <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+
+      <ul className="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" role="list" aria-label="Lista de habilidades técnicas">
         {skills.map((skill, index) => (
-          <motion.div
+          <motion.li
             key={index}
             className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-md text-center font-medium text-gray-700 dark:text-gray-200 transform hover:scale-105 transition-all duration-300"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -44,9 +45,9 @@ function Skills() {
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
             {skill}
-          </motion.div>
+          </motion.li>
         ))}
-      </div>
+      </ul>
     </motion.section>
   );
 }

@@ -10,6 +10,7 @@ function Hero() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2 }}
+      aria-label="Presentación principal"
     >
       <motion.div
         className="mx-auto w-32 h-32 md:w-40 md:h-40 overflow-hidden rounded-full border-4 border-indigo-500 shadow-lg"
@@ -19,8 +20,11 @@ function Hero() {
       >
         <img
           src={tuFoto}
-          alt="Foto de Mariano"
+          alt="Mariano Aliandri - Desarrollador Full Stack y Analista de Datos"
           className="w-full h-full object-cover"
+          width="160"
+          height="160"
+          loading="eager"
         />
       </motion.div>
       <motion.h1
@@ -37,7 +41,7 @@ function Hero() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 1 }}
       >
-        Analista de datos e inteligencia Empresarial. 
+        Analista de datos e inteligencia Empresarial.
         Desarrollador web con pasión por crear soluciones elegantes y eficientes.
         Bienvenido a mi portafolio.
       </motion.p>
@@ -49,6 +53,7 @@ function Hero() {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 1.2 }}
+        aria-label="Contactar por WhatsApp a Mariano Aliandri"
       >
         Contactar por WhatsApp
       </motion.a>

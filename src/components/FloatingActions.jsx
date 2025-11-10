@@ -122,7 +122,7 @@ export default function FloatingActions() {
       {/* ===== BADGE PRINCIPAL (siempre visible) ===== */}
       <motion.button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed bottom-6 left-6 z-[60] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white p-4 rounded-2xl shadow-2xl hover:shadow-purple-500/50 border-2 border-white/30"
+        className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[60] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white p-3 sm:p-4 rounded-2xl shadow-2xl hover:shadow-purple-500/50 border-2 border-white/30"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, scale: 0 }}
@@ -132,19 +132,19 @@ export default function FloatingActions() {
       >
         <motion.div animate={{ rotate: isMenuOpen ? 90 : 0 }}>
           {isMenuOpen ? (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h8M4 18h12" />
             </svg>
           )}
         </motion.div>
-        
+
         {/* Badge con contador */}
         <motion.div
-          className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center shadow-lg border-2 border-white"
+          className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-lg border-2 border-white"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 1 }}
@@ -168,21 +168,21 @@ export default function FloatingActions() {
 
             {/* Panel */}
             <motion.div
-              className="fixed bottom-24 left-6 z-[59] w-80 max-w-[calc(100vw-3rem)] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-purple-300 dark:border-purple-700 overflow-hidden"
+              className="fixed bottom-16 left-4 right-4 sm:bottom-24 sm:left-6 sm:right-auto z-[59] w-auto sm:w-80 max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-3rem)] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-purple-300 dark:border-purple-700 overflow-hidden"
               initial={{ scale: 0.8, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 50 }}
               transition={{ type: "spring", damping: 20 }}
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xl font-bold flex items-center gap-2">
-                    <span className="text-2xl">🚀</span>
+              <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-3 sm:p-5">
+                <div className="flex items-center justify-between mb-1 sm:mb-2">
+                  <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                    <span className="text-xl sm:text-2xl">🚀</span>
                     Herramientas
                   </h3>
-                  <button 
-                    onClick={() => setIsMenuOpen(false)} 
+                  <button
+                    onClick={() => setIsMenuOpen(false)}
                     className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
                     aria-label="Cerrar menú"
                   >
@@ -195,12 +195,12 @@ export default function FloatingActions() {
               </div>
 
               {/* Lista de herramientas */}
-              <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
+              <div className="p-3 sm:p-4 space-y-2 max-h-[60vh] sm:max-h-[60vh] overflow-y-auto">
                 {tools.map((tool, i) => (
                   <motion.button
                     key={tool.id}
                     onClick={() => openTool(tool)}
-                    className={`w-full bg-gradient-to-r ${tool.color} text-white p-4 rounded-xl shadow-lg hover:shadow-xl text-left group relative overflow-hidden`}
+                    className={`w-full bg-gradient-to-r ${tool.color} text-white p-3 sm:p-4 rounded-xl shadow-lg hover:shadow-xl text-left group relative overflow-hidden`}
                     initial={{ opacity: 0, x: -50 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
@@ -209,14 +209,14 @@ export default function FloatingActions() {
                   >
                     {/* Efecto shine */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -skew-x-12" />
-                    
-                    <div className="relative flex items-center gap-3">
-                      <div className="text-3xl">{tool.icon}</div>
-                      <div className="flex-1">
-                        <div className="font-bold text-base">{tool.name}</div>
-                        <div className="text-xs opacity-90">{tool.description}</div>
+
+                    <div className="relative flex items-center gap-2 sm:gap-3">
+                      <div className="text-2xl sm:text-3xl">{tool.icon}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-sm sm:text-base">{tool.name}</div>
+                        <div className="text-xs opacity-90 truncate">{tool.description}</div>
                       </div>
-                      <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 transform group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
@@ -225,35 +225,35 @@ export default function FloatingActions() {
               </div>
 
               {/* Footer con contacto */}
-              <div className="p-4 bg-gradient-to-r from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/20 border-t border-purple-200 dark:border-purple-800">
-                <motion.div 
-                  className="mb-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800" 
-                  initial={{ opacity: 0 }} 
-                  animate={{ opacity: 1 }} 
+              <div className="p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/20 border-t border-purple-200 dark:border-purple-800">
+                <motion.div
+                  className="mb-2 sm:mb-3 p-2 sm:p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
                 >
                   <p className="text-xs text-gray-700 dark:text-gray-300 text-center">
                     💡 <strong>Todas gratuitas</strong> y sin registro
                   </p>
                 </motion.div>
-                
-                <motion.div 
-                  className="flex gap-2" 
-                  initial={{ opacity: 0 }} 
-                  animate={{ opacity: 1 }} 
+
+                <motion.div
+                  className="flex flex-col sm:flex-row gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ delay: 0.7 }}
                 >
-                  <a 
-                    href="https://wa.me/+542995414422" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl text-center flex items-center justify-center gap-2 shadow-md transition-all"
+                  <a
+                    href="https://wa.me/+542995414422"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl text-center flex items-center justify-center gap-2 shadow-md transition-all"
                   >
                     <span>💬</span><span>WhatsApp</span>
                   </a>
-                  <a 
-                    href="mailto:marianoaliandri@gmail.com" 
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl text-center flex items-center justify-center gap-2 shadow-md transition-all"
+                  <a
+                    href="mailto:marianoaliandri@gmail.com"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl text-center flex items-center justify-center gap-2 shadow-md transition-all"
                   >
                     <span>✉️</span><span>Email</span>
                   </a>
