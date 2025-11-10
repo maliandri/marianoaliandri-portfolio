@@ -32,8 +32,11 @@ exports.handler = async (event, context) => {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
+      console.error("❌ GEMINI_API_KEY no está configurada en las variables de entorno");
       throw new Error("GEMINI_API_KEY no está configurada");
     }
+
+    console.log("✅ API Key encontrada, longitud:", apiKey.length);
 
     // Parsear el body del request
     const { message, conversationHistory } = JSON.parse(event.body);
@@ -100,9 +103,11 @@ INSTRUCCIONES:
     fullPrompt += `Usuario: ${message}\nAsistente:`;
 
     // Generar respuesta con Gemini
+    console.log("📤 Enviando prompt a Gemini...");
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;
     const text = response.text();
+    console.log("✅ Respuesta recibida de Gemini");
 
     return {
       statusCode: 200,
