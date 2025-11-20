@@ -33,7 +33,7 @@ function Hero() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.8 }}
       >
-        ¡Hola! Soy Mariano
+        Mariano Aliandri - Desarrollador Full Stack & Analista de Datos
       </motion.h1>
       <motion.p
         className="mt-4 text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"

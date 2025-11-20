@@ -49,9 +49,17 @@ export const handler = async (event, context) => {
       };
     }
 
-    // Inicializar Gemini 1.5 Pro (estable con buena cuota)
+    // Inicializar Gemini 1.5 Flash (rápido y con buena cuota)
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        temperature: 0.9,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 1024
+      }
+    });
 
     // Contexto del sistema para Gemini
     const systemContext = `Eres el asistente virtual de Mariano Aliandri, un desarrollador Full Stack y Analista de Datos especializado en:

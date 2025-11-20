@@ -32,11 +32,11 @@ export default function App() {
           SEO GLOBAL - META TAGS
           Configura todos los meta tags de la página principal
       ========================================= */}
-      <SEO 
-        title="Mariano Aliandri | Portfolio - Desarrollador Full Stack"
-        description="Portfolio profesional de Mariano Aliandri. Desarrollador Full Stack especializado en React, Next.js, Python y análisis de datos. Análisis con Power BI, Excel avanzado, web scraping y consultoría en inteligencia empresarial."
-        keywords="Mariano Aliandri, desarrollador full stack, React, Next.js, portfolio, web developer, JavaScript, Python, análisis de datos, Power BI, Excel, consultoría BI, desarrollo web, Neuquén Argentina"
-        image="https://marianoaliandri.com.ar/assets/image_12a02c-D4CCjDrI.jpg"
+      <SEO
+        title="Mariano Aliandri | Desarrollador Full Stack & BI"
+        description="Desarrollador Full Stack y Analista de Datos en Neuquén. Especialista en React, Python, Power BI y consultoría BI."
+        keywords="Mariano Aliandri, desarrollador full stack, React, Next.js, Python, Power BI, análisis de datos, consultoría BI, Neuquén Argentina"
+        image="https://marianoaliandri.com.ar/og-image.jpg"
         url="https://marianoaliandri.com.ar"
         type="website"
       />
