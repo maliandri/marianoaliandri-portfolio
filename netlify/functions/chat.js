@@ -28,7 +28,6 @@ export const handler = async (event, context) => {
   }
 
   try {
-    // Obtener la API key desde variables de entorno
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -36,9 +35,6 @@ export const handler = async (event, context) => {
       throw new Error("GEMINI_API_KEY no está configurada");
     }
 
-    console.log("✅ API Key encontrada, longitud:", apiKey.length);
-
-    // Parsear el body del request
     const { message, conversationHistory } = JSON.parse(event.body);
 
     if (!message) {
@@ -49,19 +45,8 @@ export const handler = async (event, context) => {
       };
     }
 
-    // Inicializar Gemini 1.5 Flash (rápido y con buena cuota)
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 0.9,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 1024
-      }
-    });
 
-    // Contexto del sistema para Gemini
     const systemContext = `Eres el asistente virtual de Mariano Aliandri, un desarrollador Full Stack y Analista de Datos especializado en:
 
 SERVICIOS PRINCIPALES:
@@ -99,21 +84,27 @@ INSTRUCCIONES:
 - Responde en español de manera natural y conversacional
 - NO inventes información que no esté en este contexto`;
 
-    // Construir el historial de conversación para Gemini
-    let fullPrompt = systemContext + "\n\n";
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      systemInstruction: systemContext,
+      generationConfig: {
+        temperature: 0.9,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 1024,
+      },
+    });
 
-    if (conversationHistory && conversationHistory.length > 0) {
-      conversationHistory.forEach(msg => {
-        fullPrompt += `${msg.isBot ? 'Asistente' : 'Usuario'}: ${msg.text}\n`;
-      });
-    }
+    const history = (conversationHistory || []).map(msg => ({
+      role: msg.isBot ? "model" : "user",
+      parts: [{ text: msg.text }],
+    }));
 
-    fullPrompt += `Usuario: ${message}\nAsistente:`;
+    const chat = model.startChat({ history });
 
-    // Generar respuesta con Gemini
-    console.log("📤 Enviando prompt a Gemini...");
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
+    console.log("📤 Enviando mensaje a Gemini...");
+    const result = await chat.sendMessage(message);
+    const response = result.response;
     const text = response.text();
     console.log("✅ Respuesta recibida de Gemini");
 
