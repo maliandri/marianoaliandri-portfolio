@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import tuFoto from "../assets/image_12a02c.jpg";
+import { CloudinaryAvatar } from "./CloudinaryImage";
 
 // Componente para la sección principal (Hero) del portafolio
 function Hero() {
@@ -18,13 +18,11 @@ function Hero() {
         animate={{ scale: 1 }}
         transition={{ duration: 0.5, delay: 0.5 }}
       >
-        <img
-          src={tuFoto}
+        <CloudinaryAvatar
+          publicId="image_12a02c"
           alt="Mariano Aliandri - Desarrollador Full Stack y Analista de Datos"
+          size={160}
           className="w-full h-full object-cover"
-          width="160"
-          height="160"
-          loading="eager"
         />
       </motion.div>
       <motion.h1

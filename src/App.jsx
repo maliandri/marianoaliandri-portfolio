@@ -13,6 +13,7 @@ import SEO from "./components/SEO.jsx";
 import Hero from "./components/Hero.jsx";
 import ServiciosCarousel from "./components/ServiciosCarousel.jsx";
 import Skills from "./components/Skills.jsx";
+import Carrousel from "./components/Carrousel.jsx";
 import Contact from "./components/Contact.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import LikeSystem from "./components/LikeSystem.jsx";
@@ -59,6 +60,9 @@ export default function App() {
           </section>
           <section aria-label="Habilidades técnicas">
             <Skills />
+          </section>
+          <section aria-label="Carrousel de-imagenes">
+            <Carrousel />
           </section>
           <section aria-label="Información de contacto">
             <Contact />
