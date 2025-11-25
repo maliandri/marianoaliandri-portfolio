@@ -8,7 +8,7 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-export const handler = async (event, context) => {
+export const handler = async (event) => {
   // Manejar preflight requests
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -46,15 +46,9 @@ export const handler = async (event, context) => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    
+
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 0.9,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 1024,
-      },
     });
 
     const systemContext = `Eres el asistente virtual de Mariano Aliandri, un desarrollador Full Stack y Analista de Datos especializado en:
@@ -94,24 +88,31 @@ INSTRUCCIONES:
 - Responde en español de manera natural y conversacional
 - NO inventes información que no esté en este contexto`;
 
-    const contents = [];
+    // Construir el historial de conversación
+    let chatHistory = [];
 
-    // Priming the model with the system context
-    contents.push({ role: "user", parts: [{ text: systemContext }] });
-    contents.push({ role: "model", parts: [{ text: "Entendido. Soy el asistente virtual de Mariano Aliandri, listo para ayudar." }] });
-
-    // Add existing conversation history (assuming it's already formatted correctly by the client)
-    if (conversationHistory && conversationHistory.length > 0) {
-      contents.push(...conversationHistory);
+    if (conversationHistory && Array.isArray(conversationHistory)) {
+      chatHistory = conversationHistory.map(msg => ({
+        role: msg.role,
+        parts: msg.parts
+      }));
     }
 
-    // Add the new user message
-    contents.push({ role: "user", parts: [{ text: message }] });
+    // Construir el prompt completo
+    const fullPrompt = `${systemContext}
+
+HISTORIAL DE CONVERSACIÓN:
+${chatHistory.map(msg => `${msg.role === 'user' ? 'Usuario' : 'Asistente'}: ${msg.parts[0].text}`).join('\n')}
+
+NUEVO MENSAJE DEL USUARIO:
+${message}
+
+RESPUESTA DEL ASISTENTE:`;
 
     // Generate response with Gemini
-    console.log("📤 Enviando prompt a Gemini con generateContent...");
-    const result = await model.generateContent({ contents });
-    const response = await result.response;
+    console.log("📤 Enviando prompt a Gemini...");
+    const result = await model.generateContent(fullPrompt);
+    const response = result.response;
     const text = response.text();
     console.log("✅ Respuesta recibida de Gemini");
 
