@@ -46,6 +46,16 @@ export const handler = async (event, context) => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
+    
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        temperature: 0.9,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 1024,
+      },
+    });
 
     const systemContext = `Eres el asistente virtual de Mariano Aliandri, un desarrollador Full Stack y Analista de Datos especializado en:
 
@@ -84,27 +94,24 @@ INSTRUCCIONES:
 - Responde en español de manera natural y conversacional
 - NO inventes información que no esté en este contexto`;
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      systemInstruction: systemContext,
-      generationConfig: {
-        temperature: 0.9,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 1024,
-      },
-    });
+    const contents = [];
 
-    const history = (conversationHistory || []).map(msg => ({
-      role: msg.isBot ? "model" : "user",
-      parts: [{ text: msg.text }],
-    }));
+    // Priming the model with the system context
+    contents.push({ role: "user", parts: [{ text: systemContext }] });
+    contents.push({ role: "model", parts: [{ text: "Entendido. Soy el asistente virtual de Mariano Aliandri, listo para ayudar." }] });
 
-    const chat = model.startChat({ history });
+    // Add existing conversation history (assuming it's already formatted correctly by the client)
+    if (conversationHistory && conversationHistory.length > 0) {
+      contents.push(...conversationHistory);
+    }
 
-    console.log("📤 Enviando mensaje a Gemini...");
-    const result = await chat.sendMessage(message);
-    const response = result.response;
+    // Add the new user message
+    contents.push({ role: "user", parts: [{ text: message }] });
+
+    // Generate response with Gemini
+    console.log("📤 Enviando prompt a Gemini con generateContent...");
+    const result = await model.generateContent({ contents });
+    const response = await result.response;
     const text = response.text();
     console.log("✅ Respuesta recibida de Gemini");
 
