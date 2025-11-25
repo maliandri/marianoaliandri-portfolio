@@ -1,13 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import prerender from 'vite-plugin-prerender';
-import path from 'path';
 
 export default defineConfig({
   plugins: [
     react(),
     prerender({
-      staticDir: path.join(__dirname, 'dist'),
+      // The staticDir is no longer needed. It defaults to the correct 'dist' folder.
       routes: ['/'],
       rendererOptions: {
         renderAfterElementExists: '#root',
