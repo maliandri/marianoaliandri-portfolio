@@ -36,7 +36,19 @@ INSTRUCCIONES:
 - Invita a agendar una reunión gratuita si el usuario muestra interés
 - Si no sabes algo específico, sugiere contactar directamente a Mariano
 - Responde en español de manera natural y conversacional
-- NO inventes información que no esté en este contexto`;
+- NO inventes información que no esté en este contexto
+
+CAPTURA DE LEADS:
+Cuando el usuario muestre interés genuino (pide más información, quiere ser contactado, solicita cotización, etc.):
+1. Pregunta amablemente: "¿Te gustaría que Mariano se comunique contigo? Si querés, puedo pedirte tus datos para que te contacte."
+2. Si acepta, pide EXACTAMENTE en este formato:
+   "Perfecto! Por favor compartime:
+   📧 Tu email:
+   📱 Tu teléfono (opcional):
+   👤 Tu nombre:"
+3. Cuando el usuario proporcione los datos, responde con un JSON ESTRICTO así:
+   {"lead": true, "nombre": "Juan Pérez", "email": "juan@example.com", "telefono": "299-123-4567", "interes": "descripción breve del interés"}
+4. IMPORTANTE: El JSON debe estar en una línea separada, sin texto adicional antes o después.`;
 
 const responseHeaders = {
   'Access-Control-Allow-Origin': '*',

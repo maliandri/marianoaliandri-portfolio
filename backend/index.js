@@ -115,6 +115,45 @@ app.post('/api/send-web-lead', async (req, res) => {
   }
 });
 
+// ====== Lead del Chatbot IA
+app.post('/api/send-chatbot-lead', async (req, res) => {
+  const { nombre, email, telefono, interes, conversacion } = req.body;
+  if (!email || !nombre) return res.status(400).json({ success: false, error: 'Faltan datos requeridos: email, nombre' });
+  if (!process.env.ZOHO_USER || !process.env.ZOHO_PASS) return res.status(500).json({ success: false, error: 'Configuración de email no disponible' });
+
+  try {
+    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: process.env.ZOHO_USER,
+      to: process.env.TO_EMAIL || process.env.ZOHO_USER,
+      subject: `🤖 Nuevo Lead del Chatbot IA: ${nombre}`,
+      html: `
+        <h2>¡Nuevo Lead capturado por el Chatbot IA!</h2>
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <p><strong>👤 Nombre:</strong> ${nombre}</p>
+          <p><strong>📧 Email:</strong> <a href="mailto:${email}">${email}</a></p>
+          <p><strong>📱 Teléfono:</strong> ${telefono || 'No proporcionado'}</p>
+          <p><strong>💡 Interés:</strong> ${interes}</p>
+          <p><strong>📅 Fecha:</strong> ${new Date().toLocaleString('es-AR')}</p>
+        </div>
+
+        <h3>Conversación del Chatbot:</h3>
+        <div style="background: #fff; border-left: 4px solid #4f46e5; padding: 15px; margin: 10px 0;">
+          <pre style="white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 13px;">${conversacion}</pre>
+        </div>
+
+        <p style="margin-top: 20px; color: #666;">
+          <em>Este lead fue generado automáticamente por el asistente IA de marianoaliandri.com.ar</em>
+        </p>
+      `
+    });
+    res.json({ success: true, message: 'Lead enviado correctamente' });
+  } catch (e) {
+    console.error('❌ Error enviando lead del chatbot:', e);
+    res.status(500).json({ success: false, error: 'Error al enviar el email' });
+  }
+});
+
 // ====== Página de Share para LinkedIn (OG tags dinámicas)
 app.get('/share/web-proposal', (req, res) => {
   const c   = escapeHtml(req.query.c || 'Proyecto Web');

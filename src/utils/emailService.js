@@ -66,6 +66,27 @@ export class EmailService {
       throw error;
     }
   }
+
+  async sendChatbotLead(leadData) {
+    try {
+      const response = await fetch(`${this.BACKEND_URL}/api/send-chatbot-lead`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(leadData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error sending chatbot lead:', error);
+      throw error;
+    }
+  }
 }
 
 export const emailService = new EmailService();

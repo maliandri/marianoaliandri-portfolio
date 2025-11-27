@@ -166,6 +166,41 @@ function AIChatBot() {
 
     // Obtener respuesta de Gemini (con fallback automático)
     const response = await getGeminiResponse(message);
+
+    // Detectar si la respuesta contiene datos de lead
+    try {
+      const leadMatch = response.match(/\{"lead":\s*true.*?\}/);
+      if (leadMatch) {
+        const leadData = JSON.parse(leadMatch[0]);
+
+        // Extraer el mensaje antes del JSON
+        const messageBeforeJson = response.substring(0, response.indexOf(leadMatch[0])).trim();
+        if (messageBeforeJson) {
+          addBotMessage(messageBeforeJson);
+        }
+
+        // Enviar lead por email
+        const { emailService } = await import('../utils/emailService.js');
+        await emailService.sendChatbotLead({
+          nombre: leadData.nombre,
+          email: leadData.email,
+          telefono: leadData.telefono || 'No proporcionado',
+          interes: leadData.interes,
+          conversacion: messages.slice(-10).map(m => `${m.isBot ? 'Bot' : 'Usuario'}: ${m.text}`).join('\n')
+        });
+
+        // Confirmar al usuario
+        setTimeout(() => {
+          addBotMessage('✅ ¡Perfecto! Tus datos han sido enviados. Mariano se pondrá en contacto contigo a la brevedad. ¡Gracias por tu interés!');
+        }, 1000);
+
+        return;
+      }
+    } catch (error) {
+      console.warn('Error procesando lead:', error);
+    }
+
+    // Si no hay lead, mostrar la respuesta normal
     addBotMessage(response);
 
     // Mostrar botones especiales según el contexto
