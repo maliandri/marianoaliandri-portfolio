@@ -3,5 +3,7 @@
   "version": "1.0.0",
   "description": "Netlify Functions for portfolio",
   "type": "module",
-  "dependencies": {}
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1"
+  }
 }

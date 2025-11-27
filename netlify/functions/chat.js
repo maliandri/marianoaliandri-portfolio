@@ -1,49 +1,7 @@
-// Configuración de CORS para permitir requests desde tu dominio
-const headers = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Content-Type": "application/json",
-};
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export const handler = async (event) => {
-  // Manejar preflight requests
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers,
-      body: "",
-    };
-  }
-
-  // Solo aceptar POST requests
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: "Method not allowed" }),
-    };
-  }
-
-  try {
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (!apiKey) {
-      console.error("❌ GEMINI_API_KEY no está configurada en las variables de entorno");
-      throw new Error("GEMINI_API_KEY no está configurada");
-    }
-
-    const { message, conversationHistory } = JSON.parse(event.body);
-
-    if (!message) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: "Mensaje requerido" }),
-      };
-    }
-
-    const systemContext = `Eres el asistente virtual de Mariano Aliandri, un desarrollador Full Stack y Analista de Datos especializado en:
+// Contexto del asistente de Mariano Aliandri
+const MARIANO_CONTEXT = `Eres el asistente virtual de Mariano Aliandri, un desarrollador Full Stack y Analista de Datos especializado en:
 
 SERVICIOS PRINCIPALES:
 - Análisis de Datos con Power BI, Excel avanzado (Power Query, Power Pivot, Macros)
@@ -80,91 +38,98 @@ INSTRUCCIONES:
 - Responde en español de manera natural y conversacional
 - NO inventes información que no esté en este contexto`;
 
-    // Construir el historial de conversación
-    let historyText = '';
+const responseHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Content-Type': 'application/json'
+};
 
-    if (conversationHistory && Array.isArray(conversationHistory) && conversationHistory.length > 0) {
-      try {
-        historyText = conversationHistory
-          .map(msg => {
-            const role = msg.role === 'user' ? 'Usuario' : 'Asistente';
-            const text = msg.parts && msg.parts[0] && msg.parts[0].text ? msg.parts[0].text : '';
-            return `${role}: ${text}`;
-          })
-          .filter(line => line.trim().length > 0)
-          .join('\n');
-      } catch (historyError) {
-        console.warn("⚠️ Error procesando historial, continuando sin él:", historyError);
-        historyText = '';
-      }
+export async function handler(event) {
+  // Handle OPTIONS for CORS
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers: responseHeaders, body: '' };
+  }
+
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      headers: responseHeaders,
+      body: JSON.stringify({ error: 'Method Not Allowed' })
+    };
+  }
+
+  try {
+    const { message, conversationHistory = [] } = JSON.parse(event.body);
+
+    if (!message) {
+      return {
+        statusCode: 400,
+        headers: responseHeaders,
+        body: JSON.stringify({ error: 'Mensaje requerido' })
+      };
     }
 
-    // Construir el prompt completo
-    const fullPrompt = `${systemContext}
+    if (!process.env.GEMINI_API_KEY) {
+      console.error('❌ GEMINI_API_KEY no configurada');
+      throw new Error('Configuración incompleta');
+    }
 
-${historyText ? `HISTORIAL DE CONVERSACIÓN:\n${historyText}\n` : ''}
-NUEVO MENSAJE DEL USUARIO:
-${message}
+    console.log('📤 Iniciando chat con Gemini...');
 
-RESPUESTA DEL ASISTENTE:`;
-
-    // Llamar directamente a la API REST de Gemini
-    console.log("📤 Enviando prompt a Gemini API REST...");
-    console.log("📝 Longitud del prompt:", fullPrompt.length, "caracteres");
-
-    // Usar la API v1 directamente
-    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: fullPrompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
-        }
-      })
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash-exp",
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 2048,
+      }
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("❌ Error de Gemini API:", errorData);
-      throw new Error(`Gemini API error: ${response.status} - ${JSON.stringify(errorData)}`);
+    // Convertir historial al formato de Gemini
+    const geminiHistory = [];
+
+    if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+      conversationHistory.forEach(msg => {
+        if (msg.role && msg.parts && msg.parts[0] && msg.parts[0].text) {
+          geminiHistory.push({
+            role: msg.role,
+            parts: [{ text: msg.parts[0].text }]
+          });
+        }
+      });
     }
 
-    const data = await response.json();
+    // Iniciar chat con contexto e historial
+    const chat = model.startChat({
+      history: [
+        { role: "user", parts: [{ text: MARIANO_CONTEXT }] },
+        { role: "model", parts: [{ text: "Entendido. Soy el asistente virtual de Mariano Aliandri, listo para ayudar." }] },
+        ...geminiHistory
+      ]
+    });
 
-    // Extraer el texto de la respuesta
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Lo siento, no pude generar una respuesta.";
+    const result = await chat.sendMessage(message);
+    const response = await result.response.text();
 
-    console.log("✅ Respuesta recibida de Gemini");
-    console.log("📏 Longitud respuesta:", text.length, "caracteres");
+    console.log('✅ Respuesta recibida de Gemini');
+    console.log('📏 Longitud:', response.length, 'caracteres');
 
     return {
       statusCode: 200,
-      headers,
+      headers: responseHeaders,
       body: JSON.stringify({
-        response: text,
-        timestamp: new Date().toISOString(),
-      }),
+        response: response,
+        timestamp: new Date().toISOString()
+      })
     };
 
   } catch (error) {
-    console.error("❌ Error en función chat:", error);
-    console.error("📋 Tipo de error:", error.constructor.name);
-    console.error("💬 Mensaje:", error.message);
-    console.error("📚 Stack trace:", error.stack);
+    console.error('❌ Error en función chat:', error);
+    console.error('📋 Tipo:', error.constructor.name);
+    console.error('💬 Mensaje:', error.message);
 
-    // Determinar tipo de error para mejor mensaje
     let errorMessage = "Error al procesar el mensaje";
     let statusCode = 500;
 
@@ -181,12 +146,12 @@ RESPUESTA DEL ASISTENTE:`;
 
     return {
       statusCode,
-      headers,
+      headers: responseHeaders,
       body: JSON.stringify({
         error: errorMessage,
         details: process.env.NODE_ENV === 'development' ? error.message : undefined,
-        timestamp: new Date().toISOString(),
-      }),
+        timestamp: new Date().toISOString()
+      })
     };
   }
-};
+}
