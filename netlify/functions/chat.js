@@ -47,8 +47,9 @@ export const handler = async (event) => {
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
+    // Usar gemini-pro que es el modelo estable disponible
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-pro",
     });
 
     const systemContext = `Eres el asistente virtual de Mariano Aliandri, un desarrollador Full Stack y Analista de Datos especializado en:
