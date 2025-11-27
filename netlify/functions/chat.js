@@ -1,5 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
 // Configuración de CORS para permitir requests desde tu dominio
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -44,13 +42,6 @@ export const handler = async (event) => {
         body: JSON.stringify({ error: "Mensaje requerido" }),
       };
     }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-
-    // Usar gemini-pro que es el modelo estable disponible
-    const model = genAI.getGenerativeModel({
-      model: "gemini-pro",
-    });
 
     const systemContext = `Eres el asistente virtual de Mariano Aliandri, un desarrollador Full Stack y Analista de Datos especializado en:
 
@@ -117,13 +108,43 @@ ${message}
 
 RESPUESTA DEL ASISTENTE:`;
 
-    // Generate response with Gemini
-    console.log("📤 Enviando prompt a Gemini...");
+    // Llamar directamente a la API REST de Gemini
+    console.log("📤 Enviando prompt a Gemini API REST...");
     console.log("📝 Longitud del prompt:", fullPrompt.length, "caracteres");
 
-    const result = await model.generateContent(fullPrompt);
-    const response = result.response;
-    const text = response.text();
+    // Usar la API v1 directamente
+    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: fullPrompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("❌ Error de Gemini API:", errorData);
+      throw new Error(`Gemini API error: ${response.status} - ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+
+    // Extraer el texto de la respuesta
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Lo siento, no pude generar una respuesta.";
 
     console.log("✅ Respuesta recibida de Gemini");
     console.log("📏 Longitud respuesta:", text.length, "caracteres");
