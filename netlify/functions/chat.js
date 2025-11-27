@@ -89,21 +89,28 @@ INSTRUCCIONES:
 - NO inventes información que no esté en este contexto`;
 
     // Construir el historial de conversación
-    let chatHistory = [];
+    let historyText = '';
 
-    if (conversationHistory && Array.isArray(conversationHistory)) {
-      chatHistory = conversationHistory.map(msg => ({
-        role: msg.role,
-        parts: msg.parts
-      }));
+    if (conversationHistory && Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+      try {
+        historyText = conversationHistory
+          .map(msg => {
+            const role = msg.role === 'user' ? 'Usuario' : 'Asistente';
+            const text = msg.parts && msg.parts[0] && msg.parts[0].text ? msg.parts[0].text : '';
+            return `${role}: ${text}`;
+          })
+          .filter(line => line.trim().length > 0)
+          .join('\n');
+      } catch (historyError) {
+        console.warn("⚠️ Error procesando historial, continuando sin él:", historyError);
+        historyText = '';
+      }
     }
 
     // Construir el prompt completo
     const fullPrompt = `${systemContext}
 
-HISTORIAL DE CONVERSACIÓN:
-${chatHistory.map(msg => `${msg.role === 'user' ? 'Usuario' : 'Asistente'}: ${msg.parts[0].text}`).join('\n')}
-
+${historyText ? `HISTORIAL DE CONVERSACIÓN:\n${historyText}\n` : ''}
 NUEVO MENSAJE DEL USUARIO:
 ${message}
 
@@ -111,10 +118,14 @@ RESPUESTA DEL ASISTENTE:`;
 
     // Generate response with Gemini
     console.log("📤 Enviando prompt a Gemini...");
+    console.log("📝 Longitud del prompt:", fullPrompt.length, "caracteres");
+
     const result = await model.generateContent(fullPrompt);
     const response = result.response;
     const text = response.text();
+
     console.log("✅ Respuesta recibida de Gemini");
+    console.log("📏 Longitud respuesta:", text.length, "caracteres");
 
     return {
       statusCode: 200,
@@ -126,15 +137,33 @@ RESPUESTA DEL ASISTENTE:`;
     };
 
   } catch (error) {
-    console.error("Error en función chat:", error);
-    console.error("Stack trace:", error.stack);
+    console.error("❌ Error en función chat:", error);
+    console.error("📋 Tipo de error:", error.constructor.name);
+    console.error("💬 Mensaje:", error.message);
+    console.error("📚 Stack trace:", error.stack);
+
+    // Determinar tipo de error para mejor mensaje
+    let errorMessage = "Error al procesar el mensaje";
+    let statusCode = 500;
+
+    if (error.message?.includes("API key")) {
+      errorMessage = "Error de configuración: API key no válida";
+      statusCode = 503;
+    } else if (error.message?.includes("quota") || error.message?.includes("rate limit")) {
+      errorMessage = "Límite de uso alcanzado, intenta más tarde";
+      statusCode = 429;
+    } else if (error.message?.includes("blocked") || error.message?.includes("safety")) {
+      errorMessage = "Contenido bloqueado por políticas de seguridad";
+      statusCode = 400;
+    }
 
     return {
-      statusCode: 500,
+      statusCode,
       headers,
       body: JSON.stringify({
-        error: "Error al procesar el mensaje",
-        details: error.message,
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        timestamp: new Date().toISOString(),
       }),
     };
   }
