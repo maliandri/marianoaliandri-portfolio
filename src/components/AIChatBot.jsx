@@ -240,17 +240,22 @@ function AIChatBot() {
   };
 
   // Función para convertir links en texto a HTML clickeable
-  const renderMessageWithLinks = (text) => {
+  const renderMessageWithLinks = (text, isBot) => {
+    // Color del link según quién habla
+    const linkClass = isBot
+      ? 'text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300 font-semibold'
+      : 'text-blue-100 underline hover:text-white font-semibold';
+
     // Convertir URLs directas a links
     let processedText = text.replace(
       /(https?:\/\/[^\s]+)/g,
-      '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline hover:text-blue-700">$1</a>'
+      `<a href="$1" target="_blank" rel="noopener noreferrer" class="${linkClass}">$1</a>`
     );
 
     // Convertir markdown links [texto](url) a HTML
     processedText = processedText.replace(
       /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline hover:text-blue-700">$1</a>'
+      `<a href="$2" target="_blank" rel="noopener noreferrer" class="${linkClass}">$1</a>`
     );
 
     return processedText;
@@ -376,7 +381,7 @@ function AIChatBot() {
                   }`}>
                     <div
                       className="text-sm whitespace-pre-line"
-                      dangerouslySetInnerHTML={{ __html: renderMessageWithLinks(message.text) }}
+                      dangerouslySetInnerHTML={{ __html: renderMessageWithLinks(message.text, message.isBot) }}
                     />
                     <span className={`text-xs mt-1 block ${
                       message.isBot ? 'text-gray-500 dark:text-gray-400' : 'text-blue-100'
