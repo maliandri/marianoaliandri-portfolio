@@ -239,6 +239,23 @@ function AIChatBot() {
     // setShowQuickReplies(true);
   };
 
+  // Función para convertir links en texto a HTML clickeable
+  const renderMessageWithLinks = (text) => {
+    // Convertir URLs directas a links
+    let processedText = text.replace(
+      /(https?:\/\/[^\s]+)/g,
+      '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline hover:text-blue-700">$1</a>'
+    );
+
+    // Convertir markdown links [texto](url) a HTML
+    processedText = processedText.replace(
+      /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline hover:text-blue-700">$1</a>'
+    );
+
+    return processedText;
+  };
+
   return (
     <>
      {/* Botón flotante del chat */}
@@ -357,13 +374,16 @@ function AIChatBot() {
                       ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                       : 'bg-blue-600 text-white'
                   }`}>
-                    <p className="text-sm whitespace-pre-line">{message.text}</p>
+                    <div
+                      className="text-sm whitespace-pre-line"
+                      dangerouslySetInnerHTML={{ __html: renderMessageWithLinks(message.text) }}
+                    />
                     <span className={`text-xs mt-1 block ${
                       message.isBot ? 'text-gray-500 dark:text-gray-400' : 'text-blue-100'
                     }`}>
-                      {message.timestamp.toLocaleTimeString('es-ES', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
+                      {message.timestamp.toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
                       })}
                     </span>
                   </div>
