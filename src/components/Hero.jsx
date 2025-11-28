@@ -39,22 +39,34 @@ function Hero() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 1 }}
       >
-        Analista de datos e inteligencia Empresarial.
-        Desarrollador web con pasión por crear soluciones elegantes y eficientes.
-        Bienvenido a mi portafolio.
+        Especialista en análisis de datos, Business Intelligence y desarrollo web Full Stack.
+        Con amplia experiencia en React, Next.js, Python, Power BI y Excel avanzado, transformo
+        datos en insights accionables y creo aplicaciones web modernas que impulsan el crecimiento
+        empresarial. Descubre cómo puedo ayudarte a optimizar tus procesos y tomar decisiones basadas en datos.
       </motion.p>
-      <motion.a
-        href="https://wa.me/+542995414422"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-8 inline-block px-8 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transform hover:scale-105 transition-all duration-300 ease-in-out"
+      <motion.div
+        className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center"
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 1.2 }}
-        aria-label="Contactar por WhatsApp a Mariano Aliandri"
       >
-        Contactar por WhatsApp
-      </motion.a>
+        <a
+          href="https://wa.me/+542995414422"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block px-8 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transform hover:scale-105 transition-all duration-300 ease-in-out"
+          aria-label="Contactar por WhatsApp a Mariano Aliandri"
+        >
+          Contactar por WhatsApp
+        </a>
+        <a
+          href="#contact"
+          className="inline-block px-8 py-3 border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold rounded-full hover:bg-indigo-600 hover:text-white transform hover:scale-105 transition-all duration-300 ease-in-out"
+          aria-label="Ver información de contacto"
+        >
+          Ver Contacto
+        </a>
+      </motion.div>
     </motion.section>
   );
 }
