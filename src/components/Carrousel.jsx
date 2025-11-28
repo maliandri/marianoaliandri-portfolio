@@ -149,25 +149,47 @@ const Carrousel = () => {
       <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-gray-50 mb-2 h-20 flex items-center justify-center">
         {currentModule.title}
       </h2>
-      <div className="relative overflow-hidden rounded-lg shadow-inner h-[540px]">
+      <div className="relative overflow-hidden rounded-2xl shadow-2xl h-[540px] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
         <AnimatePresence mode="wait">
           {imageData.length > 0 && (
             <motion.div
               key={`${currentModuleIndex}-${currentIndex}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.8 }}
-              className="w-full h-full"
+              className="w-full h-full p-4"
             >
-              <div className="w-full h-full flex items-center justify-center">
-                <AdvancedImage
-                  cldImg={cld.image(imageData[currentIndex].publicId)}
-                  className="w-full h-full object-contain rounded-md"
-                />
+              <div className="w-full h-full flex items-center justify-center relative">
+                {/* Contenedor con efecto de sombra interna suave */}
+                <div className="relative w-full h-full rounded-xl overflow-hidden shadow-inner">
+                  {/* Borde difuso superior */}
+                  <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-white/30 via-transparent to-transparent dark:from-black/30 pointer-events-none z-10"></div>
+
+                  {/* Borde difuso inferior */}
+                  <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/30 via-transparent to-transparent dark:from-black/30 pointer-events-none z-10"></div>
+
+                  {/* Borde difuso izquierdo */}
+                  <div className="absolute top-0 bottom-0 left-0 w-12 bg-gradient-to-r from-white/30 via-transparent to-transparent dark:from-black/30 pointer-events-none z-10"></div>
+
+                  {/* Borde difuso derecho */}
+                  <div className="absolute top-0 bottom-0 right-0 w-12 bg-gradient-to-l from-white/30 via-transparent to-transparent dark:from-black/30 pointer-events-none z-10"></div>
+
+                  {/* Imagen */}
+                  <AdvancedImage
+                    cldImg={cld.image(imageData[currentIndex].publicId)}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-black bg-opacity-50">
-                <p className="text-center text-sm text-white">{imageData[currentIndex].text}</p>
+
+              {/* Texto descriptivo con mejor diseño */}
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-gradient-to-r from-black/80 via-black/70 to-black/80 backdrop-blur-md rounded-xl p-4 border border-white/10 shadow-xl">
+                  <p className="text-center text-sm md:text-base text-white font-medium leading-relaxed">
+                    {imageData[currentIndex].text}
+                  </p>
+                </div>
               </div>
             </motion.div>
           )}
