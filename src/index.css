@@ -74,11 +74,9 @@ html {
   }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .tools-panel button:hover {
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1) !important;
-  }
+/* Dark mode support - solo con clase .dark */
+.dark .tools-panel button:hover {
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1) !important;
 }
 
 /* ===== CUSTOM SCROLLBAR STYLES ===== */
@@ -102,17 +100,7 @@ html {
   background: #9ca3af;
 }
 
-/* Dark mode scrollbar */
-@media (prefers-color-scheme: dark) {
-  ::-webkit-scrollbar-thumb {
-    background: #4b5563;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #6b7280;
-  }
-}
-
+/* Dark mode scrollbar - solo con clase .dark */
 .dark ::-webkit-scrollbar-thumb {
   background: #4b5563;
 }
@@ -125,12 +113,6 @@ html {
 * {
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;
-}
-
-@media (prefers-color-scheme: dark) {
-  * {
-    scrollbar-color: #4b5563 transparent;
-  }
 }
 
 .dark * {
