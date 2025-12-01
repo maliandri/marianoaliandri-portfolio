@@ -3,16 +3,16 @@ export class EmailService {
   // Enviar formularios directamente a Netlify Forms
   async sendContactForm(formData) {
     try {
-      const form = new FormData();
-      form.append('form-name', 'contact');
-      form.append('name', formData.name);
-      form.append('email', formData.email);
-      form.append('message', formData.message);
+      const params = new URLSearchParams();
+      params.append('form-name', 'contact');
+      params.append('name', formData.name);
+      params.append('email', formData.email);
+      params.append('message', formData.message);
 
       const response = await fetch('/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(form).toString(),
+        body: params.toString(),
       });
 
       if (!response.ok) {
@@ -27,18 +27,18 @@ export class EmailService {
 
   async sendROILead(leadData) {
     try {
-      const form = new FormData();
-      form.append('form-name', 'roi-lead');
-      form.append('name', leadData.name);
-      form.append('email', leadData.email);
-      form.append('phone', leadData.phone || '');
-      form.append('company', leadData.company || '');
-      form.append('calculationResults', JSON.stringify(leadData.calculationResults || {}));
+      const params = new URLSearchParams();
+      params.append('form-name', 'roi-lead');
+      params.append('name', leadData.name);
+      params.append('email', leadData.email);
+      params.append('phone', leadData.phone || '');
+      params.append('company', leadData.company || '');
+      params.append('calculationResults', JSON.stringify(leadData.calculationResults || {}));
 
       const response = await fetch('/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(form).toString(),
+        body: params.toString(),
       });
 
       if (!response.ok) {
@@ -53,17 +53,17 @@ export class EmailService {
 
   async sendWebLead(leadData) {
     try {
-      const form = new FormData();
-      form.append('form-name', 'web-lead');
-      form.append('name', leadData.name);
-      form.append('email', leadData.email);
-      form.append('phone', leadData.phone || '');
-      form.append('calculationResults', JSON.stringify(leadData.calculationResults || {}));
+      const params = new URLSearchParams();
+      params.append('form-name', 'web-lead');
+      params.append('name', leadData.name);
+      params.append('email', leadData.email);
+      params.append('phone', leadData.phone || '');
+      params.append('calculationResults', JSON.stringify(leadData.calculationResults || {}));
 
       const response = await fetch('/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(form).toString(),
+        body: params.toString(),
       });
 
       if (!response.ok) {
@@ -78,17 +78,17 @@ export class EmailService {
 
   async sendChatbotLead(leadData) {
     try {
-      const form = new FormData();
-      form.append('form-name', 'chatbot-lead');
-      form.append('name', leadData.name);
-      form.append('email', leadData.email);
-      form.append('phone', leadData.phone || '');
-      form.append('message', leadData.message || '');
+      const params = new URLSearchParams();
+      params.append('form-name', 'chatbot-lead');
+      params.append('name', leadData.name);
+      params.append('email', leadData.email);
+      params.append('phone', leadData.phone || '');
+      params.append('message', leadData.message || '');
 
       const response = await fetch('/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(form).toString(),
+        body: params.toString(),
       });
 
       if (!response.ok) {
