@@ -13,6 +13,8 @@ body {
   overflow-x: hidden; /* Evitar scroll horizontal */
 }
 
+/* Force cache bust for dark mode fix */
+
 /* Evitar scrollbar duplicada */
 html {
   overflow-x: hidden;
