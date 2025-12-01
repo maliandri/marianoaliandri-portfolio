@@ -7,14 +7,19 @@ function ThemeToggle() {
   // Cargar el tema guardado al iniciar
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+    // Solo usar dark mode si está explícitamente guardado
+    if (savedTheme === 'dark') {
       setDarkMode(true);
       document.documentElement.classList.add('dark');
     } else {
+      // Por defecto usar light mode
       setDarkMode(false);
       document.documentElement.classList.remove('dark');
+      // Guardar la preferencia si no existe
+      if (!savedTheme) {
+        localStorage.setItem('theme', 'light');
+      }
     }
   }, []);
 
