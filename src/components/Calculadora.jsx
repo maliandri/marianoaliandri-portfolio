@@ -224,12 +224,31 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
   const createPayment = async () => {
     setPaymentLoading(true);
     try {
-      // Precio simbólico para consulta personalizada
-      const consultationPrice = 100; // USD 100 por consulta personalizada
+      // Precio en USD
+      const consultationPriceUSD = 100;
+
+      // Obtener cotización del dólar
+      let priceARS = consultationPriceUSD * 1000; // Fallback por si falla la API
+
+      if (fx.rate) {
+        // Si ya tenemos la cotización cargada, usarla
+        priceARS = Math.ceil(consultationPriceUSD * fx.rate);
+      } else {
+        // Obtener cotización en tiempo real
+        try {
+          const fxData = await fxService.getExchangeRate();
+          if (fxData.rate) {
+            priceARS = Math.ceil(consultationPriceUSD * fxData.rate);
+            setFx(fxData);
+          }
+        } catch (error) {
+          console.warn('Error obteniendo cotización, usando fallback');
+        }
+      }
 
       const paymentData = {
         title: `Consulta Personalizada ROI - ${formData.company}`,
-        price: consultationPrice,
+        price: priceARS, // Precio en pesos argentinos
         quantity: 1,
         payer: {
           name: formData.company,
@@ -242,13 +261,17 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
           sector: formData.sector,
           employees: formData.employees,
           roi: results?.roi,
-          annualSavings: results?.annualSavings
+          annualSavings: results?.annualSavings,
+          priceUSD: consultationPriceUSD,
+          priceARS: priceARS,
+          exchangeRate: fx.rate || 'fallback'
         }
       };
 
       const preference = await createPaymentPreference(paymentData);
       setPreferenceId(preference.id);
       console.log('✅ Preferencia creada:', preference.id);
+      console.log('💵 Precio: USD', consultationPriceUSD, '→ ARS', formatARS(priceARS));
     } catch (error) {
       console.error('Error creando pago:', error);
       alert('Hubo un error al procesar el pago. Por favor, intenta de nuevo.');
@@ -444,13 +467,18 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
                           ¿Querés una consulta personalizada? 💼
                         </p>
                         {!preferenceId ? (
-                          <button
-                            onClick={createPayment}
-                            disabled={paymentLoading}
-                            className="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-semibold"
-                          >
-                            {paymentLoading ? 'Preparando pago...' : '💳 Pagar Consulta Personalizada (USD 100)'}
-                          </button>
+                          <div>
+                            <button
+                              onClick={createPayment}
+                              disabled={paymentLoading}
+                              className="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-semibold"
+                            >
+                              {paymentLoading ? 'Preparando pago...' : '💳 Pagar Consulta Personalizada'}
+                            </button>
+                            <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
+                              USD 100 {fx.rate ? `≈ ${formatARS(Math.ceil(100 * fx.rate))}` : '(cotización en proceso)'}
+                            </p>
+                          </div>
                         ) : (
                           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
                             <Wallet
