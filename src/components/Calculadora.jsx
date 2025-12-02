@@ -385,44 +385,239 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
               </div>
 
               <div className="p-6">
-                {/* Aquí iría el contenido completo de los 3 pasos */}
-                {/* Por brevedad, mantengo solo la estructura principal */}
-                
+                {/* Paso 1: Información de Empresa */}
                 {step === 1 && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Paso 1: Información de empresa
-                    </p>
-                    <button 
-                      onClick={() => setStep(2)}
-                      disabled={!isStep1Valid}
-                      className="mt-4 px-8 py-3 bg-green-600 text-white rounded-lg disabled:opacity-50"
-                    >
-                      Siguiente →
-                    </button>
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-8">
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        Información de tu Empresa
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 mt-2">
+                        Necesitamos algunos datos para calcular tu ROI personalizado
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Nombre de la Empresa *
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.company}
+                          onChange={(e) => handleInputChange('company', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                          placeholder="Ej: Mi Empresa SA"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Email Corporativo *
+                        </label>
+                        <input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => handleEmailChange(e.target.value)}
+                          onBlur={handleEmailBlur}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                          placeholder="tu@empresa.com"
+                        />
+                        {emailValidation.touched && !emailValidation.isValid && (
+                          <p className="text-red-500 text-xs mt-1">{emailValidation.message}</p>
+                        )}
+                        {emailValidation.touched && emailValidation.isValid && (
+                          <p className="text-green-500 text-xs mt-1">✓ Email válido</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Teléfono
+                        </label>
+                        <input
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                          placeholder="+54 9 11 1234-5678"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Sector de la Empresa *
+                        </label>
+                        <select
+                          value={formData.sector}
+                          onChange={(e) => handleInputChange('sector', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="">Selecciona tu sector</option>
+                          {sectors.map(sector => (
+                            <option key={sector.value} value={sector.value}>
+                              {sector.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Número de Empleados *
+                        </label>
+                        <select
+                          value={formData.employees}
+                          onChange={(e) => handleInputChange('employees', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="">Selecciona el rango</option>
+                          {employeeRanges.map(range => (
+                            <option key={range.value} value={range.value}>
+                              {range.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Ingresos Mensuales *
+                        </label>
+                        <select
+                          value={formData.monthlyRevenue}
+                          onChange={(e) => handleInputChange('monthlyRevenue', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="">Selecciona el rango</option>
+                          {revenueRanges.map(range => (
+                            <option key={range.value} value={range.value}>
+                              {range.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-6">
+                      <motion.button
+                        onClick={() => setStep(2)}
+                        disabled={!isStep1Valid}
+                        className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        Siguiente →
+                      </motion.button>
+                    </div>
+                  </motion.div>
                 )}
 
+                {/* Paso 2: Situación Actual */}
                 {step === 2 && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Paso 2: Situación actual de datos
-                    </p>
-                    <div className="flex gap-4 justify-center mt-4">
-                      <button 
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-8">
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        Situación Actual de Datos
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 mt-2">
+                        Ayúdanos a entender cómo manejas los datos actualmente
+                      </p>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          ¿Qué herramientas usan actualmente para análisis de datos?
+                        </label>
+                        <textarea
+                          value={formData.currentDataTools}
+                          onChange={(e) => handleInputChange('currentDataTools', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                          rows={3}
+                          placeholder="Ej: Excel, Google Sheets, proceso manual..."
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Horas semanales procesando datos
+                          </label>
+                          <input
+                            type="number"
+                            value={formData.dataProcessingHours}
+                            onChange={(e) => handleInputChange('dataProcessingHours', e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                            placeholder="20"
+                            min="1"
+                            max="168"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Promedio del equipo</p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Días para tomar decisiones importantes
+                          </label>
+                          <input
+                            type="number"
+                            value={formData.decisionMakingTime}
+                            onChange={(e) => handleInputChange('decisionMakingTime', e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                            placeholder="5"
+                            min="1"
+                            max="30"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Basadas en datos</p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Horas semanales generando reportes
+                          </label>
+                          <input
+                            type="number"
+                            value={formData.reportGenerationTime}
+                            onChange={(e) => handleInputChange('reportGenerationTime', e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                            placeholder="8"
+                            min="1"
+                            max="40"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Para directivos</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between pt-6">
+                      <motion.button
                         onClick={() => setStep(1)}
-                        className="px-8 py-3 bg-gray-300 rounded-lg"
+                        className="px-8 py-3 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
                         ← Anterior
-                      </button>
-                      <button 
+                      </motion.button>
+
+                      <motion.button
                         onClick={calculateROI}
-                        className="px-8 py-3 bg-green-600 text-white rounded-lg"
+                        className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
-                        Calcular ROI 🚀
-                      </button>
+                        {loading ? 'Calculando...' : 'Calcular ROI 🚀'}
+                      </motion.button>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
                 {step === 3 && results && (
