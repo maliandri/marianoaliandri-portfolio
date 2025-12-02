@@ -36,7 +36,7 @@ export default async (req, context) => {
     }
 
     // Inicializar el modelo
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     // Construir el contexto del chat
     const systemPrompt = `Sos el asistente virtual de Mariano Aliandri, un Desarrollador Full Stack y Analista de Datos especializado en:
