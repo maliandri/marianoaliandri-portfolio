@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 // import { motion } from "framer-motion"; // No lo estás usando aquí, se puede comentar
 
@@ -15,9 +15,6 @@ import ThemeToggle from "./components/ThemeToggle.jsx";
 import LikeSystem from "./components/LikeSystem.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import FloatingActions from "./components/FloatingActions.jsx";
-
-// Mercado Pago
-import { initializeMercadoPago } from "./utils/mercadoPagoConfig.js";
 
 import "./index.css";
 
@@ -55,11 +52,6 @@ const HomePage = () => (
 );
 
 export default function App() {
-  // Inicializar Mercado Pago al montar la app
-  useEffect(() => {
-    initializeMercadoPago();
-  }, []);
-
   return (
     // AGREGADO: 'relative' y 'overflow-x-hidden'
     // Esto evita que elementos decorativos rompan el ancho de la página

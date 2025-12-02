@@ -2,7 +2,6 @@
 // ✨ VERSIÓN ADAPTADA PARA BADGE CENTRAL
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wallet } from '@mercadopago/sdk-react';
 import { EmailService } from '../utils/emailService';
 import { ExchangeService, formatUSD, formatARS } from '../utils/exchangeService';
 import { createPaymentPreference } from '../utils/mercadoPagoConfig';
@@ -38,7 +37,6 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
     message: '',
     touched: false
   });
-  const [preferenceId, setPreferenceId] = useState(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
 
   const validateEmail = (email) => {
@@ -269,13 +267,18 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
       };
 
       const preference = await createPaymentPreference(paymentData);
-      setPreferenceId(preference.id);
       console.log('✅ Preferencia creada:', preference.id);
       console.log('💵 Precio: USD', consultationPriceUSD, '→ ARS', formatARS(priceARS));
+
+      // Redirigir directamente a Mercado Pago
+      if (preference.init_point) {
+        window.location.href = preference.init_point;
+      } else {
+        throw new Error('No se obtuvo la URL de pago');
+      }
     } catch (error) {
       console.error('Error creando pago:', error);
       alert('Hubo un error al procesar el pago. Por favor, intenta de nuevo.');
-    } finally {
       setPaymentLoading(false);
     }
   };
@@ -661,31 +664,16 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
                         <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-3">
                           ¿Querés una consulta personalizada? 💼
                         </p>
-                        {!preferenceId ? (
-                          <div>
-                            <button
-                              onClick={createPayment}
-                              disabled={paymentLoading}
-                              className="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-semibold"
-                            >
-                              {paymentLoading ? 'Preparando pago...' : '💳 Pagar Consulta Personalizada'}
-                            </button>
-                            <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
-                              USD 100 {fx.rate ? `≈ ${formatARS(Math.ceil(100 * fx.rate))}` : '(cotización en proceso)'}
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-                            <Wallet
-                              initialization={{ preferenceId: preferenceId }}
-                              customization={{
-                                texts: {
-                                  valueProp: 'smart_option'
-                                }
-                              }}
-                            />
-                          </div>
-                        )}
+                        <button
+                          onClick={createPayment}
+                          disabled={paymentLoading}
+                          className="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-semibold"
+                        >
+                          {paymentLoading ? 'Redirigiendo a Mercado Pago...' : '💳 Pagar Consulta Personalizada'}
+                        </button>
+                        <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          USD 100 {fx.rate ? `≈ ${formatARS(Math.ceil(100 * fx.rate))}` : '(cotización en proceso)'}
+                        </p>
                       </div>
                     </div>
                   </div>
