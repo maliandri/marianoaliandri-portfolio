@@ -54,23 +54,19 @@ Información de contacto:
 
 Si un cliente quiere contacto directo, pedí sus datos (nombre, email, teléfono, mensaje) y confirma que se los enviarás a Mariano.`;
 
+    // Construir el prompt con contexto del sistema
+    let fullMessage = message;
+
+    // Si es la primera interacción (historial vacío), agregar contexto del sistema
+    if (conversationHistory.length === 0) {
+      fullMessage = `${systemPrompt}\n\nUsuario: ${message}`;
+    }
+
     // Construir el historial de conversación
     const chatHistory = conversationHistory.map(msg => ({
       role: msg.role,
       parts: msg.parts
     }));
-
-    // Agregar el mensaje del sistema al inicio si el historial está vacío
-    if (chatHistory.length === 0) {
-      chatHistory.push({
-        role: 'user',
-        parts: [{ text: systemPrompt }]
-      });
-      chatHistory.push({
-        role: 'model',
-        parts: [{ text: '¡Hola! Soy el asistente de Mariano. ¿En qué puedo ayudarte hoy?' }]
-      });
-    }
 
     // Iniciar chat con el historial
     const chat = model.startChat({
@@ -82,7 +78,7 @@ Si un cliente quiere contacto directo, pedí sus datos (nombre, email, teléfono
     });
 
     // Enviar el mensaje
-    const result = await chat.sendMessage(message);
+    const result = await chat.sendMessage(fullMessage);
     const response = result.response.text();
 
     return new Response(JSON.stringify({
