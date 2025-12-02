@@ -150,4 +150,12 @@ html {
   pointer-events: none !important;
   display: block !important;
   opacity: 1 !important;
+  color: white !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+/* Asegurar que el contenedor del chatbot tenga z-index alto */
+.fixed.bottom-36.right-6.z-40 {
+  z-index: 65 !important;
 }
