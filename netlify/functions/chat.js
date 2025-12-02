@@ -100,6 +100,73 @@ const responseHeaders = {
   'Content-Type': 'application/json'
 };
 
+// Detectar información de contacto en el mensaje
+function detectLeadInfo(message, conversationHistory = []) {
+  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  const phoneRegex = /(\+?54\s?9?\s?)?(\d{2,4}[\s-]?\d{3,4}[\s-]?\d{4})/g;
+
+  const emails = message.match(emailRegex);
+  const phones = message.match(phoneRegex);
+
+  // Buscar nombre en el mensaje o conversación reciente
+  let name = '';
+  const namePatterns = [
+    /(?:me llamo|soy|mi nombre es)\s+([A-ZÁÉÍÓÚ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚ][a-záéíóúñ]+)*)/i,
+    /^([A-ZÁÉÍÓÚ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚ][a-záéíóúñ]+)*)$/i
+  ];
+
+  for (const pattern of namePatterns) {
+    const match = message.match(pattern);
+    if (match) {
+      name = match[1];
+      break;
+    }
+  }
+
+  // Si encontramos email o teléfono, es un lead
+  const isLead = (emails && emails.length > 0) || (phones && phones.length > 0);
+
+  return {
+    isLead,
+    info: {
+      name: name || 'No proporcionado',
+      email: emails ? emails[0] : '',
+      phone: phones ? phones[0] : '',
+      timestamp: new Date().toISOString()
+    }
+  };
+}
+
+// Enviar notificación de lead por email usando Netlify Forms
+async function sendLeadNotification(leadInfo, lastMessage, conversationHistory) {
+  // Construir resumen de la conversación
+  const conversationSummary = conversationHistory
+    .filter(msg => msg.role === 'user')
+    .map((msg, i) => `${i + 1}. ${msg.parts[0].text}`)
+    .join('\n');
+
+  const formData = new URLSearchParams();
+  formData.append('form-name', 'chatbot-lead');
+  formData.append('name', leadInfo.name);
+  formData.append('email', leadInfo.email);
+  formData.append('phone', leadInfo.phone);
+  formData.append('last-message', lastMessage);
+  formData.append('conversation', conversationSummary);
+  formData.append('timestamp', leadInfo.timestamp);
+
+  const response = await fetch('https://marianoaliandri.com.ar/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: formData.toString()
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error enviando formulario: ${response.status}`);
+  }
+
+  return response;
+}
+
 export async function handler(event) {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: responseHeaders, body: '' };
@@ -163,12 +230,27 @@ export async function handler(event) {
     const result = await chat.sendMessage(message);
     const response = await result.response.text();
 
+    // Detectar si el mensaje del usuario contiene información de contacto
+    const leadDetected = detectLeadInfo(message, conversationHistory);
+
+    // Si detectamos un lead, enviar notificación por email
+    if (leadDetected.isLead) {
+      try {
+        await sendLeadNotification(leadDetected.info, message, conversationHistory);
+        console.log('✅ Lead capturado y email enviado:', leadDetected.info);
+      } catch (emailError) {
+        console.error('❌ Error enviando email de lead:', emailError);
+        // No fallar la respuesta del chat por error en email
+      }
+    }
+
     return {
       statusCode: 200,
       headers: responseHeaders,
       body: JSON.stringify({
         success: true,
-        response: response
+        response: response,
+        leadCaptured: leadDetected.isLead
       })
     };
 
