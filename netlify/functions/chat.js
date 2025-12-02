@@ -107,7 +107,3 @@ Si un cliente quiere contacto directo, pedí sus datos (nombre, email, teléfono
     });
   }
 };
-
-export const config = {
-  path: "/.netlify/functions/chat"
-};
