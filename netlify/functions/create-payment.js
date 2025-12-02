@@ -1,9 +1,10 @@
-import mercadopago from 'mercadopago';
+import { MercadoPagoConfig, Preference } from 'mercadopago';
 
 // Configurar Mercado Pago
-mercadopago.configure({
-  access_token: process.env.MERCADOPAGO_ACCESS_TOKEN
+const client = new MercadoPagoConfig({
+  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN
 });
+const preference = new Preference(client);
 
 const responseHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,7 +34,7 @@ export async function handler(event) {
     }
 
     // Crear preferencia de pago
-    const preference = {
+    const preferenceData = {
       items: [
         {
           title: title,
@@ -52,14 +53,14 @@ export async function handler(event) {
       notification_url: `${process.env.URL}/.netlify/functions/payment-webhook`,
     };
 
-    const response = await mercadopago.preferences.create(preference);
+    const response = await preference.create({ body: preferenceData });
 
     return {
       statusCode: 200,
       headers: responseHeaders,
       body: JSON.stringify({
-        id: response.body.id,
-        init_point: response.body.init_point,
+        id: response.id,
+        init_point: response.init_point,
       })
     };
 

@@ -1,9 +1,10 @@
-import mercadopago from 'mercadopago';
+import { MercadoPagoConfig, Payment } from 'mercadopago';
 import crypto from 'crypto';
 
-mercadopago.configure({
-  access_token: process.env.MERCADOPAGO_ACCESS_TOKEN
+const client = new MercadoPagoConfig({
+  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN
 });
+const payment = new Payment(client);
 
 // Verificar firma del webhook
 function verifyWebhookSignature(event) {
@@ -68,18 +69,18 @@ export async function handler(event) {
       const paymentId = body.data.id;
 
       // Obtener información del pago
-      const payment = await mercadopago.payment.findById(paymentId);
+      const paymentData = await payment.get({ id: paymentId });
 
       console.log('💰 Información del pago:', {
-        id: payment.body.id,
-        status: payment.body.status,
-        status_detail: payment.body.status_detail,
-        transaction_amount: payment.body.transaction_amount,
-        payer_email: payment.body.payer?.email,
-        metadata: payment.body.metadata
+        id: paymentData.id,
+        status: paymentData.status,
+        status_detail: paymentData.status_detail,
+        transaction_amount: paymentData.transaction_amount,
+        payer_email: paymentData.payer?.email,
+        metadata: paymentData.metadata
       });
 
-      if (payment.body.status === 'approved') {
+      if (paymentData.status === 'approved') {
         console.log('✅ Pago aprobado!');
 
         // TODO: Aquí puedes:
@@ -88,7 +89,7 @@ export async function handler(event) {
         // - Notificar al equipo de ventas
         // - Activar servicios contratados
 
-        const metadata = payment.body.metadata;
+        const metadata = paymentData.metadata;
         console.log('📋 Tipo de consulta:', metadata.type);
         console.log('🏢 Empresa:', metadata.company);
       }
