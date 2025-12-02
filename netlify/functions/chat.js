@@ -63,10 +63,16 @@ Si un cliente quiere contacto directo, pedí sus datos (nombre, email, teléfono
     }
 
     // Construir el historial de conversación
-    const chatHistory = conversationHistory.map(msg => ({
+    // IMPORTANTE: El historial DEBE empezar con rol 'user'
+    let chatHistory = conversationHistory.map(msg => ({
       role: msg.role,
       parts: msg.parts
     }));
+
+    // Si el primer mensaje es del modelo, removerlo
+    while (chatHistory.length > 0 && chatHistory[0].role === 'model') {
+      chatHistory.shift();
+    }
 
     // Iniciar chat con el historial
     const chat = model.startChat({
