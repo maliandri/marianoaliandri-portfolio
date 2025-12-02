@@ -2,8 +2,10 @@
 // ✨ VERSIÓN ADAPTADA PARA BADGE CENTRAL
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Wallet } from '@mercadopago/sdk-react';
 import { EmailService } from '../utils/emailService';
 import { ExchangeService, formatUSD, formatARS } from '../utils/exchangeService';
+import { createPaymentPreference } from '../utils/mercadoPagoConfig';
 
 function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingButton = false }) {
   const emailService = new EmailService();
@@ -36,6 +38,8 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
     message: '',
     touched: false
   });
+  const [preferenceId, setPreferenceId] = useState(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const validateEmail = (email) => {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -217,6 +221,42 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
     closeAndCleanUrl();
   };
 
+  const createPayment = async () => {
+    setPaymentLoading(true);
+    try {
+      // Precio simbólico para consulta personalizada
+      const consultationPrice = 100; // USD 100 por consulta personalizada
+
+      const paymentData = {
+        title: `Consulta Personalizada ROI - ${formData.company}`,
+        price: consultationPrice,
+        quantity: 1,
+        payer: {
+          name: formData.company,
+          email: formData.email,
+          phone: { number: formData.phone }
+        },
+        metadata: {
+          type: 'roi_consultation',
+          company: formData.company,
+          sector: formData.sector,
+          employees: formData.employees,
+          roi: results?.roi,
+          annualSavings: results?.annualSavings
+        }
+      };
+
+      const preference = await createPaymentPreference(paymentData);
+      setPreferenceId(preference.id);
+      console.log('✅ Preferencia creada:', preference.id);
+    } catch (error) {
+      console.error('Error creando pago:', error);
+      alert('Hubo un error al procesar el pago. Por favor, intenta de nuevo.');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   const sendLeadData = async () => {
     const emailValid = validateEmail(formData.email);
     if (!emailValid.isValid) {
@@ -381,19 +421,49 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-4 justify-center mt-6">
-                      <button 
-                        onClick={resetCalculator}
-                        className="px-6 py-3 bg-gray-300 rounded-lg"
-                      >
-                        🔄 Nueva Calculación
-                      </button>
-                      <button 
-                        onClick={sendLeadData}
-                        className="px-6 py-3 bg-green-600 text-white rounded-lg"
-                      >
-                        Recibir Análisis por Email
-                      </button>
+                    <div className="flex flex-col gap-4 items-center mt-6">
+                      <div className="flex gap-4 justify-center">
+                        <button
+                          onClick={resetCalculator}
+                          className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-400 transition-colors"
+                        >
+                          🔄 Nueva Calculación
+                        </button>
+                        <button
+                          onClick={sendLeadData}
+                          disabled={emailStatus.loading}
+                          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                        >
+                          {emailStatus.loading ? 'Enviando...' : 'Recibir Análisis por Email'}
+                        </button>
+                      </div>
+
+                      {/* Botón de pago de Mercado Pago */}
+                      <div className="mt-4 w-full max-w-md">
+                        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+                          ¿Querés una consulta personalizada? 💼
+                        </p>
+                        {!preferenceId ? (
+                          <button
+                            onClick={createPayment}
+                            disabled={paymentLoading}
+                            className="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-semibold"
+                          >
+                            {paymentLoading ? 'Preparando pago...' : '💳 Pagar Consulta Personalizada (USD 100)'}
+                          </button>
+                        ) : (
+                          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                            <Wallet
+                              initialization={{ preferenceId: preferenceId }}
+                              customization={{
+                                texts: {
+                                  valueProp: 'smart_option'
+                                }
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
