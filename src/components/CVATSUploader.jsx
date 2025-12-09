@@ -13,6 +13,8 @@ export default function CVATSUploader({ isOpen: isOpenProp, onClose: onCloseProp
   const [err, setErr] = useState(null);
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [email, setEmail] = useState('');
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   // ---------- base URL backend ----------
   const BASE = (
@@ -26,7 +28,7 @@ export default function CVATSUploader({ isOpen: isOpenProp, onClose: onCloseProp
   useEffect(() => {
     // Solo se activa si NO está controlado por un padre
     if (isOpenProp !== undefined) return;
-    
+
     const path = window.location.pathname || "";
     const q = new URLSearchParams(window.location.search);
     const hash = (window.location.hash || "").replace("#", "");
@@ -34,6 +36,20 @@ export default function CVATSUploader({ isOpen: isOpenProp, onClose: onCloseProp
       setIsOpenInternal(true);
     }
   }, [isOpenProp]);
+
+  // ---------- precalentar backend cuando se abre el modal ----------
+  useEffect(() => {
+    if (isOpen && endpoint) {
+      // Hacer un ping silencioso al backend para despertarlo
+      console.log('🔥 Precalentando backend...');
+      fetch(endpoint.replace('/api/analyze-cv', '/'), {
+        method: 'HEAD',
+        mode: 'no-cors' // No importa la respuesta, solo queremos despertar el servidor
+      }).catch(() => {
+        // Ignorar errores, el objetivo es solo despertar el servidor
+      });
+    }
+  }, [isOpen, endpoint]);
 
   // ✅ 3. FUNCIONES ADAPTADAS: Las funciones de abrir/cerrar ahora respetan el control del padre.
   const openWithUrl = () => {
@@ -72,7 +88,16 @@ export default function CVATSUploader({ isOpen: isOpenProp, onClose: onCloseProp
       const form = new FormData();
       form.append("cv", file);
       form.append("topN", "5");
-      const res = await fetch(endpoint, { method: "POST", body: form });
+
+      console.log('🔄 Enviando CV a:', endpoint);
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        body: form,
+        mode: 'cors',
+        credentials: 'omit'
+      });
+
       let data = null, text = "";
       const ct = res.headers.get("content-type") || "";
       try {
@@ -86,7 +111,18 @@ export default function CVATSUploader({ isOpen: isOpenProp, onClose: onCloseProp
       if (!data) throw new Error("Respuesta sin JSON del servidor.");
       setResults(data.results || []);
     } catch (e) {
-      setErr(e.message || "Error desconocido al analizar el CV.");
+      console.error('❌ Error al analizar CV:', e);
+      let errorMsg = "Error al conectar con el servidor de análisis. ";
+
+      if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+        errorMsg += "El servicio de análisis no está disponible en este momento. Por favor, intentá más tarde o contactame por WhatsApp al +54 299 541-4422.";
+      } else if (e.message.includes('CORS')) {
+        errorMsg += "Error de configuración del servidor. Por favor, contactame para resolverlo.";
+      } else {
+        errorMsg += e.message || "Error desconocido al analizar el CV.";
+      }
+
+      setErr(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -122,6 +158,45 @@ export default function CVATSUploader({ isOpen: isOpenProp, onClose: onCloseProp
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {}
+  }
+
+  // Función para crear pago de análisis de CV
+  async function handlePayForReport() {
+    if (!email) {
+      alert('Por favor ingresá tu email para recibir el informe');
+      return;
+    }
+
+    setPaymentLoading(true);
+    try {
+      const response = await fetch('/.netlify/functions/cv-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          cvAnalysis: results
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Redirigir a Mercado Pago
+      if (data.init_point) {
+        window.location.href = data.init_point;
+      } else {
+        throw new Error('No se obtuvo la URL de pago');
+      }
+    } catch (error) {
+      console.error('Error creando pago:', error);
+      alert('Hubo un error al procesar el pago. Por favor, intenta de nuevo.');
+      setPaymentLoading(false);
+    }
   }
 
   const wa = `https://wa.me/?text=${encodeURIComponent(`${shareTitle}\n${shareText}\n${shareUrl}`)}`;
@@ -200,6 +275,9 @@ export default function CVATSUploader({ isOpen: isOpenProp, onClose: onCloseProp
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mb-4"></div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Analizando tu CV…</h3>
                     <p className="text-gray-600 dark:text-gray-400 mt-1">Extrayendo texto y comparando skills</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 italic">
+                      ⏱️ Si es la primera vez que usás la herramienta hoy, puede tardar hasta 60 segundos (el servidor se está activando)
+                    </p>
                   </div>
                 )}
                 {err && (<motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-600 dark:text-red-400 text-sm whitespace-pre-wrap">{err}</motion.p>)}
@@ -240,7 +318,33 @@ export default function CVATSUploader({ isOpen: isOpenProp, onClose: onCloseProp
                           )}
                         </AnimatePresence>
                       </div>
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="text-center">
+
+                      {/* Opción de pago para informe detallado */}
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="w-full max-w-md bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 p-6 rounded-xl border-2 border-blue-200 dark:border-blue-900">
+                        <div className="text-center mb-4">
+                          <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">📧 Recibí el Informe por Email</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Tu análisis detallado en tu casilla de correo</p>
+                        </div>
+                        <div className="space-y-3">
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="tu@email.com"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                          />
+                          <button
+                            onClick={handlePayForReport}
+                            disabled={paymentLoading || !email}
+                            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                          >
+                            {paymentLoading ? 'Procesando...' : '💳 Pagar $1.000 y Recibir Informe'}
+                          </button>
+                          <p className="text-xs text-center text-gray-500 dark:text-gray-400">Pago seguro con Mercado Pago</p>
+                        </div>
+                      </motion.div>
+
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="text-center">
                         <a href="https://cafecito.app/marianoaliandri" rel="noopener noreferrer" target="_blank" className="inline-block">
                           <img srcSet="https://cdn.cafecito.app/imgs/buttons/button_2.png 1x, https://cdn.cafecito.app/imgs/buttons/button_2_2x.png 2x, https://cdn.cafecito.app/imgs/buttons/button_2_3.75x.png 3.75x" src="https://cdn.cafecito.app/imgs/buttons/button_2.png" alt="Invitame un café en cafecito.app" className="mx-auto"/>
                         </a>

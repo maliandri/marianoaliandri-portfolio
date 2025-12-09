@@ -1,7 +1,7 @@
 import { initMercadoPago } from '@mercadopago/sdk-react';
 
-// Public Key de Mercado Pago (Prueba)
-const MERCADOPAGO_PUBLIC_KEY = 'APP_USR-beb2f9a7-c49c-42c2-9549-9b531ae22579';
+// Public Key de Mercado Pago (Producción)
+const MERCADOPAGO_PUBLIC_KEY = 'APP_USR-3a925e76-7fe7-41ae-83db-7bfe9c4ae863';
 
 // Inicializar Mercado Pago
 let isInitialized = false;

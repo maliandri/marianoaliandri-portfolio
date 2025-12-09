@@ -222,9 +222,9 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
   const createPayment = async () => {
     setPaymentLoading(true);
     try {
-      // Precio fijo para pruebas: $49,999 ARS (límite de cuenta de prueba)
-      const priceARS = 49999;
-      const consultationPriceUSD = fx.rate ? Math.ceil(priceARS / fx.rate) : 49;
+      // Precio de consulta personalizada: USD 100
+      const consultationPriceUSD = 100;
+      const priceARS = fx.rate ? Math.ceil(consultationPriceUSD * fx.rate) : 100000;
 
       const paymentData = {
         title: `Consulta Personalizada ROI - ${formData.company}`,
@@ -654,7 +654,7 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
                           {paymentLoading ? 'Redirigiendo a Mercado Pago...' : '💳 Pagar Consulta Personalizada'}
                         </button>
                         <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          {formatARS(49999)} {fx.rate ? `≈ USD ${Math.ceil(49999 / fx.rate)}` : '(cotización en proceso)'}
+                          USD 100 {fx.rate ? `≈ ${formatARS(Math.ceil(100 * fx.rate))}` : '(cotización en proceso)'}
                         </p>
                       </div>
                     </div>
