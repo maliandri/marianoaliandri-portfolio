@@ -222,27 +222,9 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
   const createPayment = async () => {
     setPaymentLoading(true);
     try {
-      // Precio en USD
-      const consultationPriceUSD = 100;
-
-      // Obtener cotización del dólar
-      let priceARS = consultationPriceUSD * 1000; // Fallback por si falla la API
-
-      if (fx.rate) {
-        // Si ya tenemos la cotización cargada, usarla
-        priceARS = Math.ceil(consultationPriceUSD * fx.rate);
-      } else {
-        // Obtener cotización en tiempo real
-        try {
-          const fxData = await fxService.getExchangeRate();
-          if (fxData.rate) {
-            priceARS = Math.ceil(consultationPriceUSD * fxData.rate);
-            setFx(fxData);
-          }
-        } catch (error) {
-          console.warn('Error obteniendo cotización, usando fallback');
-        }
-      }
+      // Precio fijo para pruebas: $49,999 ARS (límite de cuenta de prueba)
+      const priceARS = 49999;
+      const consultationPriceUSD = fx.rate ? Math.ceil(priceARS / fx.rate) : 49;
 
       const paymentData = {
         title: `Consulta Personalizada ROI - ${formData.company}`,
@@ -262,7 +244,7 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
           annualSavings: results?.annualSavings,
           priceUSD: consultationPriceUSD,
           priceARS: priceARS,
-          exchangeRate: fx.rate || 'fallback'
+          exchangeRate: fx.rate || 'test-mode'
         }
       };
 
@@ -672,7 +654,7 @@ function ROICalculator({ isOpen: isOpenProp, onClose: onCloseProp, hideFloatingB
                           {paymentLoading ? 'Redirigiendo a Mercado Pago...' : '💳 Pagar Consulta Personalizada'}
                         </button>
                         <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          USD 100 {fx.rate ? `≈ ${formatARS(Math.ceil(100 * fx.rate))}` : '(cotización en proceso)'}
+                          {formatARS(49999)} {fx.rate ? `≈ USD ${Math.ceil(49999 / fx.rate)}` : '(cotización en proceso)'}
                         </p>
                       </div>
                     </div>
