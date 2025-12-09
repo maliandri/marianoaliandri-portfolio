@@ -31,8 +31,8 @@ export async function handler(event) {
       };
     }
 
-    // Precio fijo de $1000 para pruebas
-    const priceARS = 1000;
+    // Precio de $10.000 ARS para el informe detallado
+    const priceARS = 10000;
 
     // Crear preferencia de pago
     const preferenceData = {

@@ -338,7 +338,7 @@ export default function CVATSUploader({ isOpen: isOpenProp, onClose: onCloseProp
                             disabled={paymentLoading || !email}
                             className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                           >
-                            {paymentLoading ? 'Procesando...' : '💳 Pagar $1.000 y Recibir Informe'}
+                            {paymentLoading ? 'Procesando...' : '💳 Pagar $10.000 y Recibir Informe'}
                           </button>
                           <p className="text-xs text-center text-gray-500 dark:text-gray-400">Pago seguro con Mercado Pago</p>
                         </div>
