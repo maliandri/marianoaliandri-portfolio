@@ -31,8 +31,8 @@ export async function handler(event) {
       };
     }
 
-    // Precio de $10.000 ARS para el informe detallado
-    const priceARS = 10000;
+    // Precio de $1.000 ARS para procesamiento de CV
+    const priceARS = 1000;
 
     // Crear preferencia de pago
     const preferenceData = {
