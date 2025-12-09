@@ -33,7 +33,7 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://platform.linkedin.com https://generativelanguage.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://generativelanguage.googleapis.com https://firestore.googleapis.com https://*.netlify.app https://www.google-analytics.com https://*.google-analytics.com;"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://platform.linkedin.com https://generativelanguage.googleapis.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://generativelanguage.googleapis.com https://firestore.googleapis.com https://*.netlify.app https://www.google-analytics.com https://*.google-analytics.com https://*.mercadopago.com https://marianoaliandri-portfolio.onrender.com https://api.exchangerate-api.com https://api.exchangerate.host wss://*; frame-src https://www.mercadopago.com.ar https://www.mercadopago.com;"
     # Compresión
     Vary = "Accept-Encoding"
 
