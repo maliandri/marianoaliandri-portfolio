@@ -21,7 +21,12 @@ export default function AuthButton() {
     setLoading(true);
     const result = await firebaseAuth.loginWithGoogle();
     if (!result.success) {
-      alert('Error al iniciar sesión: ' + result.error);
+      // Mensaje más claro para error de dominio no autorizado
+      if (result.error?.includes('unauthorized-domain') || result.error?.includes('auth/unauthorized-domain')) {
+        alert('⚠️ Error de configuración: Este dominio no está autorizado en Firebase.\n\nPor favor, agregá este dominio en Firebase Console → Authentication → Settings → Authorized domains');
+      } else {
+        alert('Error al iniciar sesión: ' + result.error);
+      }
     }
     setLoading(false);
   };
