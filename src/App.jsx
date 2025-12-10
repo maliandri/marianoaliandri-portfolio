@@ -15,6 +15,8 @@ import ThemeToggle from "./components/ThemeToggle.jsx";
 import LikeSystem from "./components/LikeSystem.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import FloatingActions from "./components/FloatingActions.jsx";
+import AuthButton from "./components/AuthButton.jsx";
+import ShopButton from "./components/ShopButton.jsx";
 
 import "./index.css";
 
@@ -56,6 +58,15 @@ export default function App() {
     // AGREGADO: 'relative' y 'overflow-x-hidden'
     // Esto evita que elementos decorativos rompan el ancho de la página
     <div className="font-sans min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500 relative overflow-x-hidden">
+      {/* Barra superior con Tienda y Autenticación */}
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-3">
+        <ShopButton onClick={() => {
+          // TODO: Navegar a la tienda o abrir modal de tienda
+          alert('La tienda estará disponible pronto!');
+        }} />
+        <AuthButton />
+      </div>
+
       <ThemeToggle />
       <LikeSystem />
       <FloatingActions />

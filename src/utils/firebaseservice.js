@@ -11,6 +11,13 @@ import {
   onSnapshot,
   runTransaction
 } from 'firebase/firestore';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from 'firebase/auth';
 
 // 🔥 CONFIGURACIÓN DE FIREBASE - MARIANO ALIANDRI (FIRESTORE)
 const firebaseConfig = {
@@ -24,9 +31,11 @@ const firebaseConfig = {
   measurementId: "G-58KFTQRM7Z"
 };
 
-// Inicializar Firebase con Firestore
+// Inicializar Firebase con Firestore y Auth
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 // Clase para manejar analytics de tu portfolio con Firestore
 export class FirebaseAnalyticsService {
@@ -327,3 +336,107 @@ export class FirebaseAnalyticsService {
 
 // Crear instancia global
 export const firebaseAnalytics = new FirebaseAnalyticsService();
+
+// ========================================
+// 🔐 SERVICIO DE AUTENTICACIÓN CON GOOGLE
+// ========================================
+
+export class FirebaseAuthService {
+  constructor() {
+    this.auth = auth;
+    this.googleProvider = googleProvider;
+    this.db = db;
+    console.log('🔐 Firebase Auth inicializado para Portfolio Mariano Aliandri');
+  }
+
+  // Login con Google
+  async loginWithGoogle() {
+    try {
+      console.log('🔑 Iniciando login con Google...');
+      const result = await signInWithPopup(this.auth, this.googleProvider);
+      const user = result.user;
+
+      // Guardar datos del usuario en Firestore
+      const userRef = doc(this.db, 'users', user.uid);
+      await setDoc(userRef, {
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        lastLogin: serverTimestamp(),
+        createdAt: serverTimestamp()
+      }, { merge: true });
+
+      console.log('✅ Login exitoso:', user.displayName);
+      return {
+        success: true,
+        user: {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL
+        }
+      };
+    } catch (error) {
+      console.error('❌ Error en login:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Logout
+  async logout() {
+    try {
+      await signOut(this.auth);
+      console.log('👋 Logout exitoso');
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error en logout:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Obtener usuario actual
+  getCurrentUser() {
+    return this.auth.currentUser;
+  }
+
+  // Escuchar cambios en el estado de autenticación
+  onAuthChange(callback) {
+    return onAuthStateChanged(this.auth, (user) => {
+      if (user) {
+        console.log('👤 Usuario autenticado:', user.displayName);
+        callback({
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL
+        });
+      } else {
+        console.log('👤 Usuario no autenticado');
+        callback(null);
+      }
+    });
+  }
+
+  // Obtener datos completos del usuario desde Firestore
+  async getUserData(uid) {
+    try {
+      const userRef = doc(this.db, 'users', uid);
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists()) {
+        return userDoc.data();
+      }
+      return null;
+    } catch (error) {
+      console.error('❌ Error obteniendo datos del usuario:', error);
+      return null;
+    }
+  }
+}
+
+// Crear instancia global de autenticación
+export const firebaseAuth = new FirebaseAuthService();
