@@ -13,7 +13,7 @@ export const products = [
   {
     id: 'roi-consulting-basic',
     category: productCategories.CONSULTING,
-    name: 'Consultoría ROI Básica',
+    name: 'Consultoría ROI Personalizada',
     shortDescription: 'Análisis de retorno de inversión para tu empresa',
     description: 'Análisis completo de ROI con Power BI, identificación de oportunidades de automatización y recomendaciones personalizadas para optimizar tus procesos de datos.',
     features: [
@@ -24,7 +24,7 @@ export const products = [
       'Sesión de presentación de resultados (1 hora)',
       'Recomendaciones de implementación'
     ],
-    price: 100000, // ARS
+    price: null, // Precio dinámico desde calculadora
     priceUSD: 100,
     duration: '2-3 semanas',
     deliverables: [
@@ -32,9 +32,11 @@ export const products = [
       'Reporte ejecutivo',
       'Plan de acción recomendado'
     ],
-    image: '/images/products/roi-consulting.jpg', // Placeholder
+    image: '/images/products/roi-consulting.jpg',
     demo: null,
-    tags: ['ROI', 'Power BI', 'Consultoría', 'Data Analytics']
+    tags: ['ROI', 'Power BI', 'Consultoría', 'Data Analytics'],
+    calculatorLink: true, // Indica que debe usar la calculadora
+    calculatorType: 'roi'
   },
 
   // ========== DESARROLLO WEB ==========
@@ -54,8 +56,8 @@ export const products = [
       '3 revisiones de diseño',
       'Capacitación para actualizaciones'
     ],
-    price: 50000, // ARS
-    priceUSD: 50,
+    price: null, // Desde $400 USD (varía según features)
+    priceUSD: 400,
     duration: '1-2 semanas',
     deliverables: [
       'Landing page completa',
@@ -63,13 +65,15 @@ export const products = [
       'Documentación técnica'
     ],
     image: '/images/products/landing-page.jpg',
-    demo: 'https://example-landing.marianoaliandri.com.ar',
-    tags: ['Landing Page', 'React', 'SEO', 'Responsive']
+    demo: 'https://marianoaliandri.com.ar',
+    tags: ['Landing Page', 'React', 'SEO', 'Responsive'],
+    calculatorLink: true,
+    calculatorType: 'web'
   },
   {
     id: 'website-corporate',
     category: productCategories.WEB_DEVELOPMENT,
-    name: 'Sitio Web Corporativo',
+    name: 'Sitio Web Empresarial',
     shortDescription: 'Sitio web completo para tu empresa',
     description: 'Sitio web corporativo completo con múltiples páginas, blog integrado, formulario de contacto avanzado y panel de administración. Diseño profesional y moderno.',
     features: [
@@ -84,8 +88,8 @@ export const products = [
       '5 revisiones de diseño',
       'Capacitación completa'
     ],
-    price: 150000, // ARS
-    priceUSD: 150,
+    price: null, // Desde $1000 USD (varía según features)
+    priceUSD: 1000,
     duration: '3-4 semanas',
     deliverables: [
       'Sitio web completo',
@@ -95,12 +99,14 @@ export const products = [
     ],
     image: '/images/products/corporate-website.jpg',
     demo: null,
-    tags: ['Sitio Web', 'CMS', 'React', 'SEO', 'Blog']
+    tags: ['Sitio Web', 'CMS', 'React', 'SEO', 'Blog'],
+    calculatorLink: true,
+    calculatorType: 'web'
   },
   {
     id: 'ecommerce-basic',
     category: productCategories.WEB_DEVELOPMENT,
-    name: 'E-commerce Básico',
+    name: 'E-commerce Completo',
     shortDescription: 'Tienda online lista para vender',
     description: 'E-commerce completo con carrito de compras, integración con Mercado Pago, gestión de productos y panel de administración. Ideal para empezar a vender online.',
     features: [
@@ -115,8 +121,8 @@ export const products = [
       'Responsive design',
       'Hosting (1 año)'
     ],
-    price: 250000, // ARS
-    priceUSD: 250,
+    price: null, // Desde $2000 USD (varía según features)
+    priceUSD: 2000,
     duration: '4-6 semanas',
     deliverables: [
       'Tienda online completa',
@@ -126,7 +132,45 @@ export const products = [
     ],
     image: '/images/products/ecommerce.jpg',
     demo: null,
-    tags: ['E-commerce', 'Mercado Pago', 'React', 'Tienda Online']
+    tags: ['E-commerce', 'Mercado Pago', 'React', 'Tienda Online'],
+    calculatorLink: true,
+    calculatorType: 'web'
+  },
+  {
+    id: 'website-chatbot-ia',
+    category: productCategories.WEB_DEVELOPMENT,
+    name: 'Página Web con Atención IA',
+    shortDescription: 'Sitio web con chatbot inteligente integrado',
+    description: 'Página web profesional con chatbot de inteligencia artificial integrado usando Google Gemini. El chatbot atiende consultas 24/7, captura leads automáticamente y deriva a WhatsApp cuando sea necesario.',
+    features: [
+      'Página web responsive (hasta 5 páginas)',
+      'Chatbot IA con Google Gemini',
+      'Atención automatizada 24/7',
+      'Captura automática de leads',
+      'Derivación inteligente a WhatsApp',
+      'Personalización del asistente virtual',
+      'Integración con formularios',
+      'Panel de administración',
+      'SEO optimizado',
+      'Google Analytics',
+      'Hosting y dominio (1 año)',
+      'Capacitación completa'
+    ],
+    price: 800000, // ARS (800 USD)
+    priceUSD: 800,
+    duration: '4-5 semanas',
+    deliverables: [
+      'Sitio web completo',
+      'Chatbot IA configurado',
+      'Panel de administración',
+      'Sistema de leads',
+      'Documentación técnica',
+      'Manual de usuario'
+    ],
+    image: '/images/products/ai-chatbot-website.jpg',
+    demo: 'https://marianoaliandri.com.ar', // Tu propio sitio como demo
+    tags: ['IA', 'Chatbot', 'Gemini', 'Sitio Web', 'Automatización', 'Leads'],
+    featured: true // Destacar este producto
   },
 
   // ========== DATA ANALYTICS ==========

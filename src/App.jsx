@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 // import { motion } from "framer-motion"; // No lo estás usando aquí, se puede comentar
+
+// Context
+import { CartProvider } from "./context/CartContext.jsx";
 
 // SEO y Componentes de Página
 import SEO from "./components/SEO.jsx";
@@ -17,6 +20,7 @@ import AIChatBot from "./components/AIChatBot.jsx";
 import FloatingActions from "./components/FloatingActions.jsx";
 import AuthButton from "./components/AuthButton.jsx";
 import ShopButton from "./components/ShopButton.jsx";
+import Store from "./components/Store.jsx";
 
 import "./index.css";
 
@@ -54,28 +58,32 @@ const HomePage = () => (
 );
 
 export default function App() {
+  const [showStore, setShowStore] = useState(false);
+
   return (
-    // AGREGADO: 'relative' y 'overflow-x-hidden'
-    // Esto evita que elementos decorativos rompan el ancho de la página
-    <div className="font-sans min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500 relative overflow-x-hidden">
-      {/* Barra superior con Tienda y Autenticación */}
-      <div className="fixed top-6 right-6 z-50 flex items-center gap-3">
-        <ShopButton onClick={() => {
-          // TODO: Navegar a la tienda o abrir modal de tienda
-          alert('La tienda estará disponible pronto!');
-        }} />
-        <AuthButton />
+    <CartProvider>
+      {/* AGREGADO: 'relative' y 'overflow-x-hidden'
+          Esto evita que elementos decorativos rompan el ancho de la página */}
+      <div className="font-sans min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500 relative overflow-x-hidden">
+        {/* Barra superior con Tienda y Autenticación */}
+        <div className="fixed top-6 right-20 z-50 flex items-center gap-3">
+          <ShopButton onClick={() => setShowStore(true)} />
+          <AuthButton />
+        </div>
+
+        <ThemeToggle />
+        <LikeSystem />
+        <FloatingActions />
+        <AIChatBot />
+
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          {/* Las rutas de pago se han eliminado según lo solicitado */}
+        </Routes>
+
+        {/* Modal de la Tienda */}
+        <Store isOpen={showStore} onClose={() => setShowStore(false)} />
       </div>
-
-      <ThemeToggle />
-      <LikeSystem />
-      <FloatingActions />
-      <AIChatBot />
-
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        {/* Las rutas de pago se han eliminado según lo solicitado */}
-      </Routes>
-    </div>
+    </CartProvider>
   );
 }
