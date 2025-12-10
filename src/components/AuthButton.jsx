@@ -24,6 +24,11 @@ export default function AuthButton() {
       // Mensaje más claro para error de dominio no autorizado
       if (result.error?.includes('unauthorized-domain') || result.error?.includes('auth/unauthorized-domain')) {
         alert('⚠️ Error de configuración: Este dominio no está autorizado en Firebase.\n\nPor favor, agregá este dominio en Firebase Console → Authentication → Settings → Authorized domains');
+      } else if (result.error?.includes('popup-closed-by-user') || result.error?.includes('cancelled-popup-request')) {
+        // Usuario cerró el popup o fue bloqueado - no mostrar error, es acción del usuario
+        console.log('Login cancelado por el usuario');
+      } else if (result.error?.includes('popup-blocked')) {
+        alert('⚠️ El navegador bloqueó la ventana de inicio de sesión.\n\nPor favor, permití los pop-ups para este sitio y volvé a intentar.');
       } else {
         alert('Error al iniciar sesión: ' + result.error);
       }
