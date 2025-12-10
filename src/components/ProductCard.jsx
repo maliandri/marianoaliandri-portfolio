@@ -1,10 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
-import { formatARS, formatUSD } from '../utils/exchangeService';
+import { ExchangeService, formatARS, formatUSD } from '../utils/exchangeService';
 
 export default function ProductCard({ product, onViewDetails }) {
   const { addToCart } = useCart();
+  const [fx, setFx] = useState({ rate: null, loading: true });
+  const fxService = new ExchangeService();
+
+  // Cargar cotización al montar
+  useEffect(() => {
+    async function loadExchange() {
+      try {
+        const rate = await fxService.getExchangeRate();
+        setFx({ rate, loading: false });
+      } catch (error) {
+        console.error('Error cargando cotización:', error);
+        setFx({ rate: null, loading: false });
+      }
+    }
+    loadExchange();
+  }, []);
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -118,14 +134,20 @@ export default function ProductCard({ product, onViewDetails }) {
             </div>
           ) : (
             <div className="mb-3">
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {formatARS(product.price)}
-                </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  ≈ {formatUSD(product.priceUSD)}
-                </span>
-              </div>
+              {fx.loading ? (
+                <div className="text-sm text-gray-500 dark:text-gray-400">Cargando precio...</div>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      {fx.rate ? formatARS(Math.ceil(product.priceUSD * fx.rate)) : formatARS(product.price || product.priceUSD * 1000)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {formatUSD(product.priceUSD)} • Precio oficial del día
+                  </p>
+                </>
+              )}
             </div>
           )}
 

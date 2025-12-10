@@ -1,14 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
-import { formatARS, formatUSD } from '../utils/exchangeService';
+import { ExchangeService, formatARS, formatUSD } from '../utils/exchangeService';
 
 export default function ProductDetailModal({ product, onClose }) {
   const { addToCart } = useCart();
+  const [fx, setFx] = useState({ rate: null, loading: true });
+  const fxService = new ExchangeService();
+
+  // Cargar cotización al montar
+  useEffect(() => {
+    async function loadExchange() {
+      try {
+        const rate = await fxService.getExchangeRate();
+        setFx({ rate, loading: false });
+      } catch (error) {
+        console.error('Error cargando cotización:', error);
+        setFx({ rate: null, loading: false });
+      }
+    }
+    loadExchange();
+  }, []);
 
   if (!product) return null;
 
-  const isCustom = product.isCustom || !product.price;
+  const isCustom = product.isCustom || product.calculatorLink || !product.price;
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -156,24 +172,23 @@ export default function ProductDetailModal({ product, onClose }) {
                   {isCustom ? (
                     <div>
                       <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                        Cotización Personalizada
+                        {product.calculatorLink ? `Desde ${formatUSD(product.priceUSD)}` : 'Cotización Personalizada'}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Contactanos para un presupuesto a medida
+                        {product.calculatorLink ? 'Usa la calculadora para cotizar' : 'Contactanos para un presupuesto a medida'}
                       </p>
                     </div>
+                  ) : fx.loading ? (
+                    <div className="text-gray-500 dark:text-gray-400">Cargando precio...</div>
                   ) : (
                     <div>
                       <div className="flex items-baseline gap-2">
                         <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                          {formatARS(product.price)}
-                        </span>
-                        <span className="text-lg text-gray-500 dark:text-gray-400">
-                          ≈ {formatUSD(product.priceUSD)}
+                          {fx.rate ? formatARS(Math.ceil(product.priceUSD * fx.rate)) : formatARS(product.price || product.priceUSD * 1000)}
                         </span>
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Pago seguro con Mercado Pago
+                        {formatUSD(product.priceUSD)} • Precio oficial • Pago con Mercado Pago
                       </p>
                     </div>
                   )}

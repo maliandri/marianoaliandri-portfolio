@@ -1,13 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
-import { formatARS } from '../utils/exchangeService';
+import { ExchangeService, formatARS, formatUSD } from '../utils/exchangeService';
 import { createPaymentPreference } from '../utils/mercadoPagoConfig';
 import { firebaseAuth } from '../utils/firebaseservice';
 
 export default function Cart({ onClose }) {
-  const { cart, removeFromCart, updateQuantity, clearCart, getCartTotal, getCartCount } = useCart();
+  const { cart, removeFromCart, updateQuantity, clearCart, getCartCount } = useCart();
   const [loading, setLoading] = useState(false);
+  const [fx, setFx] = useState({ rate: null, loading: true });
+  const fxService = new ExchangeService();
+
+  // Cargar cotización al montar
+  useEffect(() => {
+    async function loadExchange() {
+      try {
+        const rate = await fxService.getExchangeRate();
+        setFx({ rate, loading: false });
+      } catch (error) {
+        console.error('Error cargando cotización:', error);
+        setFx({ rate: null, loading: false });
+      }
+    }
+    loadExchange();
+  }, []);
+
+  // Calcular precio en ARS usando cotización
+  const getPriceARS = (product) => {
+    if (!fx.rate) return product.price || product.priceUSD * 1000;
+    return Math.ceil(product.priceUSD * fx.rate);
+  };
+
+  // Calcular total del carrito
+  const getCartTotal = () => {
+    return cart.reduce((total, item) => {
+      const priceARS = getPriceARS(item);
+      return total + priceARS * item.quantity;
+    }, 0);
+  };
 
   const handleCheckout = async () => {
     // Verificar autenticación
@@ -25,11 +55,11 @@ export default function Cart({ onClose }) {
     setLoading(true);
 
     try {
-      // Crear items para Mercado Pago
+      // Crear items para Mercado Pago con precio en ARS
       const items = cart.map(item => ({
         title: item.name,
         description: item.shortDescription,
-        unit_price: item.price,
+        unit_price: getPriceARS(item),
         quantity: item.quantity,
         currency_id: 'ARS'
       }));
@@ -140,7 +170,7 @@ export default function Cart({ onClose }) {
                           {item.name}
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                          {formatARS(item.price)}
+                          {formatARS(getPriceARS(item))}
                         </p>
 
                         {/* Controles de cantidad */}
@@ -184,7 +214,7 @@ export default function Cart({ onClose }) {
                     <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600 flex justify-between items-center">
                       <span className="text-xs text-gray-500 dark:text-gray-400">Subtotal:</span>
                       <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                        {formatARS(item.price * item.quantity)}
+                        {formatARS(getPriceARS(item) * item.quantity)}
                       </span>
                     </div>
                   </motion.div>
