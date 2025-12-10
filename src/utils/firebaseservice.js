@@ -15,6 +15,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
@@ -349,10 +351,35 @@ export class FirebaseAuthService {
     console.log('🔐 Firebase Auth inicializado para Portfolio Mariano Aliandri');
   }
 
-  // Login con Google
+  // Verificar resultado de redirect al cargar la página
+  async checkRedirectResult() {
+    try {
+      const result = await getRedirectResult(this.auth);
+      if (result && result.user) {
+        console.log('✅ Login con redirect exitoso:', result.user.displayName);
+        // Guardar datos del usuario en Firestore
+        const userRef = doc(this.db, 'users', result.user.uid);
+        await setDoc(userRef, {
+          uid: result.user.uid,
+          displayName: result.user.displayName,
+          email: result.user.email,
+          photoURL: result.user.photoURL,
+          lastLogin: serverTimestamp(),
+          createdAt: serverTimestamp()
+        }, { merge: true });
+        return { success: true, user: result.user };
+      }
+      return { success: true, user: null };
+    } catch (error) {
+      console.error('❌ Error en redirect result:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Login con Google (Popup)
   async loginWithGoogle() {
     try {
-      console.log('🔑 Iniciando login con Google...');
+      console.log('🔑 Iniciando login con Google (popup)...');
       const result = await signInWithPopup(this.auth, this.googleProvider);
       const user = result.user;
 
@@ -378,7 +405,23 @@ export class FirebaseAuthService {
         }
       };
     } catch (error) {
-      console.error('❌ Error en login:', error);
+      console.error('❌ Error en login popup:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Login con Google (Redirect) - Más confiable en producción
+  async loginWithGoogleRedirect() {
+    try {
+      console.log('🔑 Iniciando login con Google (redirect)...');
+      await signInWithRedirect(this.auth, this.googleProvider);
+      // El redirect ocurre aquí, el código siguiente no se ejecuta
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error en login redirect:', error);
       return {
         success: false,
         error: error.message
