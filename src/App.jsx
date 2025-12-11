@@ -22,6 +22,10 @@ import AuthButton from "./components/AuthButton.jsx";
 import ShopButton from "./components/ShopButton.jsx";
 import Store from "./components/Store.jsx";
 
+// Páginas
+import ProfilePage from "./pages/ProfilePage.jsx";
+import OrdersPage from "./pages/OrdersPage.jsx";
+
 import "./index.css";
 
 // El contenido original de tu página principal ahora vive aquí
@@ -78,6 +82,8 @@ export default function App() {
 
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/perfil" element={<ProfilePage />} />
+          <Route path="/mis-compras" element={<OrdersPage />} />
           {/* Las rutas de pago se han eliminado según lo solicitado */}
         </Routes>
 

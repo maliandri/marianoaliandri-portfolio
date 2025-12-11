@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { firebaseAuth } from '../utils/firebaseservice';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export default function AuthButton() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Escuchar cambios en autenticación
@@ -149,7 +151,7 @@ export default function AuthButton() {
               <button
                 onClick={() => {
                   setShowMenu(false);
-                  // Aquí podés agregar navegación a un perfil o dashboard
+                  navigate('/perfil');
                 }}
                 className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
               >
@@ -162,7 +164,7 @@ export default function AuthButton() {
               <button
                 onClick={() => {
                   setShowMenu(false);
-                  // Aquí podés agregar navegación a mis compras
+                  navigate('/mis-compras');
                 }}
                 className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
               >

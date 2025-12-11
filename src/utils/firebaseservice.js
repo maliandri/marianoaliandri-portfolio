@@ -497,3 +497,6 @@ export class FirebaseAuthService {
 
 // Crear instancia global de autenticación
 export const firebaseAuth = new FirebaseAuthService();
+
+// Exportar db para uso directo en páginas
+export { db };
