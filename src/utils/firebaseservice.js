@@ -22,15 +22,16 @@ import {
 } from 'firebase/auth';
 
 // 🔥 CONFIGURACIÓN DE FIREBASE - MARIANO ALIANDRI (FIRESTORE)
+// Las credenciales se cargan desde variables de entorno (.env)
 const firebaseConfig = {
-  apiKey: "AIzaSyDRyVEpQm6e_kFTw5PO3UhXZjLBw75SiLU",
-  authDomain: "marianoaliandri-3b135.firebaseapp.com",
-  databaseURL: "https://marianoaliandri-3b135-default-rtdb.firebaseio.com",
-  projectId: "marianoaliandri-3b135",
-  storageBucket: "marianoaliandri-3b135.firebasestorage.app",
-  messagingSenderId: "19495778585",
-  appId: "1:19495778585:web:f30bba1b1db0b7992bed88",
-  measurementId: "G-58KFTQRM7Z"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Inicializar Firebase con Firestore y Auth
