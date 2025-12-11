@@ -357,16 +357,23 @@ export class FirebaseAuthService {
       const result = await getRedirectResult(this.auth);
       if (result && result.user) {
         console.log('✅ Login con redirect exitoso:', result.user.displayName);
-        // Guardar datos del usuario en Firestore
-        const userRef = doc(this.db, 'users', result.user.uid);
-        await setDoc(userRef, {
-          uid: result.user.uid,
-          displayName: result.user.displayName,
-          email: result.user.email,
-          photoURL: result.user.photoURL,
-          lastLogin: serverTimestamp(),
-          createdAt: serverTimestamp()
-        }, { merge: true });
+
+        // Intentar guardar datos del usuario en Firestore (no bloqueante)
+        try {
+          const userRef = doc(this.db, 'users', result.user.uid);
+          await setDoc(userRef, {
+            uid: result.user.uid,
+            displayName: result.user.displayName,
+            email: result.user.email,
+            photoURL: result.user.photoURL,
+            lastLogin: serverTimestamp(),
+            createdAt: serverTimestamp()
+          }, { merge: true });
+          console.log('✅ Datos de usuario guardados en Firestore');
+        } catch (firestoreError) {
+          console.warn('⚠️ No se pudieron guardar datos en Firestore:', firestoreError.message);
+        }
+
         return { success: true, user: result.user };
       }
       return { success: true, user: null };
@@ -383,16 +390,23 @@ export class FirebaseAuthService {
       const result = await signInWithPopup(this.auth, this.googleProvider);
       const user = result.user;
 
-      // Guardar datos del usuario en Firestore
-      const userRef = doc(this.db, 'users', user.uid);
-      await setDoc(userRef, {
-        uid: user.uid,
-        displayName: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-        lastLogin: serverTimestamp(),
-        createdAt: serverTimestamp()
-      }, { merge: true });
+      // Intentar guardar datos del usuario en Firestore (no bloqueante)
+      try {
+        const userRef = doc(this.db, 'users', user.uid);
+        await setDoc(userRef, {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          lastLogin: serverTimestamp(),
+          createdAt: serverTimestamp()
+        }, { merge: true });
+        console.log('✅ Datos de usuario guardados en Firestore');
+      } catch (firestoreError) {
+        // No bloquear el login si Firestore falla
+        console.warn('⚠️ No se pudieron guardar datos en Firestore:', firestoreError.message);
+        console.warn('El login continuará de todas formas');
+      }
 
       console.log('✅ Login exitoso:', user.displayName);
       return {
