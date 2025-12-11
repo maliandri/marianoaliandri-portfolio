@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 // import { motion } from "framer-motion"; // No lo estás usando aquí, se puede comentar
 
@@ -20,11 +20,11 @@ import AIChatBot from "./components/AIChatBot.jsx";
 import FloatingActions from "./components/FloatingActions.jsx";
 import AuthButton from "./components/AuthButton.jsx";
 import ShopButton from "./components/ShopButton.jsx";
-import Store from "./components/Store.jsx";
 
 // Páginas
 import ProfilePage from "./pages/ProfilePage.jsx";
 import OrdersPage from "./pages/OrdersPage.jsx";
+import StorePage from "./pages/StorePage.jsx";
 
 import "./index.css";
 
@@ -62,8 +62,6 @@ const HomePage = () => (
 );
 
 export default function App() {
-  const [showStore, setShowStore] = useState(false);
-
   return (
     <CartProvider>
       {/* AGREGADO: 'relative' y 'overflow-x-hidden'
@@ -71,7 +69,7 @@ export default function App() {
       <div className="font-sans min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500 relative overflow-x-hidden">
         {/* Barra superior con Tienda y Autenticación */}
         <div className="fixed top-6 right-20 z-50 flex items-center gap-3">
-          <ShopButton onClick={() => setShowStore(true)} />
+          <ShopButton />
           <AuthButton />
         </div>
 
@@ -84,11 +82,9 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/mis-compras" element={<OrdersPage />} />
+          <Route path="/tienda" element={<StorePage />} />
           {/* Las rutas de pago se han eliminado según lo solicitado */}
         </Routes>
-
-        {/* Modal de la Tienda */}
-        <Store isOpen={showStore} onClose={() => setShowStore(false)} />
       </div>
     </CartProvider>
   );

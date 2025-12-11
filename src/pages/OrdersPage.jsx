@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { firebaseAuth } from '../utils/firebaseservice';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../utils/firebaseservice';
@@ -9,6 +10,7 @@ export default function OrdersPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = firebaseAuth.onAuthChange(async (userData) => {
@@ -176,12 +178,12 @@ export default function OrdersPage() {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Explorá nuestros servicios y realizá tu primera compra
             </p>
-            <a
-              href="/tienda"
+            <button
+              onClick={() => navigate('/tienda')}
               className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg"
             >
-              Ver Servicios
-            </a>
+              Ir a la Tienda
+            </button>
           </div>
         ) : (
           <div className="space-y-6">

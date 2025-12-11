@@ -1,10 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
-export default function ShopButton({ onClick }) {
+export default function ShopButton() {
+  const navigate = useNavigate();
+
   return (
     <motion.button
-      onClick={onClick}
+      onClick={() => navigate('/tienda')}
       className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
       whileHover={{ scale: 1.05, y: -2 }}
       whileTap={{ scale: 0.95 }}
