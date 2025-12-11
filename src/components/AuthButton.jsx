@@ -8,13 +8,6 @@ export default function AuthButton() {
   const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
-    // Verificar si hay un resultado de redirect pendiente
-    firebaseAuth.checkRedirectResult().then(result => {
-      if (result.success && result.user) {
-        console.log('Usuario autenticado desde redirect:', result.user.displayName);
-      }
-    });
-
     // Escuchar cambios en autenticación
     const unsubscribe = firebaseAuth.onAuthChange((userData) => {
       setUser(userData);
@@ -27,30 +20,33 @@ export default function AuthButton() {
   const handleLogin = async () => {
     setLoading(true);
 
-    // Intentar primero con redirect (más confiable)
-    const result = await firebaseAuth.loginWithGoogleRedirect();
+    try {
+      console.log('🔑 Intentando login con Google...');
+      const result = await firebaseAuth.loginWithGoogle();
 
-    // Si el redirect falla, intentar con popup como fallback
-    if (!result.success) {
-      console.log('Redirect falló, intentando con popup...');
-      const popupResult = await firebaseAuth.loginWithGoogle();
-
-      if (!popupResult.success) {
+      if (result.success) {
+        console.log('✅ Login exitoso:', result.user);
+        // El estado se actualizará automáticamente por onAuthChange
+      } else {
+        console.error('❌ Login falló:', result.error);
         // Mensaje más claro para error de dominio no autorizado
-        if (popupResult.error?.includes('unauthorized-domain') || popupResult.error?.includes('auth/unauthorized-domain')) {
+        if (result.error?.includes('unauthorized-domain') || result.error?.includes('auth/unauthorized-domain')) {
           alert('⚠️ Error de configuración: Este dominio no está autorizado en Firebase.\n\nPor favor, agregá este dominio en Firebase Console → Authentication → Settings → Authorized domains');
-        } else if (popupResult.error?.includes('popup-closed-by-user') || popupResult.error?.includes('cancelled-popup-request')) {
-          // Usuario cerró el popup o fue bloqueado - no mostrar error, es acción del usuario
+        } else if (result.error?.includes('popup-closed-by-user') || result.error?.includes('cancelled-popup-request')) {
+          // Usuario cerró el popup - no mostrar error
           console.log('Login cancelado por el usuario');
-        } else if (popupResult.error?.includes('popup-blocked')) {
+        } else if (result.error?.includes('popup-blocked')) {
           alert('⚠️ El navegador bloqueó la ventana de inicio de sesión.\n\nPor favor, permití los pop-ups para este sitio y volvé a intentar.');
         } else {
-          alert('Error al iniciar sesión: ' + popupResult.error);
+          alert('Error al iniciar sesión: ' + result.error);
         }
-        setLoading(false);
       }
+    } catch (error) {
+      console.error('❌ Error inesperado en login:', error);
+      alert('Error inesperado al iniciar sesión. Por favor, intentá de nuevo.');
+    } finally {
+      setLoading(false);
     }
-    // Si redirect es exitoso, la página se recargará automáticamente
   };
 
   const handleLogout = async () => {
