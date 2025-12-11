@@ -24,8 +24,7 @@ export const products = [
       'Sesión de presentación de resultados (1 hora)',
       'Recomendaciones de implementación'
     ],
-    price: null, // Precio dinámico desde calculadora
-    priceUSD: 100,
+    priceUSD: 100, // Precio fijo en USD
     duration: '2-3 semanas',
     deliverables: [
       'Dashboard interactivo de Power BI',
@@ -34,9 +33,7 @@ export const products = [
     ],
     image: '/images/products/roi-consulting.jpg',
     demo: null,
-    tags: ['ROI', 'Power BI', 'Consultoría', 'Data Analytics'],
-    calculatorLink: true, // Indica que debe usar la calculadora
-    calculatorType: 'roi'
+    tags: ['ROI', 'Power BI', 'Consultoría', 'Data Analytics']
   },
 
   // ========== DESARROLLO WEB ==========
@@ -56,8 +53,7 @@ export const products = [
       '3 revisiones de diseño',
       'Capacitación para actualizaciones'
     ],
-    price: null, // Desde $400 USD (varía según features)
-    priceUSD: 400,
+    priceUSD: 400, // Precio fijo en USD
     duration: '1-2 semanas',
     deliverables: [
       'Landing page completa',
@@ -66,9 +62,7 @@ export const products = [
     ],
     image: '/images/products/landing-page.jpg',
     demo: 'https://marianoaliandri.com.ar',
-    tags: ['Landing Page', 'React', 'SEO', 'Responsive'],
-    calculatorLink: true,
-    calculatorType: 'web'
+    tags: ['Landing Page', 'React', 'SEO', 'Responsive']
   },
   {
     id: 'website-corporate',
@@ -88,8 +82,7 @@ export const products = [
       '5 revisiones de diseño',
       'Capacitación completa'
     ],
-    price: null, // Desde $1000 USD (varía según features)
-    priceUSD: 1000,
+    priceUSD: 1000, // Precio fijo en USD
     duration: '3-4 semanas',
     deliverables: [
       'Sitio web completo',
@@ -99,9 +92,7 @@ export const products = [
     ],
     image: '/images/products/corporate-website.jpg',
     demo: null,
-    tags: ['Sitio Web', 'CMS', 'React', 'SEO', 'Blog'],
-    calculatorLink: true,
-    calculatorType: 'web'
+    tags: ['Sitio Web', 'CMS', 'React', 'SEO', 'Blog']
   },
   {
     id: 'ecommerce-basic',
@@ -121,8 +112,7 @@ export const products = [
       'Responsive design',
       'Hosting (1 año)'
     ],
-    price: null, // Desde $2000 USD (varía según features)
-    priceUSD: 2000,
+    priceUSD: 2500, // Precio fijo en USD
     duration: '4-6 semanas',
     deliverables: [
       'Tienda online completa',
@@ -132,9 +122,7 @@ export const products = [
     ],
     image: '/images/products/ecommerce.jpg',
     demo: null,
-    tags: ['E-commerce', 'Mercado Pago', 'React', 'Tienda Online'],
-    calculatorLink: true,
-    calculatorType: 'web'
+    tags: ['E-commerce', 'Mercado Pago', 'React', 'Tienda Online']
   },
   {
     id: 'website-chatbot-ia',
@@ -156,8 +144,7 @@ export const products = [
       'Hosting y dominio (1 año)',
       'Capacitación completa'
     ],
-    price: 800000, // ARS (800 USD)
-    priceUSD: 800,
+    priceUSD: 800, // Precio fijo en USD
     duration: '4-5 semanas',
     deliverables: [
       'Sitio web completo',
@@ -177,7 +164,7 @@ export const products = [
   {
     id: 'dashboard-powerbi-basic',
     category: productCategories.DATA_ANALYTICS,
-    name: 'Dashboard Power BI Básico',
+    name: 'Dashboard Power BI',
     shortDescription: 'Dashboard interactivo personalizado',
     description: 'Dashboard de Power BI personalizado para visualizar tus datos de negocio. Incluye conexión a fuentes de datos, visualizaciones interactivas y automatización de reportes.',
     features: [
@@ -190,8 +177,7 @@ export const products = [
       'Documentación completa',
       'Soporte por 1 mes'
     ],
-    price: 80000, // ARS
-    priceUSD: 80,
+    priceUSD: 1200, // Precio fijo en USD
     duration: '2-3 semanas',
     deliverables: [
       'Dashboard Power BI',
@@ -219,8 +205,7 @@ export const products = [
       'Capacitación de uso',
       'Soporte por 1 mes'
     ],
-    price: 60000, // ARS
-    priceUSD: 60,
+    priceUSD: null, // Sin precio - cotización personalizada
     duration: '1-2 semanas',
     deliverables: [
       'Script Python completo',
@@ -230,7 +215,8 @@ export const products = [
     ],
     image: '/images/products/python-automation.jpg',
     demo: null,
-    tags: ['Python', 'Automatización', 'Scripts', 'Data Processing']
+    tags: ['Python', 'Automatización', 'Scripts', 'Data Processing'],
+    isCustom: true // Requiere cotización
   },
 
   // ========== SERVICIOS PERSONALIZADOS ==========
