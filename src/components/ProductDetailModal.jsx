@@ -24,7 +24,7 @@ export default function ProductDetailModal({ product, onClose }) {
 
   if (!product) return null;
 
-  const isCustom = product.isCustom || product.calculatorLink || !product.price;
+  const isCustom = product.priceUSD === null || product.priceUSD === undefined;
 
   const handleAddToCart = () => {
     addToCart(product);

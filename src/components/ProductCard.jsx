@@ -32,8 +32,8 @@ export default function ProductCard({ product, onViewDetails }) {
     }
   };
 
-  // Productos personalizados o con calculadora no tienen precio fijo
-  const isCustom = product.isCustom || product.calculatorLink || !product.price;
+  // Productos personalizados no tienen precio fijo (priceUSD es null)
+  const isCustom = product.priceUSD === null || product.priceUSD === undefined;
 
   return (
     <motion.div
@@ -126,10 +126,10 @@ export default function ProductCard({ product, onViewDetails }) {
           {isCustom ? (
             <div className="mb-3">
               <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                {product.calculatorLink ? `Desde ${formatUSD(product.priceUSD)}` : 'Cotización Personalizada'}
+                Cotización Personalizada
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {product.calculatorLink ? 'Usa la calculadora para cotizar' : 'Contactanos para un presupuesto a medida'}
+                Contactanos para un presupuesto a medida
               </p>
             </div>
           ) : (
