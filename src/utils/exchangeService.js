@@ -43,6 +43,12 @@ export class ExchangeService {
     const usd = Number(amountUsd) || 0;
     return Math.round(usd * rate);
   }
+
+  // Método simplificado para obtener solo la cotización
+  async getExchangeRate() {
+    const { rate } = await this.getLatest();
+    return rate;
+  }
 }
 
 // helper de formateo
