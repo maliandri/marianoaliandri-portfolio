@@ -67,7 +67,10 @@ export async function handler(event) {
     }
 
     const body = JSON.parse(event.body);
-    console.log('Body:', body);
+    console.log('Body completo:', JSON.stringify(body, null, 2));
+    console.log('Body type:', body.type);
+    console.log('Body data:', body.data);
+    console.log('Body id:', body.id);
 
     // Verificar el tipo de notificación
     if (body.type === 'payment') {
