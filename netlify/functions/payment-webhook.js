@@ -99,7 +99,44 @@ async function saveStoreOrder(paymentData) {
 export async function handler(event) {
   try {
     console.log('📬 Webhook unificado recibido de Mercado Pago');
-    console.log('Headers:', event.headers);
+    console.log('Method:', event.httpMethod);
+    console.log('Headers:', JSON.stringify(event.headers, null, 2));
+    console.log('Raw body length:', event.body?.length || 0);
+    console.log('Raw body:', event.body);
+
+    // Parse body
+    let body;
+    try {
+      body = JSON.parse(event.body);
+      console.log('✅ Body parseado correctamente');
+    } catch (parseError) {
+      console.error('❌ Error parseando body:', parseError);
+      console.log('Body string:', event.body);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Invalid JSON body' })
+      };
+    }
+
+    console.log('Body completo:', JSON.stringify(body, null, 2));
+    console.log('Body type:', body.type);
+    console.log('Body action:', body.action);
+    console.log('Body data:', body.data);
+    console.log('Body data.id:', body.data?.id);
+    console.log('Body id:', body.id);
+
+    // Verificar firma solo si tenemos un data.id válido
+    const dataId = body.data?.id || body.id;
+    if (!dataId) {
+      console.log('⚠️ Notificación sin data.id - posiblemente una prueba o ping');
+      console.log('Tipo de notificación:', body.type);
+      console.log('Acción:', body.action);
+      // Retornar 200 para notificaciones de test
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ received: true, note: 'Test notification' })
+      };
+    }
 
     const isValidSignature = verifyWebhookSignature(event);
     if (!isValidSignature) {
@@ -109,12 +146,6 @@ export async function handler(event) {
         body: JSON.stringify({ error: 'Invalid signature' })
       };
     }
-
-    const body = JSON.parse(event.body);
-    console.log('Body completo:', JSON.stringify(body, null, 2));
-    console.log('Body type:', body.type);
-    console.log('Body data:', body.data);
-    console.log('Body id:', body.id);
 
     if (body.type === 'payment') {
       const paymentId = body.data.id;
