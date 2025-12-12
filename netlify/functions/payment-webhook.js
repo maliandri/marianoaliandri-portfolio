@@ -27,7 +27,6 @@ function verifyWebhookSignature(event) {
     const body = JSON.parse(event.body);
     const dataId = body.data?.id || body.id;
 
-    // Extraer ts y v1 del header x-signature
     const parts = xSignature.split(',');
     const ts = parts.find(p => p.startsWith('ts=')).replace('ts=', '');
     const hash = parts.find(p => p.startsWith('v1=')).replace('v1=', '');
@@ -35,15 +34,12 @@ function verifyWebhookSignature(event) {
     // El manifest debe usar data.id, no el body completo
     const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
 
-    // Generar HMAC
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(manifest);
     const calculatedHash = hmac.digest('hex');
-
     const isValid = calculatedHash === hash;
     console.log(`🔐 Verificación de firma: ${isValid ? 'VÁLIDA' : 'INVÁLIDA'}`);
     console.log(`   Data ID: ${dataId}, Request ID: ${xRequestId}, TS: ${ts}`);
-
     return isValid;
   } catch (error) {
     console.error('❌ Error verificando firma:', error);
@@ -51,12 +47,60 @@ function verifyWebhookSignature(event) {
   }
 }
 
+// Enviar email con análisis de CV usando Netlify Forms
+async function sendCVAnalysisEmail(paymentData) {
+  const metadata = paymentData.metadata;
+  const cvAnalysis = JSON.parse(metadata.cvAnalysis);
+
+  // Formatear los resultados del análisis
+  const resultsText = cvAnalysis.map((r, i) =>
+    `${i + 1}. ${r.profesion} - Score: ${r.score}%
+   Skills encontradas: ${r.skills_found?.join(', ') || 'Ninguna'}
+   Skills faltantes: ${r.skills_missing?.join(', ') || 'Ninguna'}`
+  ).join('\n\n');
+
+  const formData = new URLSearchParams();
+  formData.append('form-name', 'cv-analysis');
+  formData.append('email', metadata.email);
+  formData.append('payment-id', paymentData.id);
+  formData.append('amount', paymentData.transaction_amount);
+  formData.append('analysis-results', resultsText);
+  formData.append('timestamp', metadata.timestamp);
+
+  const response = await fetch('https://marianoaliandri.com.ar/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: formData.toString()
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error enviando formulario: ${response.status}`);
+  }
+
+  return response;
+}
+
+// Guardar orden de tienda en base de datos (placeholder)
+async function saveStoreOrder(paymentData) {
+  const metadata = paymentData.metadata;
+  console.log('💾 Guardando orden de tienda:', {
+    type: metadata.type,
+    company: metadata.company,
+    email: paymentData.payer?.email,
+    amount: paymentData.transaction_amount
+  });
+
+  // TODO: Aquí puedes:
+  // - Guardar en Firestore
+  // - Enviar email de confirmación al cliente
+  // - Notificar al equipo de ventas
+}
+
 export async function handler(event) {
   try {
-    console.log('📬 Webhook recibido de Mercado Pago');
+    console.log('📬 Webhook unificado recibido de Mercado Pago');
     console.log('Headers:', event.headers);
 
-    // Verificar firma del webhook (en producción debería ser obligatorio)
     const isValidSignature = verifyWebhookSignature(event);
     if (!isValidSignature) {
       console.log('❌ Firma inválida, rechazando webhook');
@@ -72,11 +116,8 @@ export async function handler(event) {
     console.log('Body data:', body.data);
     console.log('Body id:', body.id);
 
-    // Verificar el tipo de notificación
     if (body.type === 'payment') {
       const paymentId = body.data.id;
-
-      // Obtener información del pago
       const paymentData = await payment.get({ id: paymentId });
 
       console.log('💰 Información del pago:', {
@@ -91,15 +132,32 @@ export async function handler(event) {
       if (paymentData.status === 'approved') {
         console.log('✅ Pago aprobado!');
 
-        // TODO: Aquí puedes:
-        // - Guardar en base de datos
-        // - Enviar email de confirmación al cliente
-        // - Notificar al equipo de ventas
-        // - Activar servicios contratados
-
         const metadata = paymentData.metadata;
-        console.log('📋 Tipo de consulta:', metadata.type);
-        console.log('🏢 Empresa:', metadata.company);
+
+        // Detectar el tipo de pago según metadata
+        if (metadata && metadata.cvAnalysis) {
+          // Es un pago de análisis de CV
+          console.log('📄 Tipo: Análisis de CV');
+          try {
+            await sendCVAnalysisEmail(paymentData);
+            console.log('✅ Email de análisis enviado a:', metadata.email);
+          } catch (emailError) {
+            console.error('❌ Error enviando email:', emailError);
+          }
+        } else if (metadata && (metadata.type || metadata.company)) {
+          // Es un pago de la tienda (consultoría)
+          console.log('🏪 Tipo: Compra de tienda');
+          console.log('📋 Tipo de consulta:', metadata.type);
+          console.log('🏢 Empresa:', metadata.company);
+          try {
+            await saveStoreOrder(paymentData);
+          } catch (saveError) {
+            console.error('❌ Error guardando orden:', saveError);
+          }
+        } else {
+          // Pago sin metadata específico
+          console.log('⚠️ Pago sin metadata de tipo específico');
+        }
       }
     }
 
@@ -109,7 +167,7 @@ export async function handler(event) {
     };
 
   } catch (error) {
-    console.error('❌ Error en webhook:', error);
+    console.error('❌ Error en webhook unificado:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message })
