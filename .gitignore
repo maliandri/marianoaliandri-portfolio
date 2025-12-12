@@ -40,4 +40,8 @@ pids
 # Vite cache
 .vite/
 
+# Claude Code configuration
+.claudecode/
+.claude/
+
 # 
