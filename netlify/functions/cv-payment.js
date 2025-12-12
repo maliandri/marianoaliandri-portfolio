@@ -34,11 +34,18 @@ export async function handler(event) {
     // Precio de $1.000 ARS para procesamiento de CV
     const priceARS = 1000;
 
+    // Generar ID único para la transacción
+    const externalReference = `CV-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
     // Crear preferencia de pago
     const preferenceData = {
+      external_reference: externalReference,
       items: [
         {
+          id: 'cv-analysis-ats',
           title: 'Informe Detallado de Análisis ATS',
+          description: 'Análisis profesional de CV contra sistemas ATS con recomendaciones personalizadas',
+          category_id: 'services',
           unit_price: priceARS,
           quantity: 1,
         }
@@ -56,9 +63,10 @@ export async function handler(event) {
         type: 'cv_analysis',
         email: email,
         cvAnalysis: JSON.stringify(cvAnalysis),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        external_reference: externalReference
       },
-      notification_url: `${process.env.URL}/.netlify/functions/cv-payment-webhook`,
+      notification_url: `${process.env.URL}/.netlify/functions/payment-webhook`,
     };
 
     const response = await preference.create({ body: preferenceData });

@@ -33,11 +33,18 @@ export async function handler(event) {
       };
     }
 
+    // Generar ID único para la transacción
+    const externalReference = `STORE-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
     // Crear preferencia de pago
     const preferenceData = {
+      external_reference: externalReference,
       items: [
         {
+          id: metadata?.productId || `product-${Date.now()}`,
           title: title,
+          description: metadata?.description || title,
+          category_id: metadata?.category || 'services',
           unit_price: Number(price),
           quantity: Number(quantity),
         }
@@ -49,7 +56,10 @@ export async function handler(event) {
         pending: `${process.env.URL}/pending`
       },
       auto_return: 'approved',
-      metadata: metadata || {},
+      metadata: {
+        ...(metadata || {}),
+        external_reference: externalReference
+      },
       notification_url: `${process.env.URL}/.netlify/functions/payment-webhook`,
     };
 
