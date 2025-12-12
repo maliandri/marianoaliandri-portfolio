@@ -23,15 +23,23 @@ function verifyWebhookSignature(event) {
   }
 
   try {
+    // Parse del body para obtener el data.id
+    const body = JSON.parse(event.body);
+    const dataId = body.data?.id || body.id;
+
     const parts = xSignature.split(',');
     const ts = parts.find(p => p.startsWith('ts=')).replace('ts=', '');
     const hash = parts.find(p => p.startsWith('v1=')).replace('v1=', '');
-    const manifest = `id:${event.body};request-id:${xRequestId};ts:${ts};`;
+
+    // El manifest debe usar data.id, no el body completo
+    const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(manifest);
     const calculatedHash = hmac.digest('hex');
     const isValid = calculatedHash === hash;
     console.log(`🔐 Verificación de firma: ${isValid ? 'VÁLIDA' : 'INVÁLIDA'}`);
+    console.log(`   Data ID: ${dataId}, Request ID: ${xRequestId}, TS: ${ts}`);
     return isValid;
   } catch (error) {
     console.error('❌ Error verificando firma:', error);
