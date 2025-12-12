@@ -20,6 +20,7 @@ import AIChatBot from "./components/AIChatBot.jsx";
 import FloatingActions from "./components/FloatingActions.jsx";
 import AuthButton from "./components/AuthButton.jsx";
 import ShopButton from "./components/ShopButton.jsx";
+import Footer from "./components/Footer.jsx";
 
 // Páginas
 import ProfilePage from "./pages/ProfilePage.jsx";
@@ -45,16 +46,16 @@ const HomePage = () => (
     */}
     <main className="max-w-5xl mx-auto p-4 space-y-20 relative">
       <Hero />
-      <section aria-label="Servicios profesionales">
+      <section id="servicios" aria-label="Servicios profesionales">
         <ServiciosCarousel />
       </section>
-      <section aria-label="Habilidades técnicas">
+      <section id="skills" aria-label="Habilidades técnicas">
         <Skills />
       </section>
       <section aria-label="Carrousel de-imagenes">
         <Carrousel />
       </section>
-      <section aria-label="Información de contacto">
+      <section id="contact" aria-label="Información de contacto">
         <Contact />
       </section>
     </main>
@@ -85,6 +86,8 @@ export default function App() {
           <Route path="/tienda" element={<StorePage />} />
           {/* Las rutas de pago se han eliminado según lo solicitado */}
         </Routes>
+
+        <Footer />
       </div>
     </CartProvider>
   );
