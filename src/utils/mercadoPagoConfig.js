@@ -1,13 +1,17 @@
 import { initMercadoPago } from '@mercadopago/sdk-react';
 
-// Public Key de Mercado Pago (Producción)
-const MERCADOPAGO_PUBLIC_KEY = 'APP_USR-3a925e76-7fe7-41ae-83db-7bfe9c4ae863';
+// Public Key de Mercado Pago desde variables de entorno
+const MERCADOPAGO_PUBLIC_KEY = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
 
 // Inicializar Mercado Pago
 let isInitialized = false;
 
 export const initializeMercadoPago = () => {
   if (!isInitialized) {
+    if (!MERCADOPAGO_PUBLIC_KEY) {
+      console.error('❌ VITE_MERCADOPAGO_PUBLIC_KEY no está configurada');
+      return;
+    }
     initMercadoPago(MERCADOPAGO_PUBLIC_KEY, {
       locale: 'es-AR'
     });
