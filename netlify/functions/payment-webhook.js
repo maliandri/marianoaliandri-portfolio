@@ -47,36 +47,50 @@ function verifyWebhookSignature(event) {
   }
 }
 
-// Enviar email con análisis de CV usando Netlify Forms
+// Enviar email con análisis de CV usando la función send-cv-analysis
 async function sendCVAnalysisEmail(paymentData) {
+  console.log('📧 Iniciando envío de email de análisis CV');
+  console.log('Payment ID:', paymentData.id);
+  console.log('Metadata:', paymentData.metadata);
+
   const metadata = paymentData.metadata;
-  const cvAnalysis = JSON.parse(metadata.cvAnalysis);
 
-  // Formatear los resultados del análisis
-  const resultsText = cvAnalysis.map((r, i) =>
-    `${i + 1}. ${r.profesion} - Score: ${r.score}%
-   Skills encontradas: ${r.skills_found?.join(', ') || 'Ninguna'}
-   Skills faltantes: ${r.skills_missing?.join(', ') || 'Ninguna'}`
-  ).join('\n\n');
-
-  const formData = new URLSearchParams();
-  formData.append('form-name', 'cv-analysis');
-  formData.append('email', metadata.email);
-  formData.append('payment-id', paymentData.id);
-  formData.append('amount', paymentData.transaction_amount);
-  formData.append('analysis-results', resultsText);
-  formData.append('timestamp', metadata.timestamp);
-
-  const response = await fetch('https://marianoaliandri.com.ar/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: formData.toString()
-  });
-
-  if (!response.ok) {
-    throw new Error(`Error enviando formulario: ${response.status}`);
+  if (!metadata || !metadata.cvAnalysis) {
+    throw new Error('Metadata o cvAnalysis no encontrado en el pago');
   }
 
+  const cvAnalysis = JSON.parse(metadata.cvAnalysis);
+  console.log('CV Analysis parseado:', cvAnalysis.length, 'resultados');
+
+  console.log('📤 Llamando a función send-cv-analysis');
+  console.log('Email destinatario:', metadata.email);
+
+  // Llamar a la función de envío de email
+  const response = await fetch(`${process.env.URL}/.netlify/functions/send-cv-analysis`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: metadata.email,
+      cvAnalysis: cvAnalysis,
+      paymentId: paymentData.id,
+      amount: paymentData.transaction_amount,
+      timestamp: metadata.timestamp
+    })
+  });
+
+  console.log('📬 Respuesta de send-cv-analysis:');
+  console.log('Status:', response.status);
+  console.log('Status Text:', response.statusText);
+
+  const responseData = await response.json();
+  console.log('Response data:', responseData);
+
+  if (!response.ok) {
+    throw new Error(`Error enviando email: ${response.status} - ${responseData.error || response.statusText}`);
+  }
+
+  console.log('✅ Email de análisis enviado exitosamente');
+  console.log('Email ID:', responseData.emailId);
   return response;
 }
 
