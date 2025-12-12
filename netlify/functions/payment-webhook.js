@@ -1,5 +1,19 @@
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import crypto from 'crypto';
+import admin from 'firebase-admin';
+
+// Inicializar Firebase Admin si no está inicializado
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+    })
+  });
+}
+
+const db = admin.firestore();
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN
@@ -94,6 +108,40 @@ async function sendCVAnalysisEmail(paymentData) {
   return response;
 }
 
+// Guardar orden de CV en Firestore
+async function saveCVOrder(paymentData) {
+  const metadata = paymentData.metadata;
+  console.log('💾 Guardando orden de CV en Firestore');
+
+  try {
+    const orderData = {
+      paymentId: paymentData.id,
+      type: 'cv_analysis',
+      customerEmail: metadata.email,
+      status: paymentData.status,
+      totalARS: paymentData.transaction_amount,
+      items: [
+        {
+          name: 'Informe Detallado de Análisis ATS',
+          quantity: 1,
+          priceARS: paymentData.transaction_amount
+        }
+      ],
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      paymentMethod: paymentData.payment_type_id,
+      externalReference: metadata.external_reference || paymentData.external_reference
+    };
+
+    // Guardar en Firestore con el payment ID como documento
+    await db.collection('orders').doc(`CV-${paymentData.id}`).set(orderData);
+
+    console.log('✅ Orden de CV guardada en Firestore:', `CV-${paymentData.id}`);
+  } catch (error) {
+    console.error('❌ Error guardando orden de CV:', error);
+    throw error;
+  }
+}
+
 // Guardar orden de tienda en base de datos (placeholder)
 async function saveStoreOrder(paymentData) {
   const metadata = paymentData.metadata;
@@ -184,10 +232,19 @@ export async function handler(event) {
           // Es un pago de análisis de CV
           console.log('📄 Tipo: Análisis de CV');
           try {
+            // Enviar email con el análisis
             await sendCVAnalysisEmail(paymentData);
             console.log('✅ Email de análisis enviado a:', metadata.email);
           } catch (emailError) {
             console.error('❌ Error enviando email:', emailError);
+          }
+
+          try {
+            // Guardar orden en Firestore
+            await saveCVOrder(paymentData);
+            console.log('✅ Orden de CV guardada en Firestore');
+          } catch (saveError) {
+            console.error('❌ Error guardando orden de CV:', saveError);
           }
         } else if (metadata && (metadata.type || metadata.company)) {
           // Es un pago de la tienda (consultoría)

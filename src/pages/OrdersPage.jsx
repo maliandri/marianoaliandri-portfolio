@@ -27,19 +27,56 @@ export default function OrdersPage() {
   const loadOrders = async (userId) => {
     try {
       const ordersRef = collection(db, 'orders');
-      const q = query(
+
+      // Primero buscar órdenes por userId (compras de tienda con autenticación)
+      const q1 = query(
         ordersRef,
         where('userId', '==', userId),
         orderBy('createdAt', 'desc')
       );
-      const querySnapshot = await getDocs(q);
+
+      // También buscar órdenes por email del usuario (compras de CV sin autenticación)
+      const q2 = query(
+        ordersRef,
+        where('customerEmail', '==', user.email),
+        orderBy('createdAt', 'desc')
+      );
+
+      const [snapshot1, snapshot2] = await Promise.all([
+        getDocs(q1),
+        getDocs(q2)
+      ]);
 
       const ordersData = [];
-      querySnapshot.forEach((doc) => {
-        ordersData.push({
-          id: doc.id,
-          ...doc.data()
-        });
+      const addedIds = new Set();
+
+      // Agregar órdenes por userId
+      snapshot1.forEach((doc) => {
+        if (!addedIds.has(doc.id)) {
+          ordersData.push({
+            id: doc.id,
+            ...doc.data()
+          });
+          addedIds.add(doc.id);
+        }
+      });
+
+      // Agregar órdenes por email (CV analysis)
+      snapshot2.forEach((doc) => {
+        if (!addedIds.has(doc.id)) {
+          ordersData.push({
+            id: doc.id,
+            ...doc.data()
+          });
+          addedIds.add(doc.id);
+        }
+      });
+
+      // Ordenar por fecha
+      ordersData.sort((a, b) => {
+        const dateA = a.createdAt?.seconds || 0;
+        const dateB = b.createdAt?.seconds || 0;
+        return dateB - dateA;
       });
 
       setOrders(ordersData);
@@ -48,15 +85,35 @@ export default function OrdersPage() {
       // Si falla la query, intentamos sin orderBy (por si no hay índice)
       try {
         const ordersRef = collection(db, 'orders');
-        const q = query(ordersRef, where('userId', '==', userId));
-        const querySnapshot = await getDocs(q);
+        const q1 = query(ordersRef, where('userId', '==', userId));
+        const q2 = query(ordersRef, where('customerEmail', '==', user.email));
+
+        const [snapshot1, snapshot2] = await Promise.all([
+          getDocs(q1),
+          getDocs(q2)
+        ]);
 
         const ordersData = [];
-        querySnapshot.forEach((doc) => {
-          ordersData.push({
-            id: doc.id,
-            ...doc.data()
-          });
+        const addedIds = new Set();
+
+        snapshot1.forEach((doc) => {
+          if (!addedIds.has(doc.id)) {
+            ordersData.push({
+              id: doc.id,
+              ...doc.data()
+            });
+            addedIds.add(doc.id);
+          }
+        });
+
+        snapshot2.forEach((doc) => {
+          if (!addedIds.has(doc.id)) {
+            ordersData.push({
+              id: doc.id,
+              ...doc.data()
+            });
+            addedIds.add(doc.id);
+          }
         });
 
         // Ordenar manualmente por fecha
