@@ -18,9 +18,12 @@ export default function Store({ isOpen, onClose }) {
 
   // Cargar productos desde Firebase
   useEffect(() => {
+    console.log('🎯 useEffect ejecutado. isOpen:', isOpen);
     let isMounted = true;
 
     const loadProducts = async () => {
+      console.log('📲 loadProducts() llamada');
+
       try {
         setLoading(true);
 
