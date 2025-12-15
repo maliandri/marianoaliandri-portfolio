@@ -187,6 +187,44 @@ export default function AdminPage() {
     }
   };
 
+  const updateAllDescriptions = async () => {
+    if (!confirm('📝 ¿Actualizar descripciones de TODOS los productos?\n\n' +
+                 'Esto va a actualizar las 10 descripciones con:\n' +
+                 '- Beneficios detallados\n' +
+                 '- Características específicas\n' +
+                 '- Información técnica\n\n' +
+                 '¿Continuar?')) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch('/.netlify/functions/update-all-descriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminPassword: sessionStorage.getItem('adminPassword')
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert('✅ Descripciones actualizadas!\n\n' +
+              '📝 Productos actualizados: ' + result.products.length + '\n\n' +
+              'Recargando...');
+
+        // Limpiar caché para que la tienda vea los cambios
+        priceService.clearCache();
+        window.location.reload();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error actualizando descripciones');
+      }
+    } catch (error) {
+      alert('Error: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const createTestOrders = async () => {
     if (!confirm('¿Crear datos de prueba?\n\n' +
                  '- 2 órdenes (CV + Tienda)\n' +
@@ -639,13 +677,22 @@ export default function AdminPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Productos de la Tienda ({products.length})</h2>
-              <button
-                onClick={resetProducts}
-                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium"
-                disabled={loading}
-              >
-                🔄 Resetear Productos (10)
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={updateAllDescriptions}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                  disabled={loading}
+                >
+                  📝 Actualizar Descripciones
+                </button>
+                <button
+                  onClick={resetProducts}
+                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium"
+                  disabled={loading}
+                >
+                  🔄 Resetear Productos (10)
+                </button>
+              </div>
             </div>
 
             <div className="space-y-4">
