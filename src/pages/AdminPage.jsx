@@ -64,35 +64,28 @@ export default function AdminPage() {
     setPassword('');
   };
 
-  const loadUsers = useCallback(async () => {
+  const loadAdminData = useCallback(async () => {
+    setLoading(true);
     try {
+      // Load users
       const usersRef = collection(db, 'users');
-      const snapshot = await getDocs(usersRef);
+      const usersSnapshot = await getDocs(usersRef);
       const usersData = [];
-      snapshot.forEach((doc) => {
+      usersSnapshot.forEach((doc) => {
         usersData.push({ id: doc.id, ...doc.data() });
       });
       setUsers(usersData);
-      setStats(prev => ({
-        ...prev,
-        totalUsers: usersData.length
-      }));
-    } catch (error) {
-      console.error('Error cargando usuarios:', error);
-    }
-  }, []);
 
-  const loadOrders = useCallback(async () => {
-    try {
+      // Load orders
       const ordersRef = collection(db, 'orders');
       const q = query(ordersRef, orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
+      const ordersSnapshot = await getDocs(q);
       const ordersData = [];
       let totalRevenue = 0;
       let cvCount = 0;
       let storeCount = 0;
 
-      snapshot.forEach((doc) => {
+      ordersSnapshot.forEach((doc) => {
         const order = { id: doc.id, ...doc.data() };
         ordersData.push(order);
 
@@ -106,47 +99,30 @@ export default function AdminPage() {
           storeCount++;
         }
       });
-
       setOrders(ordersData);
-      setStats(prev => ({
-        ...prev,
+
+      // Load products
+      const productsRef = collection(db, 'products');
+      const productsSnapshot = await getDocs(productsRef);
+      const productsData = [];
+      productsSnapshot.forEach((doc) => {
+        productsData.push({ id: doc.id, ...doc.data() });
+      });
+      setProducts(productsData);
+
+      // Update stats
+      setStats({
+        totalUsers: usersData.length,
         totalOrders: ordersData.length,
         totalRevenue,
         cvAnalysis: cvCount,
         storeOrders: storeCount
-      }));
-    } catch (error) {
-      console.error('Error cargando órdenes:', error);
-    }
-  }, []);
-
-  const loadProducts = useCallback(async () => {
-    try {
-      const productsRef = collection(db, 'products');
-      const snapshot = await getDocs(productsRef);
-      const productsData = [];
-      snapshot.forEach((doc) => {
-        productsData.push({ id: doc.id, ...doc.data() });
       });
-      setProducts(productsData);
-    } catch (error) {
-      console.error('Error cargando productos:', error);
-    }
-  }, []);
-
-  const loadAdminData = useCallback(async () => {
-    setLoading(true);
-    try {
-      await Promise.all([
-        loadUsers(),
-        loadOrders(),
-        loadProducts()
-      ]);
     } catch (error) {
       console.error('Error cargando datos admin:', error);
     }
     setLoading(false);
-  }, [loadUsers, loadOrders, loadProducts]);
+  }, []);
 
   const resendCVEmail = async (order) => {
     try {
@@ -183,7 +159,15 @@ export default function AdminPage() {
         updatedAt: new Date()
       });
       alert('Precio actualizado exitosamente');
-      loadProducts();
+
+      // Recargar solo productos
+      const productsRef = collection(db, 'products');
+      const snapshot = await getDocs(productsRef);
+      const productsData = [];
+      snapshot.forEach((doc) => {
+        productsData.push({ id: doc.id, ...doc.data() });
+      });
+      setProducts(productsData);
     } catch (error) {
       alert('Error actualizando precio: ' + error.message);
     }
@@ -195,7 +179,15 @@ export default function AdminPage() {
     try {
       await deleteDoc(doc(db, 'products', productId));
       alert('Producto eliminado');
-      loadProducts();
+
+      // Recargar solo productos
+      const productsRef = collection(db, 'products');
+      const snapshot = await getDocs(productsRef);
+      const productsData = [];
+      snapshot.forEach((doc) => {
+        productsData.push({ id: doc.id, ...doc.data() });
+      });
+      setProducts(productsData);
     } catch (error) {
       alert('Error eliminando producto: ' + error.message);
     }
