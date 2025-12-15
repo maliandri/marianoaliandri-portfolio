@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
@@ -31,9 +31,15 @@ export default function AdminPage() {
     const isAdmin = sessionStorage.getItem('adminAuth');
     if (isAdmin === 'true') {
       setIsAuthenticated(true);
-      loadAdminData();
     }
   }, []);
+
+  // Load data when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadAdminData();
+    }
+  }, [isAuthenticated, loadAdminData]);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -46,7 +52,6 @@ export default function AdminPage() {
     if (username === ADMIN_USER && password === ADMIN_PASS) {
       sessionStorage.setItem('adminAuth', 'true');
       setIsAuthenticated(true);
-      loadAdminData();
     } else {
       setLoginError('Usuario o contraseña incorrectos');
     }
@@ -59,21 +64,7 @@ export default function AdminPage() {
     setPassword('');
   };
 
-  const loadAdminData = async () => {
-    setLoading(true);
-    try {
-      await Promise.all([
-        loadUsers(),
-        loadOrders(),
-        loadProducts()
-      ]);
-    } catch (error) {
-      console.error('Error cargando datos admin:', error);
-    }
-    setLoading(false);
-  };
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const usersRef = collection(db, 'users');
       const snapshot = await getDocs(usersRef);
@@ -82,12 +73,16 @@ export default function AdminPage() {
         usersData.push({ id: doc.id, ...doc.data() });
       });
       setUsers(usersData);
+      setStats(prev => ({
+        ...prev,
+        totalUsers: usersData.length
+      }));
     } catch (error) {
       console.error('Error cargando usuarios:', error);
     }
-  };
+  }, []);
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       const ordersRef = collection(db, 'orders');
       const q = query(ordersRef, orderBy('createdAt', 'desc'));
@@ -123,9 +118,9 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error cargando órdenes:', error);
     }
-  };
+  }, []);
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       const productsRef = collection(db, 'products');
       const snapshot = await getDocs(productsRef);
@@ -137,7 +132,21 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error cargando productos:', error);
     }
-  };
+  }, []);
+
+  const loadAdminData = useCallback(async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        loadUsers(),
+        loadOrders(),
+        loadProducts()
+      ]);
+    } catch (error) {
+      console.error('Error cargando datos admin:', error);
+    }
+    setLoading(false);
+  }, [loadUsers, loadOrders, loadProducts]);
 
   const resendCVEmail = async (order) => {
     try {
