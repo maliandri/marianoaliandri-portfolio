@@ -41,117 +41,101 @@ export default function AdminPage() {
 
       const loadData = async () => {
         setLoading(true);
+
+        const usersData = [];
+        const ordersData = [];
+        const productsData = [];
+        let totalRevenue = 0;
+        let cvCount = 0;
+        let storeCount = 0;
+
         try {
           console.log('🔄 Iniciando carga de datos admin...');
 
-          // Cargar todo en paralelo pero con timeout
-          const timeout = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Timeout loading data')), 10000)
-          );
+          // Load users - secuencial
+          try {
+            console.log('👥 Cargando usuarios...');
+            const usersRef = collection(db, 'users');
+            const usersSnapshot = await getDocs(usersRef);
+            if (cancelled) return;
 
-          const loadAllData = Promise.all([
-            // Load users
-            (async () => {
-              console.log('👥 Cargando usuarios...');
-              const usersRef = collection(db, 'users');
-              const usersSnapshot = await getDocs(usersRef);
-              const usersData = [];
-              usersSnapshot.forEach((doc) => {
-                usersData.push({ id: doc.id, ...doc.data() });
-              });
-              console.log(`✅ ${usersData.length} usuarios cargados`);
-              return { type: 'users', data: usersData };
-            })(),
+            usersSnapshot.forEach((doc) => {
+              usersData.push({ id: doc.id, ...doc.data() });
+            });
+            console.log(`✅ ${usersData.length} usuarios cargados`);
+          } catch (err) {
+            console.error('❌ Error cargando usuarios:', err);
+          }
 
-            // Load orders
-            (async () => {
-              console.log('📦 Cargando órdenes...');
-              const ordersRef = collection(db, 'orders');
-              const ordersSnapshot = await getDocs(ordersRef);
-              const ordersData = [];
-              let totalRevenue = 0;
-              let cvCount = 0;
-              let storeCount = 0;
+          // Load orders - secuencial
+          try {
+            console.log('📦 Cargando órdenes...');
+            const ordersRef = collection(db, 'orders');
+            const ordersSnapshot = await getDocs(ordersRef);
+            if (cancelled) return;
 
-              ordersSnapshot.forEach((doc) => {
-                const order = { id: doc.id, ...doc.data() };
-                ordersData.push(order);
+            ordersSnapshot.forEach((doc) => {
+              const order = { id: doc.id, ...doc.data() };
+              ordersData.push(order);
 
-                if (order.status === 'approved' && order.totalARS) {
-                  totalRevenue += order.totalARS;
-                }
+              if (order.status === 'approved' && order.totalARS) {
+                totalRevenue += order.totalARS;
+              }
 
-                if (order.type === 'cv_analysis') {
-                  cvCount++;
-                } else {
-                  storeCount++;
-                }
-              });
+              if (order.type === 'cv_analysis') {
+                cvCount++;
+              } else {
+                storeCount++;
+              }
+            });
 
-              // Ordenar manualmente por fecha
-              ordersData.sort((a, b) => {
-                const dateA = a.createdAt?.seconds || 0;
-                const dateB = b.createdAt?.seconds || 0;
-                return dateB - dateA;
-              });
+            // Ordenar manualmente por fecha
+            ordersData.sort((a, b) => {
+              const dateA = a.createdAt?.seconds || 0;
+              const dateB = b.createdAt?.seconds || 0;
+              return dateB - dateA;
+            });
 
-              console.log(`✅ ${ordersData.length} órdenes cargadas`);
-              return { type: 'orders', data: ordersData, totalRevenue, cvCount, storeCount };
-            })(),
+            console.log(`✅ ${ordersData.length} órdenes cargadas`);
+          } catch (err) {
+            console.error('❌ Error cargando órdenes:', err);
+          }
 
-            // Load products
-            (async () => {
-              console.log('🛍️ Cargando productos...');
-              const productsRef = collection(db, 'products');
-              const productsSnapshot = await getDocs(productsRef);
-              const productsData = [];
-              productsSnapshot.forEach((doc) => {
-                productsData.push({ id: doc.id, ...doc.data() });
-              });
-              console.log(`✅ ${productsData.length} productos cargados`);
-              return { type: 'products', data: productsData };
-            })()
-          ]);
+          // Load products - secuencial
+          try {
+            console.log('🛍️ Cargando productos...');
+            const productsRef = collection(db, 'products');
+            const productsSnapshot = await getDocs(productsRef);
+            if (cancelled) return;
 
-          const results = await Promise.race([loadAllData, timeout]);
+            productsSnapshot.forEach((doc) => {
+              productsData.push({ id: doc.id, ...doc.data() });
+            });
+            console.log(`✅ ${productsData.length} productos cargados`);
+          } catch (err) {
+            console.error('❌ Error cargando productos:', err);
+          }
 
-          if (cancelled) return;
+          if (!cancelled) {
+            setUsers(usersData);
+            setOrders(ordersData);
+            setProducts(productsData);
 
-          // Procesar resultados
-          const usersResult = results.find(r => r.type === 'users');
-          const ordersResult = results.find(r => r.type === 'orders');
-          const productsResult = results.find(r => r.type === 'products');
+            setStats({
+              totalUsers: usersData.length,
+              totalOrders: ordersData.length,
+              totalRevenue,
+              cvAnalysis: cvCount,
+              storeOrders: storeCount
+            });
 
-          setUsers(usersResult?.data || []);
-          setOrders(ordersResult?.data || []);
-          setProducts(productsResult?.data || []);
-
-          setStats({
-            totalUsers: usersResult?.data?.length || 0,
-            totalOrders: ordersResult?.data?.length || 0,
-            totalRevenue: ordersResult?.totalRevenue || 0,
-            cvAnalysis: ordersResult?.cvCount || 0,
-            storeOrders: ordersResult?.storeCount || 0
-          });
-
-          console.log('✅ Todos los datos cargados exitosamente');
+            console.log('✅ Todos los datos cargados exitosamente');
+          }
         } catch (error) {
           if (!cancelled) {
-            console.error('❌ Error cargando datos admin:', error);
+            console.error('❌ Error general cargando datos:', error);
             console.error('Error name:', error.name);
             console.error('Error message:', error.message);
-
-            // Intentar cargar datos vacíos para que al menos la UI funcione
-            setUsers([]);
-            setOrders([]);
-            setProducts([]);
-            setStats({
-              totalUsers: 0,
-              totalOrders: 0,
-              totalRevenue: 0,
-              cvAnalysis: 0,
-              storeOrders: 0
-            });
           }
         } finally {
           if (!cancelled) {
