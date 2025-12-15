@@ -43,10 +43,12 @@ class PriceService {
     // Usar caché si está disponible y no ha expirado
     const now = Date.now();
     if (this.pricesCache && this.cacheTime && (now - this.cacheTime) < this.CACHE_DURATION) {
+      console.log('📦 Usando caché de precios');
       return this.pricesCache;
     }
 
     try {
+      console.log('🔥 Intentando cargar precios desde Firebase...');
       const productsSnapshot = await getDocs(collection(db, 'products'));
       const prices = {};
 
@@ -57,13 +59,15 @@ class PriceService {
         };
       });
 
+      console.log(`✅ Cargados ${Object.keys(prices).length} productos desde Firebase`);
+
       // Actualizar caché
       this.pricesCache = prices;
       this.cacheTime = now;
 
       return prices;
     } catch (error) {
-      console.error('Error cargando todos los precios:', error);
+      console.error('❌ Error cargando desde Firebase, usando fallbacks:', error);
       return this.getAllFallbackPrices();
     }
   }
