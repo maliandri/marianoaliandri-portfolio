@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../utils/firebaseservice';
 
 export default function AdminPage() {
@@ -34,7 +34,7 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Load data when authenticated
+  // Load data when authenticated - usando Netlify Function con Firebase Admin SDK
   useEffect(() => {
     if (isAuthenticated) {
       let cancelled = false;
@@ -42,100 +42,47 @@ export default function AdminPage() {
       const loadData = async () => {
         setLoading(true);
 
-        const usersData = [];
-        const ordersData = [];
-        const productsData = [];
-        let totalRevenue = 0;
-        let cvCount = 0;
-        let storeCount = 0;
-
         try {
-          console.log('🔄 Iniciando carga de datos admin...');
+          console.log('🔄 Cargando datos desde Netlify Function (Firebase Admin SDK)...');
 
-          // Load users - secuencial
-          try {
-            console.log('👥 Cargando usuarios...');
-            const usersRef = collection(db, 'users');
-            const usersSnapshot = await getDocs(usersRef);
-            if (cancelled) return;
+          // Llamar a la función de Netlify que usa Firebase Admin SDK
+          const response = await fetch('/.netlify/functions/admin-get-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              username: sessionStorage.getItem('adminUsername'),
+              password: sessionStorage.getItem('adminPassword')
+            })
+          });
 
-            usersSnapshot.forEach((doc) => {
-              usersData.push({ id: doc.id, ...doc.data() });
-            });
-            console.log(`✅ ${usersData.length} usuarios cargados`);
-          } catch (err) {
-            console.error('❌ Error cargando usuarios:', err);
+          if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
           }
 
-          // Load orders - secuencial
-          try {
-            console.log('📦 Cargando órdenes...');
-            const ordersRef = collection(db, 'orders');
-            const ordersSnapshot = await getDocs(ordersRef);
-            if (cancelled) return;
+          const result = await response.json();
 
-            ordersSnapshot.forEach((doc) => {
-              const order = { id: doc.id, ...doc.data() };
-              ordersData.push(order);
+          if (cancelled) return;
 
-              if (order.status === 'approved' && order.totalARS) {
-                totalRevenue += order.totalARS;
-              }
-
-              if (order.type === 'cv_analysis') {
-                cvCount++;
-              } else {
-                storeCount++;
-              }
+          if (result.success) {
+            setUsers(result.data.users);
+            setOrders(result.data.orders);
+            setProducts(result.data.products);
+            setStats(result.data.stats);
+            console.log('✅ Datos cargados exitosamente:', {
+              users: result.data.users.length,
+              orders: result.data.orders.length,
+              products: result.data.products.length,
+              revenue: result.data.stats.totalRevenue
             });
-
-            // Ordenar manualmente por fecha
-            ordersData.sort((a, b) => {
-              const dateA = a.createdAt?.seconds || 0;
-              const dateB = b.createdAt?.seconds || 0;
-              return dateB - dateA;
-            });
-
-            console.log(`✅ ${ordersData.length} órdenes cargadas`);
-          } catch (err) {
-            console.error('❌ Error cargando órdenes:', err);
-          }
-
-          // Load products - secuencial
-          try {
-            console.log('🛍️ Cargando productos...');
-            const productsRef = collection(db, 'products');
-            const productsSnapshot = await getDocs(productsRef);
-            if (cancelled) return;
-
-            productsSnapshot.forEach((doc) => {
-              productsData.push({ id: doc.id, ...doc.data() });
-            });
-            console.log(`✅ ${productsData.length} productos cargados`);
-          } catch (err) {
-            console.error('❌ Error cargando productos:', err);
-          }
-
-          if (!cancelled) {
-            setUsers(usersData);
-            setOrders(ordersData);
-            setProducts(productsData);
-
-            setStats({
-              totalUsers: usersData.length,
-              totalOrders: ordersData.length,
-              totalRevenue,
-              cvAnalysis: cvCount,
-              storeOrders: storeCount
-            });
-
-            console.log('✅ Todos los datos cargados exitosamente');
+          } else {
+            throw new Error(result.error || 'Error desconocido');
           }
         } catch (error) {
           if (!cancelled) {
-            console.error('❌ Error general cargando datos:', error);
-            console.error('Error name:', error.name);
-            console.error('Error message:', error.message);
+            console.error('❌ Error cargando datos del admin:', error);
+            setLoginError('Error cargando datos. Por favor, intentá de nuevo.');
           }
         } finally {
           if (!cancelled) {
@@ -162,6 +109,8 @@ export default function AdminPage() {
 
     if (username === ADMIN_USER && password === ADMIN_PASS) {
       sessionStorage.setItem('adminAuth', 'true');
+      sessionStorage.setItem('adminUsername', username);
+      sessionStorage.setItem('adminPassword', password);
       setIsAuthenticated(true);
     } else {
       setLoginError('Usuario o contraseña incorrectos');
@@ -170,6 +119,8 @@ export default function AdminPage() {
 
   const handleLogout = () => {
     sessionStorage.removeItem('adminAuth');
+    sessionStorage.removeItem('adminUsername');
+    sessionStorage.removeItem('adminPassword');
     setIsAuthenticated(false);
     setUsername('');
     setPassword('');
