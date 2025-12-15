@@ -18,8 +18,8 @@ const db = admin.firestore();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Maliandri$#652542026';
 
 // 📋 Descripciones profesionales con beneficios e imágenes
-// Cloudinary URLs con formato optimizado: c_fill,w_400,h_300,f_auto,q_auto
-const CLOUDINARY_BASE = 'https://res.cloudinary.com/dxtukln2e/image/upload/c_fill,w_400,h_300,f_auto,q_auto/v1734308341';
+// Cloudinary URLs con el Cloud Name correcto y optimizaciones
+const CLOUDINARY_BASE = 'https://res.cloudinary.com/dlshym1te/image/upload/c_fill,w_400,h_300,f_auto,q_auto/v1765836744';
 
 const PRODUCT_DESCRIPTIONS = {
   'roi-consulting': {
