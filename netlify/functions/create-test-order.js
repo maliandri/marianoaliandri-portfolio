@@ -94,41 +94,115 @@ export const handler = async (event) => {
       paymentMethod: 'debit_card'
     };
 
-    // Crear productos de prueba
+    // Crear productos reales que coincidan con los servicios del sitio
     const testProducts = [
+      // CALCULADORA ROI
       {
-        name: 'Desarrollo Web Básico',
-        description: 'Sitio web estático con hasta 5 páginas',
-        priceARS: 50000,
-        priceUSD: 50,
-        category: 'web',
+        id: 'roi-consulting',
+        name: 'Consulta Personalizada ROI',
+        description: 'Análisis de retorno de inversión personalizado',
+        priceUSD: 100,
+        category: 'consulting',
+        serviceType: 'roi-calculator',
+        active: true,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      },
+      // CALCULADORA WEB - Precios base
+      {
+        id: 'landing-page',
+        name: 'Landing Page',
+        description: 'Página de aterrizaje profesional',
+        priceUSD: 400,
+        category: 'web-development',
+        serviceType: 'web-calculator',
+        websiteType: 'landing',
         active: true,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       },
       {
-        name: 'Desarrollo Web Premium',
-        description: 'Sitio web dinámico con base de datos',
-        priceARS: 150000,
-        priceUSD: 150,
-        category: 'web',
+        id: 'business-website',
+        name: 'Sitio Web Empresarial',
+        description: 'Sitio web completo para empresas',
+        priceUSD: 1000,
+        category: 'web-development',
+        serviceType: 'web-calculator',
+        websiteType: 'business',
         active: true,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       },
       {
-        name: 'Análisis de CV Profesional',
-        description: 'Análisis completo de CV con IA',
-        priceARS: 15000,
-        priceUSD: 15,
-        category: 'cv',
+        id: 'ecommerce',
+        name: 'E-commerce',
+        description: 'Tienda online completa',
+        priceUSD: 2000,
+        category: 'web-development',
+        serviceType: 'web-calculator',
+        websiteType: 'ecommerce',
         active: true,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       },
       {
-        name: 'Consultoría de Marketing Digital',
-        description: 'Asesoramiento personalizado en marketing',
-        priceARS: 75000,
-        priceUSD: 75,
-        category: 'consultoria',
+        id: 'portfolio',
+        name: 'Portfolio/Catálogo',
+        description: 'Sitio web tipo portfolio',
+        priceUSD: 1200,
+        category: 'web-development',
+        serviceType: 'web-calculator',
+        websiteType: 'portfolio',
+        active: true,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      },
+      {
+        id: 'blog',
+        name: 'Blog/Noticias',
+        description: 'Sitio web con blog integrado',
+        priceUSD: 1500,
+        category: 'web-development',
+        serviceType: 'web-calculator',
+        websiteType: 'blog',
+        active: true,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      },
+      {
+        id: 'webapp',
+        name: 'Aplicación Web',
+        description: 'Aplicación web personalizada',
+        priceUSD: 6000,
+        category: 'web-development',
+        serviceType: 'web-calculator',
+        websiteType: 'webapp',
+        active: true,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      },
+      {
+        id: 'membership',
+        name: 'Sitio de Membresías',
+        description: 'Plataforma con sistema de membresías',
+        priceUSD: 2500,
+        category: 'web-development',
+        serviceType: 'web-calculator',
+        websiteType: 'membership',
+        active: true,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      },
+      // TIENDA - Productos adicionales
+      {
+        id: 'ai-chatbot-website',
+        name: 'Página Web con Atención IA',
+        description: 'Sitio web con chatbot inteligente integrado',
+        priceUSD: 800,
+        category: 'web-development',
+        serviceType: 'store',
+        active: true,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      },
+      {
+        id: 'powerbi-dashboard',
+        name: 'Dashboard Power BI',
+        description: 'Dashboard interactivo personalizado',
+        priceUSD: 1200,
+        category: 'data-analytics',
+        serviceType: 'store',
         active: true,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       }
@@ -138,11 +212,12 @@ export const handler = async (event) => {
     const cvOrderRef = await db.collection('orders').add(testOrderCV);
     const storeOrderRef = await db.collection('orders').add(testOrderStore);
 
-    // Guardar productos
+    // Guardar productos con IDs específicos
     const productRefs = [];
     for (const product of testProducts) {
-      const ref = await db.collection('products').add(product);
-      productRefs.push(ref.id);
+      const { id, ...productData } = product;
+      await db.collection('products').doc(id).set(productData);
+      productRefs.push(id);
     }
 
     console.log('✅ Órdenes y productos de prueba creados');

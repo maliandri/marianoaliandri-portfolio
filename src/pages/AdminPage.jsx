@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../utils/firebaseservice';
 
 export default function AdminPage() {
@@ -34,7 +34,7 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Load data when authenticated - usando Netlify Function con Firebase Admin SDK
+  // Load data when authenticated (DEV: client SDK, PROD: Netlify Function)
   useEffect(() => {
     if (isAuthenticated) {
       let cancelled = false;
@@ -43,59 +43,86 @@ export default function AdminPage() {
         setLoading(true);
 
         try {
-          console.log('🔄 Cargando datos desde Netlify Function (Firebase Admin SDK)...');
+          const isDev = window.location.hostname === 'localhost';
 
-          // Llamar a la función de Netlify que usa Firebase Admin SDK
-          const response = await fetch('/.netlify/functions/admin-get-data', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              username: sessionStorage.getItem('adminUsername'),
-              password: sessionStorage.getItem('adminPassword')
-            })
-          });
+          if (isDev) {
+            // DESARROLLO: Firebase Client SDK
+            console.log('🔄 [DEV] Cargando desde Firebase Client SDK...');
 
-          if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
-          }
+            const usersData = [];
+            const ordersData = [];
+            const productsData = [];
+            let totalRevenue = 0;
+            let cvCount = 0;
+            let storeCount = 0;
 
-          const result = await response.json();
+            try {
+              const usersSnap = await getDocs(collection(db, 'users'));
+              usersSnap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
+            } catch (e) { console.error('Error usuarios:', e); }
 
-          if (cancelled) return;
+            try {
+              const ordersSnap = await getDocs(collection(db, 'orders'));
+              ordersSnap.forEach(d => {
+                const data = d.data();
+                ordersData.push({ id: d.id, ...data });
+                if (data.status === 'approved' || data.status === 'completed') totalRevenue += data.totalARS || 0;
+                data.type === 'cv_analysis' ? cvCount++ : storeCount++;
+              });
+              ordersData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            } catch (e) { console.error('Error órdenes:', e); }
 
-          if (result.success) {
-            setUsers(result.data.users);
-            setOrders(result.data.orders);
-            setProducts(result.data.products);
-            setStats(result.data.stats);
-            console.log('✅ Datos cargados exitosamente:', {
-              users: result.data.users.length,
-              orders: result.data.orders.length,
-              products: result.data.products.length,
-              revenue: result.data.stats.totalRevenue
-            });
+            try {
+              const productsSnap = await getDocs(collection(db, 'products'));
+              productsSnap.forEach(d => productsData.push({ id: d.id, ...d.data() }));
+            } catch (e) { console.error('Error productos:', e); }
+
+            if (!cancelled) {
+              setUsers(usersData);
+              setOrders(ordersData);
+              setProducts(productsData);
+              setStats({ totalUsers: usersData.length, totalOrders: ordersData.length, totalRevenue, cvAnalysis: cvCount, storeOrders: storeCount });
+              console.log('✅ [DEV] Cargado:', { users: usersData.length, orders: ordersData.length, products: productsData.length });
+            }
           } else {
-            throw new Error(result.error || 'Error desconocido');
+            // PRODUCCIÓN: Netlify Function
+            console.log('🔄 [PROD] Cargando desde Netlify Function...');
+
+            const response = await fetch('/.netlify/functions/admin-get-data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                username: sessionStorage.getItem('adminUsername'),
+                password: sessionStorage.getItem('adminPassword')
+              })
+            });
+
+            if (!response.ok) throw new Error(`Error ${response.status}`);
+            const result = await response.json();
+            if (cancelled) return;
+
+            if (result.success) {
+              setUsers(result.data.users);
+              setOrders(result.data.orders);
+              setProducts(result.data.products);
+              setStats(result.data.stats);
+              console.log('✅ [PROD] Cargado');
+            } else {
+              throw new Error(result.error);
+            }
           }
         } catch (error) {
           if (!cancelled) {
-            console.error('❌ Error cargando datos del admin:', error);
-            setLoginError('Error cargando datos. Por favor, intentá de nuevo.');
+            console.error('❌ Error cargando datos:', error);
+            setLoginError('Error cargando datos.');
           }
         } finally {
-          if (!cancelled) {
-            setLoading(false);
-          }
+          if (!cancelled) setLoading(false);
         }
       };
 
       loadData();
-
-      return () => {
-        cancelled = true;
-      };
+      return () => { cancelled = true; };
     }
   }, [isAuthenticated]);
 
@@ -325,15 +352,18 @@ export default function AdminPage() {
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-4">
+            {/* Título y botones en línea separada */}
+            <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Panel de Administración</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">Bienvenido, {username}</p>
             </div>
-            <div className="flex gap-4">
+
+            {/* Botones en su propia fila */}
+            <div className="flex gap-3 flex-wrap">
               <button
                 onClick={createTestOrders}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm font-medium"
                 disabled={loading}
               >
                 <span>🧪</span>
@@ -341,15 +371,15 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={() => navigate('/')}
-                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
               >
-                Ver Sitio
+                🛍️ Ver Tienda
               </button>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
               >
-                Cerrar Sesión
+                🚪 Cerrar Sesión
               </button>
             </div>
           </div>
@@ -575,6 +605,7 @@ function ProductCard({ product, onUpdate, onDelete, formatARS }) {
   const [formData, setFormData] = useState({
     name: product.name || product.title || '',
     description: product.description || '',
+    priceUSD: product.priceUSD || 0,
     priceARS: product.priceARS || 0
   });
 
@@ -583,11 +614,18 @@ function ProductCard({ product, onUpdate, onDelete, formatARS }) {
   };
 
   const handleSave = () => {
-    onUpdate(product.id, {
+    const updates = {
       name: formData.name,
       description: formData.description,
-      priceARS: parseFloat(formData.priceARS)
-    });
+      priceUSD: parseFloat(formData.priceUSD) || 0
+    };
+
+    // Solo actualizar priceARS si existe
+    if (formData.priceARS) {
+      updates.priceARS = parseFloat(formData.priceARS);
+    }
+
+    onUpdate(product.id, updates);
     setEditing(false);
   };
 
@@ -595,6 +633,7 @@ function ProductCard({ product, onUpdate, onDelete, formatARS }) {
     setFormData({
       name: product.name || product.title || '',
       description: product.description || '',
+      priceUSD: product.priceUSD || 0,
       priceARS: product.priceARS || 0
     });
     setEditing(false);
@@ -632,19 +671,41 @@ function ProductCard({ product, onUpdate, onDelete, formatARS }) {
             />
           </div>
 
-          {/* Precio */}
+          {/* Precio USD (principal) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Precio (ARS)
+              💵 Precio (USD) - Principal
+            </label>
+            <input
+              type="number"
+              value={formData.priceUSD}
+              onChange={(e) => handleChange('priceUSD', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="0"
+              min="0"
+              step="0.01"
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Este precio se usa en Calculadora ROI, Calculadora Web y Tienda
+            </p>
+          </div>
+
+          {/* Precio ARS (opcional - se calcula automáticamente) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              💰 Precio (ARS) - Opcional
             </label>
             <input
               type="number"
               value={formData.priceARS}
               onChange={(e) => handleChange('priceARS', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="0"
+              placeholder="Se calcula automáticamente"
               min="0"
             />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Dejalo vacío para usar conversión automática USD→ARS
+            </p>
           </div>
 
           {/* Botones */}
@@ -677,9 +738,21 @@ function ProductCard({ product, onUpdate, onDelete, formatARS }) {
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {formatARS(product.priceARS || 0)}
-            </span>
+            <div className="flex flex-col gap-1">
+              {product.priceUSD && (
+                <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  USD {product.priceUSD}
+                </span>
+              )}
+              {product.priceARS && (
+                <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                  {formatARS(product.priceARS)}
+                </span>
+              )}
+              {!product.priceUSD && !product.priceARS && (
+                <span className="text-sm text-gray-500">Sin precio configurado</span>
+              )}
+            </div>
 
             <div className="flex gap-2">
               <button
