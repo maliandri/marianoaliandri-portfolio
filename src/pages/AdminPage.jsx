@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../utils/firebaseservice';
+import priceService from '../utils/priceService';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -276,6 +277,9 @@ export default function AdminPage() {
           throw new Error(errorData.error || 'Error actualizando producto');
         }
       }
+
+      // Limpiar caché del priceService para que la tienda vea el cambio
+      priceService.clearCache();
 
       alert('✅ Producto actualizado exitosamente');
 

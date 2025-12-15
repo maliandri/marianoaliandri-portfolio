@@ -34,10 +34,11 @@ export default function Store({ isOpen, onClose }) {
           serviceType: product.serviceType || 'store',
           websiteType: product.websiteType || null,
           active: product.active !== false,
-          // Campos adicionales para compatibilidad con ProductCard
+          // Campos adicionales para compatibilidad con ProductCard y Modal
           shortDescription: product.description || '',
-          features: [],
-          tags: [],
+          features: ['Desarrollo profesional', 'Soporte técnico', 'Documentación incluida'],
+          deliverables: ['Código fuente', 'Documentación técnica', 'Capacitación'],
+          tags: [product.category || 'Servicio'],
           duration: '2-4 semanas',
           image: null,
           demo: null,
