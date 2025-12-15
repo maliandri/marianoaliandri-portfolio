@@ -49,10 +49,9 @@ export default function AdminPage() {
           });
           setUsers(usersData);
 
-          // Load orders
+          // Load orders (sin orderBy para evitar necesidad de índice)
           const ordersRef = collection(db, 'orders');
-          const q = query(ordersRef, orderBy('createdAt', 'desc'));
-          const ordersSnapshot = await getDocs(q);
+          const ordersSnapshot = await getDocs(ordersRef);
           const ordersData = [];
           let totalRevenue = 0;
           let cvCount = 0;
@@ -72,6 +71,14 @@ export default function AdminPage() {
               storeCount++;
             }
           });
+
+          // Ordenar manualmente por fecha
+          ordersData.sort((a, b) => {
+            const dateA = a.createdAt?.seconds || 0;
+            const dateB = b.createdAt?.seconds || 0;
+            return dateB - dateA;
+          });
+
           setOrders(ordersData);
 
           // Load products
