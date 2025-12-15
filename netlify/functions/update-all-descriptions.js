@@ -17,57 +17,67 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Maliandri$#652542026';
 
-// 📋 Descripciones profesionales con beneficios
+// 📋 Descripciones profesionales con beneficios e imágenes
 const PRODUCT_DESCRIPTIONS = {
   'roi-consulting': {
     name: 'Consulta Personalizada ROI',
     description: 'Análisis detallado de retorno de inversión para tu negocio. Evaluamos tus procesos actuales, identificamos oportunidades de optimización y calculamos el impacto financiero de implementar soluciones tecnológicas. Incluye reporte completo con métricas clave, recomendaciones estratégicas y proyección de ahorros.',
-    shortDescription: 'Análisis de ROI personalizado con reporte detallado de oportunidades'
+    shortDescription: 'Análisis de ROI personalizado con reporte detallado de oportunidades',
+    image: 'https://res.cloudinary.com/dxtukln2e/image/upload/v1734308341/ROICONSULT.webp'
   },
   'landing-page': {
     name: 'Landing Page',
     description: 'Página de aterrizaje profesional diseñada para maximizar conversiones. Ideal para lanzamientos de productos, campañas de marketing o captación de leads. Incluye diseño responsivo, formulario de contacto optimizado, integración con Google Analytics, optimización SEO básica y velocidad de carga ultrarrápida.',
-    shortDescription: 'Página única optimizada para conversión de visitantes en clientes'
+    shortDescription: 'Página única optimizada para conversión de visitantes en clientes',
+    image: 'https://res.cloudinary.com/dxtukln2e/image/upload/v1734308341/LANDINGPAGE.webp'
   },
   'business-website': {
     name: 'Sitio Web Empresarial',
     description: 'Sitio web corporativo completo con 4-8 páginas profesionales. Perfecto para empresas que buscan presencia digital sólida. Incluye diseño personalizado, secciones institucionales (nosotros, servicios, contacto), formularios de contacto, galería de proyectos, blog integrado y panel de administración para actualizar contenidos sin conocimientos técnicos.',
-    shortDescription: 'Sitio corporativo profesional con múltiples secciones y panel admin'
+    shortDescription: 'Sitio corporativo profesional con múltiples secciones y panel admin',
+    image: 'https://res.cloudinary.com/dxtukln2e/image/upload/v1734308341/SITIOCORPORATIVO.webp'
   },
   'ecommerce': {
     name: 'E-commerce',
     description: 'Tienda online completa con carrito de compras, pasarela de pagos y gestión de inventario. Incluye catálogo de productos ilimitado, búsqueda avanzada, filtros por categoría, sistema de pagos con Mercado Pago/PayPal, panel de administración de órdenes, gestión de stock, cupones de descuento, email transaccional automático y reportes de ventas.',
-    shortDescription: 'Tienda online completa con pagos, inventario y gestión de órdenes'
+    shortDescription: 'Tienda online completa con pagos, inventario y gestión de órdenes',
+    image: 'https://res.cloudinary.com/dxtukln2e/image/upload/v1734308341/ecommerce.webp'
   },
   'portfolio': {
     name: 'Portfolio/Catálogo',
     description: 'Sitio web tipo portfolio para mostrar tus proyectos, trabajos o productos de forma profesional. Ideal para diseñadores, fotógrafos, arquitectos o empresas de servicios. Incluye galería de proyectos con lightbox, categorización, filtros interactivos, página de casos de éxito, sección de testimonios y formulario de cotización.',
-    shortDescription: 'Galería profesional de proyectos con filtros y casos de éxito'
+    shortDescription: 'Galería profesional de proyectos con filtros y casos de éxito',
+    image: 'https://res.cloudinary.com/dxtukln2e/image/upload/v1734308341/portfolio.webp'
   },
   'blog': {
     name: 'Blog/Noticias',
     description: 'Plataforma de contenidos con sistema de blog profesional. Perfecta para marketing de contenidos, noticias corporativas o publicaciones regulares. Incluye editor de artículos WYSIWYG, categorías y etiquetas, buscador interno, comentarios moderados, suscripción por email, RSS feed, compartir en redes sociales y optimización SEO automática.',
-    shortDescription: 'Plataforma de contenidos con editor, categorías y SEO optimizado'
+    shortDescription: 'Plataforma de contenidos con editor, categorías y SEO optimizado',
+    image: 'https://res.cloudinary.com/dxtukln2e/image/upload/v1734308341/BlogNoticias.webp'
   },
   'webapp': {
     name: 'Aplicación Web',
     description: 'Aplicación web personalizada a medida para procesos de negocio específicos. Desarrollo de sistemas complejos con múltiples funcionalidades: gestión de usuarios con roles, bases de datos relacionales, API REST, dashboard con métricas en tiempo real, notificaciones push, exportación de datos (Excel/PDF), integración con servicios externos y arquitectura escalable.',
-    shortDescription: 'Sistema web personalizado con gestión de usuarios, API y dashboards'
+    shortDescription: 'Sistema web personalizado con gestión de usuarios, API y dashboards',
+    image: 'https://res.cloudinary.com/dxtukln2e/image/upload/v1734308341/webapp.webp'
   },
   'membership': {
     name: 'Sitio de Membresías',
     description: 'Plataforma con sistema de membresías y contenido exclusivo. Ideal para cursos online, comunidades premium o suscripciones. Incluye registro y login de usuarios, niveles de membresía (básico/premium), área privada de miembros, gestión de suscripciones recurrentes con Mercado Pago, control de acceso por rol, foro privado y panel de usuario personalizado.',
-    shortDescription: 'Plataforma de membresías con área privada y suscripciones recurrentes'
+    shortDescription: 'Plataforma de membresías con área privada y suscripciones recurrentes',
+    image: 'https://res.cloudinary.com/dxtukln2e/image/upload/v1734308341/Membresias.webp'
   },
   'ai-chatbot-website': {
     name: 'Página Web con Atención IA',
     description: 'Sitio web empresarial potenciado con chatbot de inteligencia artificial. El asistente virtual responde preguntas frecuentes 24/7, califica leads automáticamente y deriva consultas complejas. Incluye sitio web de 3-5 páginas, chatbot entrenado con tu información, integración con WhatsApp/Email, panel de analíticas de conversaciones y captación de leads cualificados.',
-    shortDescription: 'Web con chatbot IA que atiende clientes 24/7 y califica leads'
+    shortDescription: 'Web con chatbot IA que atiende clientes 24/7 y califica leads',
+    image: 'https://res.cloudinary.com/dxtukln2e/image/upload/v1734308341/WEBATENCIONIA.webp'
   },
   'powerbi-dashboard': {
     name: 'Dashboard Power BI',
     description: 'Dashboard interactivo personalizado con Power BI para visualización de datos empresariales. Conecta múltiples fuentes de datos (Excel, SQL, APIs, Google Sheets), transforma información en gráficos ejecutivos, métricas KPI en tiempo real, filtros interactivos, drill-down por dimensiones, actualización automática programada y acceso desde cualquier dispositivo.',
-    shortDescription: 'Dashboard ejecutivo con visualización de datos y métricas en tiempo real'
+    shortDescription: 'Dashboard ejecutivo con visualización de datos y métricas en tiempo real',
+    image: 'https://res.cloudinary.com/dxtukln2e/image/upload/v1734308341/dashboard.webp'
   }
 };
 
@@ -105,6 +115,7 @@ export const handler = async (event) => {
         name: productData.name,
         description: productData.description,
         shortDescription: productData.shortDescription || productData.description,
+        image: productData.image || null,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       }).then(() => {
         updatedProducts.push(productId);

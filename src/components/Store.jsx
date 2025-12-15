@@ -48,14 +48,14 @@ export default function Store({ isOpen, onClose }) {
           websiteType: product.websiteType || null,
           active: product.active !== false,
           // Campos adicionales para compatibilidad con ProductCard y Modal
-          shortDescription: product.description || '',
+          shortDescription: product.shortDescription || product.description || '',
           features: ['Desarrollo profesional', 'Soporte técnico', 'Documentación incluida'],
           deliverables: ['Código fuente', 'Documentación técnica', 'Capacitación'],
           tags: [product.category || 'Servicio'],
           duration: '2-4 semanas',
-          image: null,
-          demo: null,
-          featured: false,
+          image: product.image || null,
+          demo: product.demo || null,
+          featured: product.featured || false,
           isCustom: !product.priceUSD
         }));
 
