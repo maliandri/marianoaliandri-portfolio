@@ -153,10 +153,43 @@ export default function AdminPage() {
     setPassword('');
   };
 
+  const resetProducts = async () => {
+    if (!confirm('⚠️ ¿Resetear TODOS los productos?\n\n' +
+                 'Esto va a:\n' +
+                 '- Eliminar todos los productos existentes\n' +
+                 '- Crear 10 productos nuevos con precios USD\n\n' +
+                 '¿Continuar?')) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch('/.netlify/functions/reset-products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminPassword: sessionStorage.getItem('adminPassword')
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert('✅ Productos reseteados!\n\n' +
+              '🛍️ Productos creados: ' + result.productsCreated + '\n\n' +
+              'Recargando...');
+        window.location.reload();
+      } else {
+        throw new Error('Error reseteando productos');
+      }
+    } catch (error) {
+      alert('Error: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const createTestOrders = async () => {
     if (!confirm('¿Crear datos de prueba?\n\n' +
                  '- 2 órdenes (CV + Tienda)\n' +
-                 '- 4 productos para la tienda\n\n' +
+                 '- 10 productos\n\n' +
                  'Esto te ayudará a probar el sistema.')) return;
 
     try {
@@ -580,6 +613,13 @@ export default function AdminPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Productos de la Tienda ({products.length})</h2>
+              <button
+                onClick={resetProducts}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium"
+                disabled={loading}
+              >
+                🔄 Resetear Productos (10)
+              </button>
             </div>
 
             <div className="space-y-4">
