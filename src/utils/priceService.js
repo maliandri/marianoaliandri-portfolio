@@ -49,6 +49,8 @@ class PriceService {
 
     try {
       console.log('🔥 Intentando cargar precios desde Firebase...');
+      console.log('🔧 Firebase db object:', db ? 'initialized' : 'undefined');
+      console.log('🔧 Firebase project:', db?.app?.options?.projectId || 'unknown');
       const productsSnapshot = await getDocs(collection(db, 'products'));
       const prices = {};
 
