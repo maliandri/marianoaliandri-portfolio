@@ -37,21 +37,32 @@ export default function AdminPage() {
   // Load data when authenticated
   useEffect(() => {
     if (isAuthenticated) {
+      let cancelled = false;
+
       const loadData = async () => {
         setLoading(true);
         try {
+          console.log('🔄 Iniciando carga de datos admin...');
+
           // Load users
+          console.log('👥 Cargando usuarios...');
           const usersRef = collection(db, 'users');
           const usersSnapshot = await getDocs(usersRef);
+          if (cancelled) return;
+
           const usersData = [];
           usersSnapshot.forEach((doc) => {
             usersData.push({ id: doc.id, ...doc.data() });
           });
           setUsers(usersData);
+          console.log(`✅ ${usersData.length} usuarios cargados`);
 
           // Load orders (sin orderBy para evitar necesidad de índice)
+          console.log('📦 Cargando órdenes...');
           const ordersRef = collection(db, 'orders');
           const ordersSnapshot = await getDocs(ordersRef);
+          if (cancelled) return;
+
           const ordersData = [];
           let totalRevenue = 0;
           let cvCount = 0;
@@ -80,15 +91,20 @@ export default function AdminPage() {
           });
 
           setOrders(ordersData);
+          console.log(`✅ ${ordersData.length} órdenes cargadas`);
 
           // Load products
+          console.log('🛍️ Cargando productos...');
           const productsRef = collection(db, 'products');
           const productsSnapshot = await getDocs(productsRef);
+          if (cancelled) return;
+
           const productsData = [];
           productsSnapshot.forEach((doc) => {
             productsData.push({ id: doc.id, ...doc.data() });
           });
           setProducts(productsData);
+          console.log(`✅ ${productsData.length} productos cargados`);
 
           // Update stats
           setStats({
@@ -98,13 +114,26 @@ export default function AdminPage() {
             cvAnalysis: cvCount,
             storeOrders: storeCount
           });
+
+          console.log('✅ Todos los datos cargados exitosamente');
         } catch (error) {
-          console.error('Error cargando datos admin:', error);
+          if (!cancelled) {
+            console.error('❌ Error cargando datos admin:', error);
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+          }
+        } finally {
+          if (!cancelled) {
+            setLoading(false);
+          }
         }
-        setLoading(false);
       };
 
       loadData();
+
+      return () => {
+        cancelled = true;
+      };
     }
   }, [isAuthenticated]);
 
@@ -246,6 +275,7 @@ export default function AdminPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="Usuario"
                 required
@@ -258,6 +288,7 @@ export default function AdminPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="••••••••"
                 required
