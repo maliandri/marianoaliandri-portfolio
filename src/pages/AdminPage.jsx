@@ -250,12 +250,34 @@ export default function AdminPage() {
 
   const updateProduct = async (productId, updates) => {
     try {
-      const productRef = doc(db, 'products', productId);
-      await updateDoc(productRef, {
-        ...updates,
-        updatedAt: new Date()
-      });
-      alert('Producto actualizado exitosamente');
+      const isDev = window.location.hostname === 'localhost';
+
+      if (isDev) {
+        // DESARROLLO: usar Client SDK directamente
+        const productRef = doc(db, 'products', productId);
+        await updateDoc(productRef, {
+          ...updates,
+          updatedAt: new Date()
+        });
+      } else {
+        // PRODUCCIÓN: usar Netlify Function con Admin SDK
+        const response = await fetch('/.netlify/functions/update-product', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adminPassword: sessionStorage.getItem('adminPassword'),
+            productId,
+            updates
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Error actualizando producto');
+        }
+      }
+
+      alert('✅ Producto actualizado exitosamente');
 
       // Actualizar el estado local sin recargar desde Firestore
       setProducts(prevProducts =>
@@ -264,7 +286,7 @@ export default function AdminPage() {
         )
       );
     } catch (error) {
-      alert('Error actualizando producto: ' + error.message);
+      alert('❌ Error actualizando producto: ' + error.message);
     }
   };
 

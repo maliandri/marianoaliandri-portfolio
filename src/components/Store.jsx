@@ -1,17 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { products, productCategories, searchProducts } from '../data/products';
+import { productCategories } from '../data/products';
 import ProductCard from './ProductCard';
 import ProductDetailModal from './ProductDetailModal';
 import Cart from './Cart';
 import { useCart } from '../context/CartContext';
+import priceService from '../utils/priceService';
 
 export default function Store({ isOpen, onClose }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showCart, setShowCart] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { getCartCount } = useCart();
+
+  // Cargar productos desde Firebase
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const pricesData = await priceService.getAllPrices();
+
+        // Convertir objeto de precios a array de productos
+        const productsArray = Object.values(pricesData).map(product => ({
+          id: product.id,
+          name: product.name || 'Sin nombre',
+          description: product.description || '',
+          priceUSD: product.priceUSD || null,
+          priceARS: product.priceARS || null,
+          category: product.category || 'custom',
+          serviceType: product.serviceType || 'store',
+          websiteType: product.websiteType || null,
+          active: product.active !== false,
+          // Campos adicionales para compatibilidad con ProductCard
+          shortDescription: product.description || '',
+          features: [],
+          tags: [],
+          duration: '2-4 semanas',
+          image: null,
+          demo: null,
+          featured: false,
+          isCustom: !product.priceUSD
+        }));
+
+        setProducts(productsArray.filter(p => p.active));
+      } catch (error) {
+        console.error('Error cargando productos:', error);
+        // Si falla, usar productos vacíos (el servicio ya tiene fallbacks)
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      loadProducts();
+    }
+  }, [isOpen]);
 
   // Filtrar productos
   const filteredProducts = React.useMemo(() => {
@@ -19,7 +66,11 @@ export default function Store({ isOpen, onClose }) {
 
     // Filtrar por búsqueda
     if (searchQuery.trim()) {
-      filtered = searchProducts(searchQuery);
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query)
+      );
     }
 
     // Filtrar por categoría
@@ -28,7 +79,7 @@ export default function Store({ isOpen, onClose }) {
     }
 
     return filtered;
-  }, [searchQuery, selectedCategory]);
+  }, [products, searchQuery, selectedCategory]);
 
   const categories = [
     { id: 'all', label: 'Todos', icon: '🏪' },
@@ -133,7 +184,14 @@ export default function Store({ isOpen, onClose }) {
 
           {/* Grid de productos */}
           <div className="flex-1 overflow-y-auto p-6">
-            {filteredProducts.length > 0 ? (
+            {loading ? (
+              <div className="text-center py-16">
+                <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600 mb-4"></div>
+                <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300">
+                  Cargando productos...
+                </h3>
+              </div>
+            ) : filteredProducts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((product) => (
                   <ProductCard
