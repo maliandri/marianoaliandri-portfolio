@@ -126,6 +126,41 @@ export default function AdminPage() {
     setPassword('');
   };
 
+  const createTestOrders = async () => {
+    if (!confirm('¿Crear datos de prueba?\n\n' +
+                 '- 2 órdenes (CV + Tienda)\n' +
+                 '- 4 productos para la tienda\n\n' +
+                 'Esto te ayudará a probar el sistema.')) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch('/.netlify/functions/create-test-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminPassword: sessionStorage.getItem('adminPassword')
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert('✅ Datos de prueba creados exitosamente!\n\n' +
+              '📦 Órdenes: ' + Object.keys(result.data.orders).length + '\n' +
+              '🛍️ Productos: ' + result.data.products.length + '\n\n' +
+              'Recargando página...');
+
+        // Recargar datos
+        window.location.reload();
+      } else {
+        throw new Error('Error creando datos de prueba');
+      }
+    } catch (error) {
+      alert('Error: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resendCVEmail = async (order) => {
     try {
       setLoading(true);
@@ -298,6 +333,14 @@ export default function AdminPage() {
               <p className="text-sm text-gray-500 dark:text-gray-400">Bienvenido, {username}</p>
             </div>
             <div className="flex gap-4">
+              <button
+                onClick={createTestOrders}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                disabled={loading}
+              >
+                <span>🧪</span>
+                Crear Datos de Prueba
+              </button>
               <button
                 onClick={() => navigate('/')}
                 className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
