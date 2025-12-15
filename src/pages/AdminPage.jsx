@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
@@ -37,9 +37,69 @@ export default function AdminPage() {
   // Load data when authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      loadAdminData();
+      const loadData = async () => {
+        setLoading(true);
+        try {
+          // Load users
+          const usersRef = collection(db, 'users');
+          const usersSnapshot = await getDocs(usersRef);
+          const usersData = [];
+          usersSnapshot.forEach((doc) => {
+            usersData.push({ id: doc.id, ...doc.data() });
+          });
+          setUsers(usersData);
+
+          // Load orders
+          const ordersRef = collection(db, 'orders');
+          const q = query(ordersRef, orderBy('createdAt', 'desc'));
+          const ordersSnapshot = await getDocs(q);
+          const ordersData = [];
+          let totalRevenue = 0;
+          let cvCount = 0;
+          let storeCount = 0;
+
+          ordersSnapshot.forEach((doc) => {
+            const order = { id: doc.id, ...doc.data() };
+            ordersData.push(order);
+
+            if (order.status === 'approved' && order.totalARS) {
+              totalRevenue += order.totalARS;
+            }
+
+            if (order.type === 'cv_analysis') {
+              cvCount++;
+            } else {
+              storeCount++;
+            }
+          });
+          setOrders(ordersData);
+
+          // Load products
+          const productsRef = collection(db, 'products');
+          const productsSnapshot = await getDocs(productsRef);
+          const productsData = [];
+          productsSnapshot.forEach((doc) => {
+            productsData.push({ id: doc.id, ...doc.data() });
+          });
+          setProducts(productsData);
+
+          // Update stats
+          setStats({
+            totalUsers: usersData.length,
+            totalOrders: ordersData.length,
+            totalRevenue,
+            cvAnalysis: cvCount,
+            storeOrders: storeCount
+          });
+        } catch (error) {
+          console.error('Error cargando datos admin:', error);
+        }
+        setLoading(false);
+      };
+
+      loadData();
     }
-  }, [isAuthenticated, loadAdminData]);
+  }, [isAuthenticated]);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -63,66 +123,6 @@ export default function AdminPage() {
     setUsername('');
     setPassword('');
   };
-
-  const loadAdminData = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Load users
-      const usersRef = collection(db, 'users');
-      const usersSnapshot = await getDocs(usersRef);
-      const usersData = [];
-      usersSnapshot.forEach((doc) => {
-        usersData.push({ id: doc.id, ...doc.data() });
-      });
-      setUsers(usersData);
-
-      // Load orders
-      const ordersRef = collection(db, 'orders');
-      const q = query(ordersRef, orderBy('createdAt', 'desc'));
-      const ordersSnapshot = await getDocs(q);
-      const ordersData = [];
-      let totalRevenue = 0;
-      let cvCount = 0;
-      let storeCount = 0;
-
-      ordersSnapshot.forEach((doc) => {
-        const order = { id: doc.id, ...doc.data() };
-        ordersData.push(order);
-
-        if (order.status === 'approved' && order.totalARS) {
-          totalRevenue += order.totalARS;
-        }
-
-        if (order.type === 'cv_analysis') {
-          cvCount++;
-        } else {
-          storeCount++;
-        }
-      });
-      setOrders(ordersData);
-
-      // Load products
-      const productsRef = collection(db, 'products');
-      const productsSnapshot = await getDocs(productsRef);
-      const productsData = [];
-      productsSnapshot.forEach((doc) => {
-        productsData.push({ id: doc.id, ...doc.data() });
-      });
-      setProducts(productsData);
-
-      // Update stats
-      setStats({
-        totalUsers: usersData.length,
-        totalOrders: ordersData.length,
-        totalRevenue,
-        cvAnalysis: cvCount,
-        storeOrders: storeCount
-      });
-    } catch (error) {
-      console.error('Error cargando datos admin:', error);
-    }
-    setLoading(false);
-  }, []);
 
   const resendCVEmail = async (order) => {
     try {
