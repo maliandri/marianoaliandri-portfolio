@@ -188,25 +188,23 @@ export default function AdminPage() {
     }
   };
 
-  const updateProductPrice = async (productId, newPrice) => {
+  const updateProduct = async (productId, updates) => {
     try {
       const productRef = doc(db, 'products', productId);
       await updateDoc(productRef, {
-        priceARS: parseFloat(newPrice),
+        ...updates,
         updatedAt: new Date()
       });
-      alert('Precio actualizado exitosamente');
+      alert('Producto actualizado exitosamente');
 
-      // Recargar solo productos
-      const productsRef = collection(db, 'products');
-      const snapshot = await getDocs(productsRef);
-      const productsData = [];
-      snapshot.forEach((doc) => {
-        productsData.push({ id: doc.id, ...doc.data() });
-      });
-      setProducts(productsData);
+      // Actualizar el estado local sin recargar desde Firestore
+      setProducts(prevProducts =>
+        prevProducts.map(p =>
+          p.id === productId ? { ...p, ...updates } : p
+        )
+      );
     } catch (error) {
-      alert('Error actualizando precio: ' + error.message);
+      alert('Error actualizando producto: ' + error.message);
     }
   };
 
@@ -559,7 +557,7 @@ export default function AdminPage() {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onUpdatePrice={updateProductPrice}
+                  onUpdate={updateProduct}
                   onDelete={deleteProduct}
                   formatARS={formatARS}
                 />
@@ -572,64 +570,134 @@ export default function AdminPage() {
   );
 }
 
-function ProductCard({ product, onUpdatePrice, onDelete, formatARS }) {
+function ProductCard({ product, onUpdate, onDelete, formatARS }) {
   const [editing, setEditing] = useState(false);
-  const [newPrice, setNewPrice] = useState(product.priceARS || 0);
+  const [formData, setFormData] = useState({
+    name: product.name || product.title || '',
+    description: product.description || '',
+    priceARS: product.priceARS || 0
+  });
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleSave = () => {
-    onUpdatePrice(product.id, newPrice);
+    onUpdate(product.id, {
+      name: formData.name,
+      description: formData.description,
+      priceARS: parseFloat(formData.priceARS)
+    });
+    setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      name: product.name || product.title || '',
+      description: product.description || '',
+      priceARS: product.priceARS || 0
+    });
     setEditing(false);
   };
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{product.name || product.title}</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{product.description}</p>
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+      {editing ? (
+        <div className="space-y-4">
+          {/* Título */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Título del Producto
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Ej: Desarrollo Web Premium"
+            />
+          </div>
 
-          <div className="flex items-center gap-4">
-            {editing ? (
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  value={newPrice}
-                  onChange={(e) => setNewPrice(e.target.value)}
-                  className="w-32 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-                <button
-                  onClick={handleSave}
-                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  Guardar
-                </button>
-                <button
-                  onClick={() => setEditing(false)}
-                  className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
-                >
-                  Cancelar
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <span className="text-2xl font-bold text-gray-900 dark:text-white">{formatARS(product.priceARS || 0)}</span>
-                <button
-                  onClick={() => setEditing(true)}
-                  className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                >
-                  Editar Precio
-                </button>
-                <button
-                  onClick={() => onDelete(product.id)}
-                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                >
-                  Eliminar
-                </button>
-              </div>
-            )}
+          {/* Descripción */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Descripción
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              placeholder="Descripción del producto..."
+            />
+          </div>
+
+          {/* Precio */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Precio (ARS)
+            </label>
+            <input
+              type="number"
+              value={formData.priceARS}
+              onChange={(e) => handleChange('priceARS', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="0"
+              min="0"
+            />
+          </div>
+
+          {/* Botones */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+            >
+              💾 Guardar Cambios
+            </button>
+            <button
+              onClick={handleCancel}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Cancelar
+            </button>
           </div>
         </div>
-      </div>
+      ) : (
+        <div>
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                {product.name || product.title}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {product.description}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              {formatARS(product.priceARS || 0)}
+            </span>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setEditing(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                ✏️ Editar
+              </button>
+              <button
+                onClick={() => onDelete(product.id)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+              >
+                🗑️ Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
