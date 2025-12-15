@@ -201,7 +201,7 @@ export default function OrdersPage() {
       {/* Botón de cierre */}
       <button
         onClick={() => navigate('/')}
-        className="fixed top-6 right-6 z-50 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+        className="fixed top-6 left-6 z-50 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
         title="Volver al inicio"
       >
         <svg
