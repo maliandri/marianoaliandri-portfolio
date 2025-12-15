@@ -26,6 +26,7 @@ import Footer from "./components/Footer.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import OrdersPage from "./pages/OrdersPage.jsx";
 import StorePage from "./pages/StorePage.jsx";
+import AdminPage from "./pages/AdminPage.jsx";
 
 import "./index.css";
 
@@ -84,6 +85,7 @@ export default function App() {
           <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/mis-compras" element={<OrdersPage />} />
           <Route path="/tienda" element={<StorePage />} />
+          <Route path="/admin" element={<AdminPage />} />
           {/* Las rutas de pago se han eliminado según lo solicitado */}
         </Routes>
 
