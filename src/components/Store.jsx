@@ -21,6 +21,10 @@ export default function Store({ isOpen, onClose }) {
     const loadProducts = async () => {
       try {
         setLoading(true);
+
+        // Limpiar caché para siempre obtener datos frescos
+        priceService.clearCache();
+
         const pricesData = await priceService.getAllPrices();
 
         // Convertir objeto de precios a array de productos
