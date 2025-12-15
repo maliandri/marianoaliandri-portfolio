@@ -18,6 +18,8 @@ export default function Store({ isOpen, onClose }) {
 
   // Cargar productos desde Firebase
   useEffect(() => {
+    let isMounted = true;
+
     const loadProducts = async () => {
       try {
         setLoading(true);
@@ -26,6 +28,10 @@ export default function Store({ isOpen, onClose }) {
         priceService.clearCache();
 
         const pricesData = await priceService.getAllPrices();
+
+        if (!isMounted) return; // No actualizar si el componente se desmontó
+
+        console.log('🛍️ Productos cargados desde Firebase:', pricesData);
 
         // Convertir objeto de precios a array de productos
         const productsArray = Object.values(pricesData).map(product => ({
@@ -52,17 +58,24 @@ export default function Store({ isOpen, onClose }) {
 
         setProducts(productsArray.filter(p => p.active));
       } catch (error) {
+        if (!isMounted) return;
         console.error('Error cargando productos:', error);
         // Si falla, usar productos vacíos (el servicio ya tiene fallbacks)
         setProducts([]);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     if (isOpen) {
       loadProducts();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [isOpen]);
 
   // Filtrar productos
