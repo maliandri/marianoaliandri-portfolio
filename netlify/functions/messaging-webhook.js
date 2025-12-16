@@ -554,7 +554,8 @@ export const handler = async (event) => {
       const data = JSON.parse(event.body);
       console.log('[Webhook Data]', {
         object: data.object,
-        entryCount: data.entry?.length
+        entryCount: data.entry?.length,
+        fullData: JSON.stringify(data, null, 2)
       });
 
       // Identificar tipo de webhook y parsear mensajes
