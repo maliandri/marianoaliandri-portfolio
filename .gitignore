@@ -44,4 +44,8 @@ pids
 .claudecode/
 .claude/
 
-# 
+# Scripts and utilities
+scripts/
+PRIVATE_KEY_FOR_NETLIFY.txt
+
+#
