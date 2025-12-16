@@ -531,11 +531,23 @@ export const handler = async (event) => {
 
       console.log('[Signature Validation]', {
         hasSignature: !!signature,
-        hasAppSecret: !!appSecret
+        hasAppSecret: !!appSecret,
+        signaturePreview: signature?.substring(0, 30)
       });
 
-      if (!signature || !validateSignature(event.body, signature, appSecret)) {
-        console.error('[Invalid Signature] ❌', { signature: signature?.substring(0, 20) });
+      let isValidSignature = false;
+      try {
+        isValidSignature = validateSignature(event.body, signature, appSecret);
+        console.log('[Signature Result]', { isValid: isValidSignature });
+      } catch (error) {
+        console.error('[Signature Validation Error]', error.message);
+      }
+
+      if (!signature || !isValidSignature) {
+        console.error('[Invalid Signature] ❌', {
+          hasSignature: !!signature,
+          isValid: isValidSignature
+        });
         return { statusCode: 403, headers, body: JSON.stringify({ error: 'Invalid signature' }) };
       }
 
