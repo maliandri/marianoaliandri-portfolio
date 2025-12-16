@@ -519,16 +519,31 @@ export const handler = async (event) => {
   // POST: Recibir mensajes
   if (event.httpMethod === 'POST') {
     try {
+      console.log('[POST Request Received]', {
+        hasBody: !!event.body,
+        bodyLength: event.body?.length,
+        headers: Object.keys(event.headers)
+      });
+
       // Validar firma HMAC
       const signature = event.headers['x-hub-signature-256'] || event.headers['X-Hub-Signature-256'];
       const appSecret = process.env.META_APP_SECRET || process.env.INSTAGRAM_APP_SECRET;
 
+      console.log('[Signature Validation]', {
+        hasSignature: !!signature,
+        hasAppSecret: !!appSecret
+      });
+
       if (!signature || !validateSignature(event.body, signature, appSecret)) {
-        console.error('[Invalid Signature] ❌');
+        console.error('[Invalid Signature] ❌', { signature: signature?.substring(0, 20) });
         return { statusCode: 403, headers, body: JSON.stringify({ error: 'Invalid signature' }) };
       }
 
       const data = JSON.parse(event.body);
+      console.log('[Webhook Data]', {
+        object: data.object,
+        entryCount: data.entry?.length
+      });
 
       // Identificar tipo de webhook y parsear mensajes
       let messages = [];
