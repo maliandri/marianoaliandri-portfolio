@@ -1,8 +1,9 @@
 // netlify/functions/messaging-webhook.js
 // Webhook UNIFICADO para Instagram, Facebook Messenger y WhatsApp
-// Usa Llama de Meta (1000 mensajes/día gratis) en lugar de Gemini
+// Usa Gemini AI para respuestas inteligentes
 import crypto from 'crypto';
 import admin from 'firebase-admin';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Inicializar Firebase Admin (solo una vez)
 if (!admin.apps.length) {
@@ -336,48 +337,28 @@ async function saveLead(userId, channel, username, leadData, conversationHistory
   }
 }
 
-// Procesar mensaje con Llama (Meta AI) - 1000 mensajes/día GRATIS
-async function processWithLlama(userMessage, history, channel) {
+// Procesar mensaje con Gemini AI
+async function processWithGemini(userMessage, history, channel) {
   try {
-    // Construir mensajes para Llama
-    const messages = [
-      {
-        role: 'system',
-        content: CHANNEL_CONTEXTS[channel]
-      },
-      ...history,
-      {
-        role: 'user',
-        content: userMessage
-      }
-    ];
-
-    // Llamar a Meta Llama API
-    const response = await fetch('https://graph.facebook.com/v21.0/me/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.META_AI_ACCESS_TOKEN || process.env.INSTAGRAM_PAGE_ACCESS_TOKEN}`
-      },
-      body: JSON.stringify({
-        model: 'meta-llama/Llama-3.2-11B-Vision-Instruct',
-        messages: messages,
-        max_tokens: 1000,
-        temperature: 0.7
-      })
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: CHANNEL_CONTEXTS[channel]
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('[Llama API Error]', error);
-      throw new Error(`Llama API Error: ${error.error?.message || 'Unknown'}`);
-    }
+    // Convertir historial a formato Gemini
+    const geminiHistory = history.map(msg => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }]
+    }));
 
-    const data = await response.json();
-    return data.choices[0].message.content;
+    const chat = model.startChat({ history: geminiHistory });
+    const result = await chat.sendMessage(userMessage);
+
+    return result.response.text();
 
   } catch (error) {
-    console.error('[Llama AI Error]', error);
+    console.error('[Gemini AI Error]', error);
 
     // Fallback personalizado por canal
     const fallbacks = {
@@ -402,8 +383,8 @@ async function processMessageAsync(userId, channel, username, messageText, acces
     // Detectar lead
     const leadInfo = detectLead(messageText);
 
-    // Procesar con Llama AI
-    const aiResponse = await processWithLlama(messageText, history, channel);
+    // Procesar con Gemini AI
+    const aiResponse = await processWithGemini(messageText, history, channel);
 
     // Guardar respuesta del bot
     await saveMessage(userId, channel, username, aiResponse, true);
