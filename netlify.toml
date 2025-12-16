@@ -2,8 +2,8 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-# Timeout extendido para Instagram webhook
-[functions."instagram-webhook"]
+# Timeout extendido para messaging webhook (Instagram, Messenger, WhatsApp)
+[functions."messaging-webhook"]
   timeout = 26
 
 [build]
@@ -72,9 +72,9 @@
   [headers.values]
     Cache-Control = "public, max-age=3600"
 
-# Headers para webhook de Instagram
+# Headers para webhook de Meta (Instagram, Messenger, WhatsApp)
 [[headers]]
-  for = "/.netlify/functions/instagram-webhook"
+  for = "/.netlify/functions/messaging-webhook"
   [headers.values]
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
