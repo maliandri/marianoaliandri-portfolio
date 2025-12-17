@@ -115,6 +115,34 @@ Para que Mariano te prepare una *propuesta personalizada*, confirmame:
 Mariano se comunica en 24hs para consulta gratuita de 30 min. ¿Dale?"`
 };
 
+// Obtener mensaje de Instagram usando Graph API (workaround para message_edit)
+async function fetchInstagramMessage(messageId, accessToken) {
+  try {
+    const url = `https://graph.instagram.com/v21.0/${messageId}?fields=id,text,from&access_token=${accessToken}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error('[Graph API Error]', {
+        status: response.status,
+        statusText: response.statusText
+      });
+      return null;
+    }
+
+    const data = await response.json();
+    console.log('[Graph API Success]', {
+      messageId: data.id,
+      hasText: !!data.text,
+      from: data.from?.id
+    });
+
+    return data;
+  } catch (error) {
+    console.error('[Graph API Fetch Error]', error.message);
+    return null;
+  }
+}
+
 // Validar firma HMAC de Meta
 function validateSignature(payload, signature, secret) {
   const expectedSignature = 'sha256=' + crypto
@@ -416,19 +444,47 @@ async function processMessageAsync(userId, channel, username, messageText, acces
 }
 
 // Parsear webhook de Instagram
-function parseInstagramWebhook(data) {
+async function parseInstagramWebhook(data) {
   const messages = [];
 
   for (const entry of data.entry || []) {
     for (const messaging of entry.messaging || []) {
+      // Mensaje normal con texto
       if (messaging.message && messaging.message.text) {
         messages.push({
           channel: 'instagram',
           userId: messaging.sender.id,
           username: messaging.sender.username || `ig_${messaging.sender.id.substring(0, 8)}`,
           text: messaging.message.text,
+          messageId: messaging.message.mid,
           accessToken: process.env.INSTAGRAM_PAGE_ACCESS_TOKEN
         });
+      }
+      // Workaround: message_edit con num_edit=0 indica mensaje nuevo
+      // Usamos Graph API para obtener el texto del mensaje
+      else if (messaging.message_edit && messaging.message_edit.num_edit === 0) {
+        console.log('[Instagram message_edit detected - fetching content via Graph API]', {
+          mid: messaging.message_edit.mid,
+          sender: messaging.sender?.id
+        });
+
+        const messageData = await fetchInstagramMessage(
+          messaging.message_edit.mid,
+          process.env.INSTAGRAM_PAGE_ACCESS_TOKEN
+        );
+
+        if (messageData && messageData.text) {
+          messages.push({
+            channel: 'instagram',
+            userId: messageData.from?.id || messaging.sender?.id,
+            username: messageData.from?.username || `ig_${(messageData.from?.id || messaging.sender?.id || '').substring(0, 8)}`,
+            text: messageData.text,
+            messageId: messageData.id,
+            accessToken: process.env.INSTAGRAM_PAGE_ACCESS_TOKEN
+          });
+        } else {
+          console.error('[Instagram message_edit] Could not fetch message text');
+        }
       }
     }
   }
@@ -562,7 +618,7 @@ export const handler = async (event) => {
       let messages = [];
 
       if (data.object === 'instagram') {
-        messages = parseInstagramWebhook(data);
+        messages = await parseInstagramWebhook(data);
       } else if (data.object === 'page') {
         messages = parseMessengerWebhook(data);
       } else if (data.object === 'whatsapp_business_account') {
