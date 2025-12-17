@@ -1,7 +1,7 @@
 // netlify/functions/messaging-webhook.js
 // Webhook UNIFICADO para Instagram, Facebook Messenger y WhatsApp
 // Usa Gemini AI para respuestas inteligentes
-// Updated: 2025-12-16 - Token refresh
+// Updated: 2025-12-17 - Instagram linked to Facebook Page
 import crypto from 'crypto';
 import admin from 'firebase-admin';
 import { GoogleGenerativeAI } from '@google/generative-ai';
