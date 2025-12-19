@@ -194,7 +194,7 @@ export default function Footer() {
             </a>
             {' · '}
             <a
-              href="mailto:marianoaliandri@gmail.com"
+              href="mailto:yo@marianoaliandri.com.ar"
               className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors underline"
             >
               Contacto
