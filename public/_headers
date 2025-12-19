@@ -1,6 +1,25 @@
 # Netlify Headers File
 # https://docs.netlify.com/routing/headers/
 
+# Políticas de privacidad para Meta - deben permitir ser mostradas en iframe
+/privacy-policy.html
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Content-Security-Policy: frame-ancestors 'self' https://www.facebook.com https://business.facebook.com https://developers.facebook.com
+
+/terms-of-service.html
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Content-Security-Policy: frame-ancestors 'self' https://www.facebook.com https://business.facebook.com https://developers.facebook.com
+
+/data-deletion.html
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Content-Security-Policy: frame-ancestors 'self' https://www.facebook.com https://business.facebook.com https://developers.facebook.com
+
 # HTML files
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
