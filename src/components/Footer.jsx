@@ -183,6 +183,23 @@ export default function Footer() {
           <p className="text-sm text-gray-600 dark:text-gray-400">
             © {new Date().getFullYear()} Mariano Aliandri. Todos los derechos reservados.
           </p>
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+            <a
+              href="/privacy-policy.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors underline"
+            >
+              Política de Privacidad
+            </a>
+            {' · '}
+            <a
+              href="mailto:marianoaliandri@gmail.com"
+              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors underline"
+            >
+              Contacto
+            </a>
+          </p>
         </div>
       </div>
     </footer>
