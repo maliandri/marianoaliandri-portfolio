@@ -74,8 +74,11 @@ export default function Footer() {
     {
       name: 'Mercado Pago Certified',
       logo: (
-        <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M15.968 7.456l-3.6 8.145-3.598-8.145h-3.11l5.599 12.117h2.219l5.598-12.117h-3.108zm-9.938 0h-3.03v12.117h3.03V7.456zm18.97 0h-3.03v12.117h3.03V7.456z"/>
+        <svg className="w-8 h-8" viewBox="0 0 32 32" fill="currentColor">
+          <path d="M27.5 8.5h-23C3.673 8.5 3 9.173 3 10v12c0 .827.673 1.5 1.5 1.5h23c.827 0 1.5-.673 1.5-1.5V10c0-.827-.673-1.5-1.5-1.5z"/>
+          <path d="M16 11c-2.761 0-5 2.239-5 5s2.239 5 5 5 5-2.239 5-5-2.239-5-5-5zm0 8c-1.654 0-3-1.346-3-3s1.346-3 3-3 3 1.346 3 3-1.346 3-3 3z" fill="#fff"/>
+          <path d="M16 14.5c-.827 0-1.5.673-1.5 1.5s.673 1.5 1.5 1.5 1.5-.673 1.5-1.5-.673-1.5-1.5-1.5z" fill="#fff"/>
+          <path d="M8 13h2v6H8zm14 0h2v6h-2z" fill="#fff"/>
         </svg>
       ),
       color: 'text-[#009EE3]'
