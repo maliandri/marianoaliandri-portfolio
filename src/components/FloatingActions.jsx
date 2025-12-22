@@ -1,6 +1,7 @@
 // src/components/FloatingActions.jsx
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import KpiRadar from "./KpiRadar";
 import DashboardStats from "./DashboardStats";
 import CVATSUploader from "./CVATSUploader";
@@ -8,6 +9,7 @@ import ROICalculator from "./Calculadora";
 import WebCalculator from "./CalculadoraWeb";
 
 export default function FloatingActions() {
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(true); // Abierto por defecto
   const [activeTool, setActiveTool] = useState(null);
 
@@ -59,6 +61,15 @@ export default function FloatingActions() {
       Component: KpiRadar
     }
   ];
+
+  // Cerrar menú cuando se navega a otra página (no home)
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      setIsMenuOpen(false);
+    } else {
+      setIsMenuOpen(true);
+    }
+  }, [location.pathname]);
 
   // Detectar deep-links al cargar
   useEffect(() => {
