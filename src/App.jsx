@@ -1,6 +1,7 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
-// import { motion } from "framer-motion"; // No lo estás usando aquí, se puede comentar
+import React, { useState } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import "./App.css";
+import "./index.css";
 
 // Context
 import { CartProvider } from "./context/CartContext.jsx";
@@ -17,22 +18,19 @@ import Contact from "./components/Contact.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import LikeSystem from "./components/LikeSystem.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
-import FloatingActions from "./components/FloatingActions.jsx";
-import Sidebar from "./components/Sidebar.jsx";
 import AuthButton from "./components/AuthButton.jsx";
 import ShopButton from "./components/ShopButton.jsx";
 import Footer from "./components/Footer.jsx";
 
-// Páginas
-import ProfilePage from "./pages/ProfilePage.jsx";
-import OrdersPage from "./pages/OrdersPage.jsx";
-import StorePage from "./pages/StorePage.jsx";
-import AdminPage from "./pages/AdminPage.jsx";
+// Herramientas
+import KpiRadar from "./components/KpiRadar";
+import DashboardStats from "./components/DashboardStats";
+import CVATSUploader from "./components/CVATSUploader";
+import ROICalculator from "./components/Calculadora";
+import WebCalculator from "./components/CalculadoraWeb";
 
-import "./index.css";
-
-// El contenido original de tu página principal ahora vive aquí
-const HomePage = ({ onToolOpen }) => (
+// HomePage Component
+const HomePage = () => (
   <>
     <SEO
       title="Mariano Aliandri | Dev. Full Stack, React, Python & Data"
@@ -40,12 +38,8 @@ const HomePage = ({ onToolOpen }) => (
       canonical="/"
     />
 
-    <div className="flex pt-20">
-      {/* Sidebar integrado */}
-      <Sidebar onToolOpen={onToolOpen} />
-
-      {/* Contenido principal */}
-      <main className="flex-1 max-w-5xl mx-auto p-4 space-y-20 relative">
+    <main className="animation-section">
+      <div className="animation-content-wrapper">
         <Hero />
         <section id="servicios" aria-label="Servicios profesionales">
           <ServiciosCarousel />
@@ -59,19 +53,28 @@ const HomePage = ({ onToolOpen }) => (
         <section id="contact" aria-label="Información de contacto">
           <Contact />
         </section>
-      </main>
-    </div>
+      </div>
+    </main>
   </>
 );
 
-export default function App() {
-  const [activeTool, setActiveTool] = React.useState(null);
+// Páginas
+import ProfilePage from "./pages/ProfilePage.jsx";
+import OrdersPage from "./pages/OrdersPage.jsx";
+import StorePage from "./pages/StorePage.jsx";
+import AdminPage from "./pages/AdminPage.jsx";
 
-  const handleToolOpen = (tool) => {
-    setActiveTool(tool);
+export default function App() {
+  const location = useLocation();
+  const [activeTool, setActiveTool] = useState(null);
+
+  // Abrir herramienta
+  const openTool = (toolId) => {
+    setActiveTool(toolId);
   };
 
-  const handleToolClose = () => {
+  // Cerrar herramienta
+  const closeTool = () => {
     setActiveTool(null);
     // Limpiar URL
     const url = new URL(window.location.href);
@@ -80,11 +83,13 @@ export default function App() {
     window.history.replaceState({}, "", url.toString());
   };
 
+  // Verificar si estamos en home
+  const isHomePage = location.pathname === '/';
+
   return (
     <CartProvider>
-      {/* AGREGADO: 'relative' y 'overflow-x-hidden'
-          Esto evita que elementos decorativos rompan el ancho de la página */}
-      <div className="font-sans min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500 relative overflow-x-hidden">
+      <div className="App font-sans min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500 relative overflow-x-hidden">
+
         {/* Barra superior con Tienda y Autenticación */}
         <div className="fixed top-6 right-20 z-50 flex items-center gap-3">
           <ShopButton />
@@ -93,17 +98,128 @@ export default function App() {
 
         <ThemeToggle />
         <LikeSystem />
-        <FloatingActions activeTool={activeTool} onClose={handleToolClose} />
-        <AIChatBot />
 
+        {/* Herramientas (Modales) */}
+        <DashboardStats
+          isOpen={activeTool === 'stats'}
+          onClose={closeTool}
+          hideFloatingButton={true}
+        />
+        <CVATSUploader
+          isOpen={activeTool === 'ats'}
+          onClose={closeTool}
+          hideFloatingButton={true}
+        />
+        <ROICalculator
+          isOpen={activeTool === 'roi'}
+          onClose={closeTool}
+          hideFloatingButton={true}
+        />
+        <WebCalculator
+          isOpen={activeTool === 'web'}
+          onClose={closeTool}
+          hideFloatingButton={true}
+        />
+        <KpiRadar
+          isOpen={activeTool === 'kpi'}
+          onClose={closeTool}
+          hideFloatingButton={true}
+        />
+
+        {/* Routes */}
         <Routes>
-          <Route path="/" element={<HomePage onToolOpen={handleToolOpen} />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/mis-compras" element={<OrdersPage />} />
           <Route path="/tienda" element={<StorePage />} />
           <Route path="/admin" element={<AdminPage />} />
-          {/* Las rutas de pago se han eliminado según lo solicitado */}
         </Routes>
+
+        {/* BOTONES FLOTANTES - Solo en home */}
+        {isHomePage && (
+          <div className="floating-buttons-container">
+            {/* Estadísticas */}
+            <button
+              className="floating-button"
+              onClick={() => openTool('stats')}
+              title="Estadísticas"
+            >
+              <span className="button-icon">📊</span>
+              <span className="button-label">Estadísticas</span>
+            </button>
+
+            {/* Analizador ATS */}
+            <button
+              className="floating-button"
+              onClick={() => openTool('ats')}
+              title="Analizador ATS"
+            >
+              <span className="button-icon">📄</span>
+              <span className="button-label">Analizador ATS</span>
+            </button>
+
+            {/* ROI Calculator */}
+            <button
+              className="floating-button"
+              onClick={() => openTool('roi')}
+              title="Calcular ROI"
+            >
+              <span className="button-icon">💰</span>
+              <span className="button-label">Calcular ROI</span>
+            </button>
+
+            {/* Web Calculator */}
+            <button
+              className="floating-button"
+              onClick={() => openTool('web')}
+              title="Cotizar Web"
+            >
+              <span className="button-icon">🌐</span>
+              <span className="button-label">Cotizar Web</span>
+            </button>
+
+            {/* KPI Radar */}
+            <button
+              className="floating-button"
+              onClick={() => openTool('kpi')}
+              title="Radar KPI"
+            >
+              <span className="button-icon">🎯</span>
+              <span className="button-label">Radar KPI</span>
+            </button>
+
+            <hr className="separator" />
+
+            {/* WhatsApp */}
+            <a
+              href="https://wa.me/+542995414422"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="floating-button social-button whatsapp-button"
+              title="WhatsApp"
+            >
+              <span className="button-icon">💬</span>
+              <span className="button-label">WhatsApp</span>
+            </a>
+
+            {/* Email */}
+            <a
+              href="mailto:yo@marianoaliandri.com.ar"
+              className="floating-button social-button email-button"
+              title="Email"
+            >
+              <span className="button-icon">✉️</span>
+              <span className="button-label">Email</span>
+            </a>
+
+            <hr className="separator" />
+
+            {/* ChatBot */}
+            <div className="mini-buttons-row">
+              <AIChatBot />
+            </div>
+          </div>
+        )}
 
         <Footer />
       </div>

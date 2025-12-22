@@ -1,0 +1,360 @@
+/* ================================================================== */
+/* APP.CSS - MARIANO ALIANDRI PORTFOLIO                              */
+/* ================================================================== */
+
+/* ================================================================== */
+/* VARIABLES Y TOKENS DE DISEÑO                                      */
+/* ================================================================== */
+
+:root {
+  /* Espaciado */
+  --header-height: 90px;
+  --header-spacing: 30px;
+  --content-padding-top: calc(var(--header-height) + var(--header-spacing));
+
+  /* Colores de Acento */
+  --color-accent-primary: #4c01f9;
+  --color-accent-secondary: #8e2de2;
+  --color-accent-gold: #d4a574;
+
+  /* Bordes */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 50px;
+
+  /* Transiciones */
+  --transition-fast: 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
+  --transition-base: 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  --transition-slow: 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* Z-index */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 1000;
+  --z-modal: 1001;
+}
+
+/* ================================================================== */
+/* LAYOUT PRINCIPAL                                                   */
+/* ================================================================== */
+
+.animation-section {
+  min-height: 100vh;
+  padding: 20px 20px 20px 300px;
+  background: var(--bg-primary, #f9fafb);
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  transition: background-color 0.3s ease;
+}
+
+.dark .animation-section {
+  background: var(--bg-primary, #111827);
+}
+
+.animation-content-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5rem;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+/* ================================================================== */
+/* BOTONES FLOTANTES - ESTILO ALMAMOD                                */
+/* ================================================================== */
+
+.floating-buttons-container {
+  position: fixed;
+  top: var(--content-padding-top);
+  left: 20px;
+  z-index: var(--z-fixed);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  /* Modo claro: fondo celeste suave con glassmorphism */
+  background: linear-gradient(135deg, rgba(227, 242, 253, 0.95) 0%, rgba(187, 222, 251, 0.95) 100%);
+  backdrop-filter: blur(15px) saturate(180%);
+  -webkit-backdrop-filter: blur(15px) saturate(180%);
+  padding: 20px 15px;
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  box-shadow:
+    0 8px 32px rgba(33, 150, 243, 0.2),
+    0 4px 16px rgba(33, 150, 243, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+/* Modo oscuro: fondo oscuro con glassmorphism */
+.dark .floating-buttons-container {
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.floating-button {
+  width: 230px;
+  justify-content: flex-start;
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-base);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(76, 1, 249, 0.2);
+  text-decoration: none;
+}
+
+.floating-button:hover {
+  transform: translateX(8px) scale(1.02);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.15),
+    0 8px 16px rgba(76, 1, 249, 0.3);
+}
+
+.floating-button:active {
+  transform: translateX(8px) scale(0.98);
+}
+
+/* Efecto de brillo en hover */
+.floating-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.floating-button:hover::before {
+  left: 100%;
+}
+
+.button-icon {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.button-label {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* Separador */
+.separator {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  border: none;
+  margin: 5px 0;
+}
+
+.dark .separator {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+}
+
+/* Botones sociales */
+.social-button {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.whatsapp-button {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+}
+
+.email-button {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+/* Contenedor de mini botones */
+.mini-buttons-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* ================================================================== */
+/* RESPONSIVE DESIGN - MÓVIL                                          */
+/* ================================================================== */
+
+@media (max-width: 992px) {
+  .floating-buttons-container {
+    left: 10px;
+    right: 10px;
+    width: auto;
+  }
+
+  .animation-section {
+    padding-left: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .animation-section {
+    padding: 140px 15px 15px 15px;
+  }
+
+  .floating-buttons-container {
+    top: 140px;
+    padding: 15px 10px;
+  }
+}
+
+/* ================================================================== */
+/* MÓVIL - BARRA INFERIOR                                             */
+/* ================================================================== */
+
+@media (max-width: 480px) {
+  .animation-section {
+    padding: 160px 10px 100px 10px !important;
+    min-height: calc(100vh - 100px);
+  }
+
+  .animation-content-wrapper {
+    width: 100%;
+  }
+
+  /* Botones flotantes en barra inferior */
+  .floating-buttons-container {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 10px 5px !important;
+    border-radius: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    max-height: 90px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 8px !important;
+    background: rgba(0, 0, 0, 0.95) !important;
+    z-index: 998 !important;
+    backdrop-filter: blur(20px) !important;
+  }
+
+  :root:not(.dark) .floating-buttons-container {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Botones como íconos circulares */
+  .floating-button {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Ocultar texto en móvil */
+  .floating-button span.button-label {
+    display: none !important;
+  }
+
+  /* Ajustar íconos */
+  .button-icon {
+    margin: 0 !important;
+    font-size: 1.2rem !important;
+  }
+
+  /* Ocultar separadores */
+  .separator {
+    display: none !important;
+  }
+
+  .floating-button::before {
+    display: none !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .floating-button {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+  }
+
+  .button-icon {
+    font-size: 1rem !important;
+  }
+
+  .floating-buttons-container {
+    padding: 8px 4px !important;
+    gap: 6px !important;
+  }
+}
+
+/* ================================================================== */
+/* FOOTER AJUSTES                                                     */
+/* ================================================================== */
+
+/* En desktop, agregar margen izquierdo para evitar superposición con botones flotantes */
+@media (min-width: 769px) {
+  .main-footer,
+  footer {
+    margin-left: 270px;
+    padding: 2.5rem 2rem;
+  }
+}
+
+/* En móvil, agregar padding inferior para evitar que la barra de botones tape el footer */
+@media (max-width: 480px) {
+  .main-footer,
+  footer {
+    padding-bottom: 100px;
+  }
+}
