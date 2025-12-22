@@ -60,7 +60,7 @@ export default function Sidebar({ onToolOpen }) {
   };
 
   return (
-    <aside className="w-64 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-r-2 border-purple-300 dark:border-purple-700 flex flex-col sticky top-0 h-screen">
+    <aside className="w-64 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-r-2 border-purple-300 dark:border-purple-700 flex flex-col sticky top-20 h-[calc(100vh-5rem)] self-start">
       {/* Header compacto */}
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-3">
         <h3 className="text-base font-bold flex items-center gap-2">

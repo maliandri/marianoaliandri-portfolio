@@ -40,7 +40,7 @@ const HomePage = ({ onToolOpen }) => (
       canonical="/"
     />
 
-    <div className="flex">
+    <div className="flex pt-20">
       {/* Sidebar integrado */}
       <Sidebar onToolOpen={onToolOpen} />
 
