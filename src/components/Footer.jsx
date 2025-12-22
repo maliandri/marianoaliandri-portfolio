@@ -101,25 +101,25 @@ export default function Footer() {
   ];
 
   const handleScrollTo = (href) => {
-    // Extraer el hash del href (ej: "/#contact" -> "#contact")
+    // Extraer el hash del href (ej: "/#contact" -> "contact")
     const hash = href.includes('#') ? href.split('#')[1] : '';
 
     // Si no estamos en la página principal, navegar primero
     if (location.pathname !== '/') {
-      navigate('/');
-      // Esperar a que la navegación complete y luego hacer scroll
+      // Navegar a home con el hash
+      navigate(`/#${hash}`);
+      // El FloatingActions detectará el hash automáticamente
+    } else {
+      // Ya estamos en home, actualizar el hash directamente
+      window.location.hash = hash;
+
+      // Para secciones normales (no calculadoras), hacer scroll
       setTimeout(() => {
         const element = document.getElementById(hash);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }, 100);
-    } else {
-      // Ya estamos en la página principal, hacer scroll directo
-      const element = document.getElementById(hash);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
     }
   };
 
