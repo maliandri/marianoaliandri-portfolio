@@ -139,24 +139,14 @@ export default function App() {
         {/* BOTONES FLOTANTES - Solo en home */}
         {isHomePage && (
           <div className="floating-buttons-container">
-            {/* Estadísticas */}
+            {/* Web Calculator */}
             <button
               className="floating-button"
-              onClick={() => openTool('stats')}
-              title="Estadísticas"
+              onClick={() => openTool('web')}
+              title="Cotizar Web"
             >
-              <span className="button-icon">📊</span>
-              <span className="button-label">Estadísticas</span>
-            </button>
-
-            {/* Analizador ATS */}
-            <button
-              className="floating-button"
-              onClick={() => openTool('ats')}
-              title="Analizador ATS"
-            >
-              <span className="button-icon">📄</span>
-              <span className="button-label">Analizador ATS</span>
+              <span className="button-icon">🌐</span>
+              <span className="button-label">Cotizar Web</span>
             </button>
 
             {/* ROI Calculator */}
@@ -169,14 +159,24 @@ export default function App() {
               <span className="button-label">Calcular ROI</span>
             </button>
 
-            {/* Web Calculator */}
+            {/* Analizador ATS */}
             <button
               className="floating-button"
-              onClick={() => openTool('web')}
-              title="Cotizar Web"
+              onClick={() => openTool('ats')}
+              title="Analizador ATS"
             >
-              <span className="button-icon">🌐</span>
-              <span className="button-label">Cotizar Web</span>
+              <span className="button-icon">📄</span>
+              <span className="button-label">Analizador ATS</span>
+            </button>
+
+            {/* Estadísticas */}
+            <button
+              className="floating-button"
+              onClick={() => openTool('stats')}
+              title="Estadísticas"
+            >
+              <span className="button-icon">📊</span>
+              <span className="button-label">Estadísticas</span>
             </button>
 
             {/* KPI Radar */}
@@ -188,30 +188,6 @@ export default function App() {
               <span className="button-icon">🎯</span>
               <span className="button-label">Radar KPI</span>
             </button>
-
-            <hr className="separator" />
-
-            {/* WhatsApp */}
-            <a
-              href="https://wa.me/+542995414422"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="floating-button social-button whatsapp-button"
-              title="WhatsApp"
-            >
-              <span className="button-icon">💬</span>
-              <span className="button-label">WhatsApp</span>
-            </a>
-
-            {/* Email */}
-            <a
-              href="mailto:yo@marianoaliandri.com.ar"
-              className="floating-button social-button email-button"
-              title="Email"
-            >
-              <span className="button-icon">✉️</span>
-              <span className="button-label">Email</span>
-            </a>
 
           </div>
         )}
