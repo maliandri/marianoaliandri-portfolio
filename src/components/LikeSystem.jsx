@@ -130,76 +130,61 @@ function LikeSystemV2() {
   };
 
   return (
-    <motion.div
-      className="fixed bottom-6 right-6 z-50 flex flex-col gap-2"
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5, delay: 1 }}
-    >
+    <div className="flex items-center gap-2">
       {/* Botón de Like */}
       <motion.button
         onClick={() => handleVote('like')}
         disabled={loading}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all duration-300 ${
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-full shadow-md transition-all duration-300 ${
           userVote === 'like'
-            ? 'bg-green-500 text-white scale-105'
+            ? 'bg-green-500 text-white'
             : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900'
         } border border-gray-200 dark:border-gray-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         whileHover={{ scale: userVote === 'like' ? 1.05 : 1.1 }}
         whileTap={{ scale: 0.95 }}
+        title="Me gusta"
       >
         <motion.div
-          animate={{ 
+          animate={{
             scale: userVote === 'like' ? [1, 1.3, 1] : 1,
             rotate: userVote === 'like' ? [0, 15, -15, 0] : 0
           }}
           transition={{ duration: 0.3 }}
         >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
           </svg>
         </motion.div>
-        <span className="font-medium">{loading ? '...' : likes}</span>
+        <span className="font-medium text-sm">{loading ? '...' : likes}</span>
       </motion.button>
 
       {/* Botón de Dislike */}
       <motion.button
         onClick={() => handleVote('dislike')}
         disabled={loading}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all duration-300 ${
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-full shadow-md transition-all duration-300 ${
           userVote === 'dislike'
-            ? 'bg-red-500 text-white scale-105'
+            ? 'bg-red-500 text-white'
             : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900'
         } border border-gray-200 dark:border-gray-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         whileHover={{ scale: userVote === 'dislike' ? 1.05 : 1.1 }}
         whileTap={{ scale: 0.95 }}
+        title="No me gusta"
       >
         <motion.div
-          animate={{ 
+          animate={{
             scale: userVote === 'dislike' ? [1, 1.3, 1] : 1,
             rotate: userVote === 'dislike' ? [0, -15, 15, 0] : 0
           }}
           transition={{ duration: 0.3 }}
         >
-          <svg className="w-5 h-5 transform rotate-180" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-4 h-4 transform rotate-180" fill="currentColor" viewBox="0 0 20 20">
             <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
           </svg>
         </motion.div>
-        <span className="font-medium">{loading ? '...' : dislikes}</span>
+        <span className="font-medium text-sm">{loading ? '...' : dislikes}</span>
       </motion.button>
-
-      {/* Indicador de estado */}
-      {!loading && (likes > 0 || dislikes > 0) && (
-        <motion.div
-          className="text-xs text-gray-500 dark:text-gray-400 text-center bg-white dark:bg-gray-800 px-2 py-1 rounded-full border border-gray-200 dark:border-gray-700"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-        >
-          🌍 Global: {likes + dislikes} votos
-        </motion.div>
-      )}
-    </motion.div>
+    </div>
   );
 }
 

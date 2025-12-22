@@ -263,43 +263,39 @@ function AIChatBot() {
 
   return (
     <>
-     {/* Botón flotante del chat */}
+     {/* Botón del chat - Header version */}
 <motion.button
   onClick={() => setIsOpen(!isOpen)}
-  className={`fixed top-1/2 right-6 z-40 w-14 h-14 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center transform -translate-y-1/2 ${
+  className={`relative w-12 h-12 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
     isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'
   }`}
   whileHover={{ scale: 1.1 }}
   whileTap={{ scale: 0.9 }}
-  initial={{ opacity: 0, scale: 0 }}
-  animate={{ opacity: 1, scale: 1 }}
-  transition={{ duration: 0.5, delay: 2 }}
+  title={isOpen ? "Cerrar chat" : "Abrir chat"}
 >
   <motion.div
     animate={{ rotate: isOpen ? 180 : 0 }}
     transition={{ duration: 0.3 }}
   >
     {isOpen ? (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
       </svg>
     ) : (
-      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
         <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
       </svg>
     )}
   </motion.div>
-        
+
         {/* Indicador de mensajes nuevos */}
         {!isOpen && (
           <motion.div
-            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center"
+            className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 3 }}
-          >
-            <span className="text-xs text-white font-bold">!</span>
-          </motion.div>
+          />
         )}
       </motion.button>
 
@@ -307,10 +303,10 @@ function AIChatBot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed bottom-36 right-6 z-[65] w-96 h-[500px] max-h-[calc(100vh-10rem)] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden"
-            initial={{ opacity: 0, y: 100, scale: 0.8 }}
+            className="fixed top-20 right-6 z-[65] w-96 h-[500px] max-h-[calc(100vh-10rem)] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden"
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 100, scale: 0.8 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ duration: 0.3 }}
           >
             {/* Header */}
