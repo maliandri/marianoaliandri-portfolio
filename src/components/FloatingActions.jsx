@@ -8,7 +8,7 @@ import ROICalculator from "./Calculadora";
 import WebCalculator from "./CalculadoraWeb";
 
 export default function FloatingActions() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(true); // Abierto por defecto
   const [activeTool, setActiveTool] = useState(null);
 
   // Herramientas disponibles
@@ -119,60 +119,43 @@ export default function FloatingActions() {
 
   return (
     <>
-      {/* ===== BADGE PRINCIPAL (siempre visible) ===== */}
-      <motion.button
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[60] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white p-3 sm:p-4 rounded-2xl shadow-2xl hover:shadow-purple-500/50 border-2 border-white/30"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        aria-label="Abrir menú de herramientas"
-      >
-        <motion.div animate={{ rotate: isMenuOpen ? 90 : 0 }}>
-          {isMenuOpen ? (
-            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h8M4 18h12" />
-            </svg>
-          )}
-        </motion.div>
-
-        {/* Badge con contador */}
-        <motion.div
-          className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-lg border-2 border-white"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 1 }}
+      {/* ===== BADGE PRINCIPAL (solo cuando el menú está cerrado) ===== */}
+      {!isMenuOpen && (
+        <motion.button
+          onClick={() => setIsMenuOpen(true)}
+          className="fixed top-20 left-4 z-[60] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white p-3 rounded-2xl shadow-2xl hover:shadow-purple-500/50 border-2 border-white/30"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          aria-label="Abrir menú de herramientas"
         >
-          {unreadCount}
-        </motion.div>
-      </motion.button>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h8M4 18h12" />
+          </svg>
+
+          {/* Badge con contador */}
+          <motion.div
+            className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            {unreadCount}
+          </motion.div>
+        </motion.button>
+      )}
 
       {/* ===== PANEL DE HERRAMIENTAS ===== */}
       <AnimatePresence>
         {isMenuOpen && (
-          <>
-            {/* Overlay */}
             <motion.div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[58]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMenuOpen(false)}
-            />
-
-            {/* Panel */}
-            <motion.div
-              className="fixed top-4 bottom-20 left-4 right-4 sm:top-auto sm:bottom-24 sm:left-6 sm:right-auto z-[59] w-auto sm:w-80 max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-3rem)] max-h-[calc(100vh-6rem)] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-purple-300 dark:border-purple-700 overflow-hidden flex flex-col"
-              initial={{ scale: 0.8, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: 50 }}
-              transition={{ type: "spring", damping: 20 }}
+              className="fixed top-16 left-0 bottom-0 z-[59] w-72 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-r-2 border-purple-300 dark:border-purple-700 overflow-hidden flex flex-col"
+              initial={{ x: -300, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -300, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
             >
               {/* Header */}
               <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-3 sm:p-5">
@@ -252,7 +235,7 @@ export default function FloatingActions() {
                     <span>💬</span><span>WhatsApp</span>
                   </a>
                   <a
-                    href="mailto:marianoaliandri@gmail.com"
+                    href="mailto:yo@marianoaliandri.com.ar"
                     className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl text-center flex items-center justify-center gap-2 shadow-md transition-all"
                   >
                     <span>✉️</span><span>Email</span>
@@ -260,7 +243,6 @@ export default function FloatingActions() {
                 </motion.div>
               </div>
             </motion.div>
-          </>
         )}
       </AnimatePresence>
 
