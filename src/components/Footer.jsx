@@ -5,8 +5,8 @@ export default function Footer() {
   const location = useLocation();
 
   const quickLinks = [
-    { name: 'Calcular ROI', href: '/#contact', type: 'scroll' },
-    { name: 'Calcular Web', href: '/#contact', type: 'scroll' },
+    { name: 'Calcular ROI', href: '/#roi', type: 'scroll' },
+    { name: 'Calcular Web', href: '/#web', type: 'scroll' },
     { name: 'Tienda', href: '/tienda', type: 'route' },
     { name: 'Servicios', href: '/#servicios', type: 'scroll' },
     { name: 'Habilidades', href: '/#skills', type: 'scroll' },
