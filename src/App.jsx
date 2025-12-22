@@ -18,6 +18,7 @@ import ThemeToggle from "./components/ThemeToggle.jsx";
 import LikeSystem from "./components/LikeSystem.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import FloatingActions from "./components/FloatingActions.jsx";
+import Sidebar from "./components/Sidebar.jsx";
 import AuthButton from "./components/AuthButton.jsx";
 import ShopButton from "./components/ShopButton.jsx";
 import Footer from "./components/Footer.jsx";
@@ -31,39 +32,54 @@ import AdminPage from "./pages/AdminPage.jsx";
 import "./index.css";
 
 // El contenido original de tu página principal ahora vive aquí
-const HomePage = () => (
+const HomePage = ({ onToolOpen }) => (
   <>
     <SEO
       title="Mariano Aliandri | Dev. Full Stack, React, Python & Data"
       description="Desarrollador Full Stack y Analista de Datos con experiencia en React y Python. Explora mi portfolio de proyectos y habilidades en Power BI."
       canonical="/"
     />
-    
-    {/* IMPORTANTE: Hero suele tener fondos de ancho completo. 
-       Si Hero tiene un fondo que debe ir de borde a borde de la pantalla,
-       debería estar FUERA de este 'max-w-5xl'. 
-       
-       Si el Hero se ve "encajonado", muévelo fuera del <main> justo antes de él.
-    */}
-    <main className="max-w-5xl mx-auto p-4 space-y-20 relative">
-      <Hero />
-      <section id="servicios" aria-label="Servicios profesionales">
-        <ServiciosCarousel />
-      </section>
-      <section id="skills" aria-label="Habilidades técnicas">
-        <Skills />
-      </section>
-      <section aria-label="Carrousel de-imagenes">
-        <Carrousel />
-      </section>
-      <section id="contact" aria-label="Información de contacto">
-        <Contact />
-      </section>
-    </main>
+
+    <div className="flex">
+      {/* Sidebar integrado */}
+      <Sidebar onToolOpen={onToolOpen} />
+
+      {/* Contenido principal */}
+      <main className="flex-1 max-w-5xl mx-auto p-4 space-y-20 relative">
+        <Hero />
+        <section id="servicios" aria-label="Servicios profesionales">
+          <ServiciosCarousel />
+        </section>
+        <section id="skills" aria-label="Habilidades técnicas">
+          <Skills />
+        </section>
+        <section aria-label="Carrousel de-imagenes">
+          <Carrousel />
+        </section>
+        <section id="contact" aria-label="Información de contacto">
+          <Contact />
+        </section>
+      </main>
+    </div>
   </>
 );
 
 export default function App() {
+  const [activeTool, setActiveTool] = React.useState(null);
+
+  const handleToolOpen = (tool) => {
+    setActiveTool(tool);
+  };
+
+  const handleToolClose = () => {
+    setActiveTool(null);
+    // Limpiar URL
+    const url = new URL(window.location.href);
+    url.hash = "";
+    url.searchParams.delete("tool");
+    window.history.replaceState({}, "", url.toString());
+  };
+
   return (
     <CartProvider>
       {/* AGREGADO: 'relative' y 'overflow-x-hidden'
@@ -77,11 +93,11 @@ export default function App() {
 
         <ThemeToggle />
         <LikeSystem />
-        <FloatingActions />
+        <FloatingActions activeTool={activeTool} onClose={handleToolClose} />
         <AIChatBot />
 
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<HomePage onToolOpen={handleToolOpen} />} />
           <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/mis-compras" element={<OrdersPage />} />
           <Route path="/tienda" element={<StorePage />} />
