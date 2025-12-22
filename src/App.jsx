@@ -98,6 +98,7 @@ export default function App() {
 
         <ThemeToggle />
         <LikeSystem />
+        <AIChatBot />
 
         {/* Herramientas (Modales) */}
         <DashboardStats
@@ -212,12 +213,6 @@ export default function App() {
               <span className="button-label">Email</span>
             </a>
 
-            <hr className="separator" />
-
-            {/* ChatBot */}
-            <div className="mini-buttons-row">
-              <AIChatBot />
-            </div>
           </div>
         )}
 

@@ -71,7 +71,7 @@
 
 .floating-buttons-container {
   position: fixed;
-  top: var(--content-padding-top);
+  top: 20px;
   left: 20px;
   z-index: var(--z-fixed);
   display: flex;
