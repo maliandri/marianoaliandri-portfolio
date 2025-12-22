@@ -162,7 +162,7 @@ export default function FloatingActions() {
       <AnimatePresence>
         {isMenuOpen && (
             <motion.div
-              className="fixed top-0 left-0 bottom-0 z-[59] w-64 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-r-2 border-purple-300 dark:border-purple-700 overflow-hidden flex flex-col"
+              className="fixed top-0 left-0 z-[59] w-64 h-[calc(100vh-120px)] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-r-2 border-purple-300 dark:border-purple-700 overflow-hidden flex flex-col"
               initial={{ x: -300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -300, opacity: 0 }}
