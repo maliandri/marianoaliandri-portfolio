@@ -1,7 +1,9 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export default function Footer() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const quickLinks = [
     { name: 'Calcular ROI', href: '/#contact', type: 'scroll' },
     { name: 'Calcular Web', href: '/#contact', type: 'scroll' },
@@ -100,10 +102,24 @@ export default function Footer() {
 
   const handleScrollTo = (href) => {
     // Extraer el hash del href (ej: "/#contact" -> "#contact")
-    const hash = href.includes('#') ? '#' + href.split('#')[1] : href;
-    const element = document.querySelector(hash);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const hash = href.includes('#') ? href.split('#')[1] : '';
+
+    // Si no estamos en la página principal, navegar primero
+    if (location.pathname !== '/') {
+      navigate('/');
+      // Esperar a que la navegación complete y luego hacer scroll
+      setTimeout(() => {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    } else {
+      // Ya estamos en la página principal, hacer scroll directo
+      const element = document.getElementById(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
