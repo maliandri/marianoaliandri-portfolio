@@ -160,7 +160,7 @@ export default function App() {
         {/* BOTONES FLOTANTES - Solo en home */}
         {isHomePage && (
           <div className="floating-buttons-container">
-            {/* Web Calculator */}
+            {/* 1. Calcular Web */}
             <button
               className="floating-button"
               onClick={() => openTool('web')}
@@ -170,7 +170,7 @@ export default function App() {
               <span className="button-label">Cotizar Web</span>
             </button>
 
-            {/* ROI Calculator */}
+            {/* 2. ROI Calculator */}
             <button
               className="floating-button"
               onClick={() => openTool('roi')}
@@ -180,7 +180,17 @@ export default function App() {
               <span className="button-label">Calcular ROI</span>
             </button>
 
-            {/* Analizador ATS */}
+            {/* 3. Radar KPI */}
+            <button
+              className="floating-button"
+              onClick={() => openTool('kpi')}
+              title="Radar KPI"
+            >
+              <span className="button-icon">🎯</span>
+              <span className="button-label">Radar KPI</span>
+            </button>
+
+            {/* 4. Analizador ATS */}
             <button
               className="floating-button"
               onClick={() => openTool('ats')}
@@ -190,7 +200,7 @@ export default function App() {
               <span className="button-label">Analizador ATS</span>
             </button>
 
-            {/* Estadísticas */}
+            {/* 5. Estadísticas */}
             <button
               className="floating-button"
               onClick={() => openTool('stats')}
@@ -198,16 +208,6 @@ export default function App() {
             >
               <span className="button-icon">📊</span>
               <span className="button-label">Estadísticas</span>
-            </button>
-
-            {/* KPI Radar */}
-            <button
-              className="floating-button"
-              onClick={() => openTool('kpi')}
-              title="Radar KPI"
-            >
-              <span className="button-icon">🎯</span>
-              <span className="button-label">Radar KPI</span>
             </button>
 
           </div>
