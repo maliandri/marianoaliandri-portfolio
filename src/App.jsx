@@ -115,8 +115,8 @@ export default function App() {
       <div className="App font-sans min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500 relative overflow-x-hidden">
 
         {/* Barra superior con Tienda, Autenticación, Chat y Likes - Centrada y Fija */}
-        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center py-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3">
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center py-3 px-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-center max-w-full">
             <ShopButton />
             <AuthButton />
             <AIChatBot />
