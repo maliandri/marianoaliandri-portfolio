@@ -17,6 +17,7 @@ import Contact from "./components/Contact.jsx";
 // Componentes UI
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import LikeSystem from "./components/LikeSystem.jsx";
+import VisitorCounter from "./components/VisitorCounter.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import AuthButton from "./components/AuthButton.jsx";
 import ShopButton from "./components/ShopButton.jsx";
@@ -97,6 +98,7 @@ export default function App() {
             <AuthButton />
             <AIChatBot />
             <LikeSystem />
+            <VisitorCounter />
             <ThemeToggle />
           </div>
         </div>

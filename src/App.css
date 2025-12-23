@@ -264,19 +264,19 @@
     right: 0 !important;
     width: 100% !important;
     flex-direction: row !important;
-    flex-wrap: wrap !important;
-    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-evenly !important;
     align-items: center !important;
-    padding: 10px 5px !important;
+    padding: 8px 4px !important;
     border-radius: 0 !important;
     border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-left: none !important;
     border-right: none !important;
     border-bottom: none !important;
-    max-height: 90px !important;
-    overflow-x: auto !important;
+    max-height: 70px !important;
+    overflow-x: hidden !important;
     overflow-y: hidden !important;
-    gap: 8px !important;
+    gap: 4px !important;
     background: rgba(0, 0, 0, 0.95) !important;
     z-index: 998 !important;
     backdrop-filter: blur(20px) !important;
@@ -287,12 +287,12 @@
     border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
   }
 
-  /* Botones como íconos circulares */
+  /* Botones como íconos circulares más pequeños */
   .floating-button {
-    width: 42px !important;
-    height: 42px !important;
-    min-width: 42px !important;
-    min-height: 42px !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
     padding: 0 !important;
     justify-content: center !important;
     border-radius: 50% !important;
@@ -307,7 +307,7 @@
   /* Ajustar íconos */
   .button-icon {
     margin: 0 !important;
-    font-size: 1.2rem !important;
+    font-size: 1.3rem !important;
   }
 
   /* Ocultar separadores */
@@ -322,19 +322,19 @@
 
 @media (max-width: 360px) {
   .floating-button {
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
-    min-height: 38px !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
   }
 
   .button-icon {
-    font-size: 1rem !important;
+    font-size: 1.1rem !important;
   }
 
   .floating-buttons-container {
-    padding: 8px 4px !important;
-    gap: 6px !important;
+    padding: 6px 2px !important;
+    gap: 3px !important;
   }
 }
 
