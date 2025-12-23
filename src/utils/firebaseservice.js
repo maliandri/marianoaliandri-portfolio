@@ -464,12 +464,12 @@ export class FirebaseAnalyticsService {
   // Obtener total de usuarios registrados con Google
   async getRegisteredUsersCount() {
     try {
-      const { collection, getCountFromServer } = await import('firebase/firestore');
+      const { collection, getDocs } = await import('firebase/firestore');
 
       const usersRef = collection(this.db, 'users');
-      const snapshot = await getCountFromServer(usersRef);
+      const snapshot = await getDocs(usersRef);
 
-      const count = snapshot.data().count;
+      const count = snapshot.size;
       console.log('👥 Total de usuarios registrados:', count);
       return count;
     } catch (error) {
