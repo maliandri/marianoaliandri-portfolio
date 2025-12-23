@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import "./App.css";
 import "./index.css";
 
@@ -71,6 +71,7 @@ import AdminPage from "./pages/AdminPage.jsx";
 
 export default function App() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTool, setActiveTool] = useState(null);
   const [firebaseService] = useState(() => new FirebaseAnalyticsService());
 
@@ -81,30 +82,33 @@ export default function App() {
       '/perfil': 'Perfil de Usuario',
       '/mis-compras': 'Mis Compras',
       '/tienda': 'Tienda',
-      '/admin': 'Panel de Administración'
+      '/admin': 'Panel de Administración',
+      '/web': 'Calculadora Web',
+      '/roi': 'Calculadora ROI',
+      '/stats': 'Estadísticas',
+      '/ats': 'Analizador ATS',
+      '/kpi': 'Radar KPI',
+      '/radarweb': 'Radar Web'
     };
 
     const pageTitle = pageMap[location.pathname] || 'Página desconocida';
     firebaseService.trackPageView(location.pathname, pageTitle);
   }, [location.pathname, firebaseService]);
 
-  // Abrir herramienta
+  // Abrir herramienta - Navegar a la ruta
   const openTool = (toolId) => {
-    setActiveTool(toolId);
+    navigate(`/${toolId}`);
   };
 
-  // Cerrar herramienta
+  // Cerrar herramienta - Navegar de vuelta al home
   const closeTool = () => {
-    setActiveTool(null);
-    // Limpiar URL
-    const url = new URL(window.location.href);
-    url.hash = "";
-    url.searchParams.delete("tool");
-    window.history.replaceState({}, "", url.toString());
+    navigate('/');
   };
 
-  // Verificar si estamos en home
+  // Verificar si estamos en home o en una herramienta
   const isHomePage = location.pathname === '/';
+  const isToolPage = ['/web', '/roi', '/stats', '/ats', '/kpi', '/radarweb'].includes(location.pathname);
+  const showFloatingButtons = isHomePage || isToolPage;
 
   return (
     <CartProvider>
@@ -122,34 +126,34 @@ export default function App() {
           </div>
         </div>
 
-        {/* Herramientas (Modales) */}
+        {/* Herramientas (Modales) - Abren según la ruta */}
         <DashboardStats
-          isOpen={activeTool === 'stats'}
+          isOpen={location.pathname === '/stats'}
           onClose={closeTool}
           hideFloatingButton={true}
         />
         <CVATSUploader
-          isOpen={activeTool === 'ats'}
+          isOpen={location.pathname === '/ats'}
           onClose={closeTool}
           hideFloatingButton={true}
         />
         <ROICalculator
-          isOpen={activeTool === 'roi'}
+          isOpen={location.pathname === '/roi'}
           onClose={closeTool}
           hideFloatingButton={true}
         />
         <WebCalculator
-          isOpen={activeTool === 'web'}
+          isOpen={location.pathname === '/web'}
           onClose={closeTool}
           hideFloatingButton={true}
         />
         <KpiRadar
-          isOpen={activeTool === 'kpi'}
+          isOpen={location.pathname === '/kpi'}
           onClose={closeTool}
           hideFloatingButton={true}
         />
         <RadarWeb
-          isOpen={activeTool === 'radarweb'}
+          isOpen={location.pathname === '/radarweb'}
           onClose={closeTool}
           hideFloatingButton={true}
         />
@@ -161,10 +165,17 @@ export default function App() {
           <Route path="/mis-compras" element={<OrdersPage />} />
           <Route path="/tienda" element={<StorePage />} />
           <Route path="/admin" element={<AdminPage />} />
+          {/* Rutas de herramientas - Renderizan el HomePage con el modal abierto */}
+          <Route path="/web" element={<HomePage />} />
+          <Route path="/roi" element={<HomePage />} />
+          <Route path="/stats" element={<HomePage />} />
+          <Route path="/ats" element={<HomePage />} />
+          <Route path="/kpi" element={<HomePage />} />
+          <Route path="/radarweb" element={<HomePage />} />
         </Routes>
 
-        {/* BOTONES FLOTANTES - Solo en home */}
-        {isHomePage && (
+        {/* BOTONES FLOTANTES - En home y páginas de herramientas */}
+        {showFloatingButtons && (
           <div className="floating-buttons-container">
             {/* 1. Calcular Web */}
             <button
