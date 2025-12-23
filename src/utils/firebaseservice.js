@@ -335,6 +335,178 @@ export class FirebaseAnalyticsService {
       console.error('❌ Error registrando evento Web:', error);
     }
   }
+
+  // Registrar visita a una página
+  async trackPageView(pagePath, pageTitle = '') {
+    try {
+      const visitId = this.getVisitorId();
+      const eventRef = doc(this.db, 'pageViews', `${visitId}_${Date.now()}`);
+
+      await setDoc(eventRef, {
+        path: pagePath,
+        title: pageTitle,
+        timestamp: serverTimestamp(),
+        visitorId: visitId,
+        userAgent: navigator.userAgent.substring(0, 100)
+      });
+
+      // Incrementar contador de la página en documento agregado
+      const pageStatsRef = doc(this.db, 'pageStats', pagePath.replace(/\//g, '_'));
+      const pageStatsDoc = await getDoc(pageStatsRef);
+
+      if (pageStatsDoc.exists()) {
+        await updateDoc(pageStatsRef, {
+          views: increment(1),
+          lastView: serverTimestamp()
+        });
+      } else {
+        await setDoc(pageStatsRef, {
+          path: pagePath,
+          title: pageTitle,
+          views: 1,
+          lastView: serverTimestamp()
+        });
+      }
+
+      console.log('📄 Vista de página registrada:', pagePath);
+    } catch (error) {
+      console.error('❌ Error registrando vista de página:', error);
+    }
+  }
+
+  // Registrar visita a un producto
+  async trackProductView(productId, productName) {
+    try {
+      const visitId = this.getVisitorId();
+      const eventRef = doc(this.db, 'productViews', `${visitId}_${productId}_${Date.now()}`);
+
+      await setDoc(eventRef, {
+        productId: productId,
+        productName: productName,
+        timestamp: serverTimestamp(),
+        visitorId: visitId
+      });
+
+      // Incrementar contador del producto
+      const productStatsRef = doc(this.db, 'productStats', productId);
+      const productStatsDoc = await getDoc(productStatsRef);
+
+      if (productStatsDoc.exists()) {
+        await updateDoc(productStatsRef, {
+          views: increment(1),
+          lastView: serverTimestamp()
+        });
+      } else {
+        await setDoc(productStatsRef, {
+          productId: productId,
+          productName: productName,
+          views: 1,
+          lastView: serverTimestamp()
+        });
+      }
+
+      console.log('🛍️ Vista de producto registrada:', productName);
+    } catch (error) {
+      console.error('❌ Error registrando vista de producto:', error);
+    }
+  }
+
+  // Obtener páginas más visitadas
+  async getTopPages(limit = 10) {
+    try {
+      const { collection, query, orderBy, limit: limitQuery, getDocs } = await import('firebase/firestore');
+
+      const pagesRef = collection(this.db, 'pageStats');
+      const q = query(pagesRef, orderBy('views', 'desc'), limitQuery(limit));
+      const snapshot = await getDocs(q);
+
+      const topPages = [];
+      snapshot.forEach((doc) => {
+        topPages.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      console.log('📊 Páginas más visitadas cargadas:', topPages.length);
+      return topPages;
+    } catch (error) {
+      console.error('❌ Error obteniendo páginas más visitadas:', error);
+      return [];
+    }
+  }
+
+  // Obtener productos más visitados
+  async getTopProducts(limit = 10) {
+    try {
+      const { collection, query, orderBy, limit: limitQuery, getDocs } = await import('firebase/firestore');
+
+      const productsRef = collection(this.db, 'productStats');
+      const q = query(productsRef, orderBy('views', 'desc'), limitQuery(limit));
+      const snapshot = await getDocs(q);
+
+      const topProducts = [];
+      snapshot.forEach((doc) => {
+        topProducts.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      console.log('📊 Productos más visitados cargados:', topProducts.length);
+      return topProducts;
+    } catch (error) {
+      console.error('❌ Error obteniendo productos más visitados:', error);
+      return [];
+    }
+  }
+
+  // Obtener total de usuarios registrados con Google
+  async getRegisteredUsersCount() {
+    try {
+      const { collection, getCountFromServer } = await import('firebase/firestore');
+
+      const usersRef = collection(this.db, 'users');
+      const snapshot = await getCountFromServer(usersRef);
+
+      const count = snapshot.data().count;
+      console.log('👥 Total de usuarios registrados:', count);
+      return count;
+    } catch (error) {
+      console.error('❌ Error obteniendo conteo de usuarios:', error);
+      return 0;
+    }
+  }
+
+  // Obtener estadísticas completas (extendidas)
+  async getExtendedStats() {
+    try {
+      const [basicStats, topPages, topProducts, registeredUsers] = await Promise.all([
+        this.getStats(),
+        this.getTopPages(5),
+        this.getTopProducts(5),
+        this.getRegisteredUsersCount()
+      ]);
+
+      return {
+        ...basicStats,
+        topPages,
+        topProducts,
+        registeredUsers
+      };
+    } catch (error) {
+      console.error('❌ Error obteniendo estadísticas extendidas:', error);
+      return {
+        totalVisits: 0,
+        uniqueVisitors: 0,
+        likes: 0,
+        dislikes: 0,
+        topPages: [],
+        topProducts: [],
+        registeredUsers: 0
+      };
+    }
+  }
 }
 
 // Crear instancia global

@@ -4,18 +4,21 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FirebaseAnalyticsService } from "../utils/firebaseservice";
 
-export default function DashboardStats({ 
-  isOpen: isOpenProp, 
-  onClose: onCloseProp, 
-  hideFloatingButton = false 
+export default function DashboardStats({
+  isOpen: isOpenProp,
+  onClose: onCloseProp,
+  hideFloatingButton = false
 }) {
-  const [stats, setStats] = useState({ 
-    totalVisits: 0, 
-    uniqueVisitors: 0, 
-    likes: 0, 
-    dislikes: 0 
+  const [stats, setStats] = useState({
+    totalVisits: 0,
+    uniqueVisitors: 0,
+    likes: 0,
+    dislikes: 0,
+    topPages: [],
+    topProducts: [],
+    registeredUsers: 0
   });
-  
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [firebaseService] = useState(() => new FirebaseAnalyticsService());
@@ -46,9 +49,18 @@ export default function DashboardStats({
       try {
         setLoading(true);
         await firebaseService.recordVisit();
-        const s = await firebaseService.getStats();
-        setStats(s);
-        cleanup = firebaseService.subscribeToStats((u) => setStats(u));
+
+        // Cargar estadísticas extendidas
+        const extendedStats = await firebaseService.getExtendedStats();
+        setStats(extendedStats);
+
+        // Suscribirse a actualizaciones básicas en tiempo real
+        cleanup = firebaseService.subscribeToStats((basicStats) => {
+          setStats(prev => ({
+            ...prev,
+            ...basicStats
+          }));
+        });
       } catch {
         // Fallback a localStorage
         const savedVisits = localStorage.getItem("siteVisits");
@@ -61,6 +73,9 @@ export default function DashboardStats({
           uniqueVisitors: newVisits,
           likes: savedLikes ? parseInt(savedLikes) : 0,
           dislikes: savedDislikes ? parseInt(savedDislikes) : 0,
+          topPages: [],
+          topProducts: [],
+          registeredUsers: 0
         });
       } finally {
         setLoading(false);
@@ -118,11 +133,11 @@ export default function DashboardStats({
         </motion.button>
       )}
 
-      {/* Modal centrado */}
+      {/* Modal centrado - Expandido */}
       {open && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
           <motion.div
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-5 w-80 max-w-md border border-gray-200 dark:border-gray-700"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             onClick={(e) => e.stopPropagation()}
@@ -141,33 +156,39 @@ export default function DashboardStats({
             </div>
 
             {/* Reloj */}
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
               {currentTime.toLocaleString("es-ES")}
             </p>
 
-            {/* Stats */}
-            <div className="space-y-2">
-              <Item 
-                label="Visitas Totales" 
-                value={loading ? "…" : fmt(stats.totalVisits)} 
-                color="blue" 
+            {/* Grid de estadísticas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {/* Estadísticas básicas */}
+              <Item
+                label="Visitas Totales"
+                value={loading ? "…" : fmt(stats.totalVisits)}
+                color="blue"
               />
-              <Item 
-                label="Visitantes Únicos" 
-                value={loading ? "…" : fmt(stats.uniqueVisitors)} 
-                color="purple" 
+              <Item
+                label="Visitantes Únicos"
+                value={loading ? "…" : fmt(stats.uniqueVisitors)}
+                color="purple"
               />
-              <Item 
-                label="Me gusta" 
-                value={loading ? "…" : fmt(stats.likes)} 
-                color="green" 
+              <Item
+                label="Usuarios Registrados"
+                value={loading ? "…" : fmt(stats.registeredUsers)}
+                color="indigo"
               />
-              <Item 
-                label="No me gusta" 
-                value={loading ? "…" : fmt(stats.dislikes)} 
-                color="red" 
+              <Item
+                label="Me gusta"
+                value={loading ? "…" : fmt(stats.likes)}
+                color="green"
               />
-              
+              <Item
+                label="No me gusta"
+                value={loading ? "…" : fmt(stats.dislikes)}
+                color="red"
+              />
+
               {/* Barra de satisfacción */}
               <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-xl">
                 <div className="text-[11px] text-gray-600 dark:text-gray-400">
@@ -184,6 +205,73 @@ export default function DashboardStats({
                     transition={{ duration: 0.6 }}
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Grid de listas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              {/* Páginas más visitadas */}
+              <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl">
+                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                  <span>📄</span>
+                  Páginas más visitadas
+                </h3>
+                {loading ? (
+                  <p className="text-xs text-gray-500">Cargando...</p>
+                ) : stats.topPages && stats.topPages.length > 0 ? (
+                  <div className="space-y-2">
+                    {stats.topPages.map((page, index) => (
+                      <div
+                        key={page.id}
+                        className="flex items-center justify-between text-xs bg-white dark:bg-gray-800 p-2 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-gray-400 w-4">#{index + 1}</span>
+                          <span className="text-gray-700 dark:text-gray-300 truncate max-w-[180px]">
+                            {page.title || page.path}
+                          </span>
+                        </div>
+                        <span className="font-semibold text-blue-600 dark:text-blue-400">
+                          {fmt(page.views)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500">No hay datos disponibles</p>
+                )}
+              </div>
+
+              {/* Productos más visitados */}
+              <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl">
+                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                  <span>🛍️</span>
+                  Productos más visitados
+                </h3>
+                {loading ? (
+                  <p className="text-xs text-gray-500">Cargando...</p>
+                ) : stats.topProducts && stats.topProducts.length > 0 ? (
+                  <div className="space-y-2">
+                    {stats.topProducts.map((product, index) => (
+                      <div
+                        key={product.id}
+                        className="flex items-center justify-between text-xs bg-white dark:bg-gray-800 p-2 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-gray-400 w-4">#{index + 1}</span>
+                          <span className="text-gray-700 dark:text-gray-300 truncate max-w-[180px]">
+                            {product.productName}
+                          </span>
+                        </div>
+                        <span className="font-semibold text-green-600 dark:text-green-400">
+                          {fmt(product.views)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500">No hay datos disponibles</p>
+                )}
               </div>
             </div>
 
@@ -216,6 +304,7 @@ function Item({ label, value, color }) {
   const colorMap = {
     blue: "bg-blue-50 dark:bg-blue-900/20",
     purple: "bg-purple-50 dark:bg-purple-900/20",
+    indigo: "bg-indigo-50 dark:bg-indigo-900/20",
     green: "bg-green-50 dark:bg-green-900/20",
     red: "bg-red-50 dark:bg-red-900/20",
   };

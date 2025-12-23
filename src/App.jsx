@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import "./App.css";
 import "./index.css";
 
 // Context
 import { CartProvider } from "./context/CartContext.jsx";
+
+// Firebase
+import { FirebaseAnalyticsService } from "./utils/firebaseservice";
 
 // SEO y Componentes de Página
 import SEO from "./components/SEO.jsx";
@@ -68,6 +71,21 @@ import AdminPage from "./pages/AdminPage.jsx";
 export default function App() {
   const location = useLocation();
   const [activeTool, setActiveTool] = useState(null);
+  const [firebaseService] = useState(() => new FirebaseAnalyticsService());
+
+  // Tracking automático de páginas visitadas
+  useEffect(() => {
+    const pageMap = {
+      '/': 'Home',
+      '/perfil': 'Perfil de Usuario',
+      '/mis-compras': 'Mis Compras',
+      '/tienda': 'Tienda',
+      '/admin': 'Panel de Administración'
+    };
+
+    const pageTitle = pageMap[location.pathname] || 'Página desconocida';
+    firebaseService.trackPageView(location.pathname, pageTitle);
+  }, [location.pathname, firebaseService]);
 
   // Abrir herramienta
   const openTool = (toolId) => {
