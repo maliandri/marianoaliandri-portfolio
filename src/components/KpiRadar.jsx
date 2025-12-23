@@ -132,17 +132,17 @@ export default function KpiRadar({ isOpen: isOpenProp, onClose: onCloseProp, hid
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 grid place-items-center p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center md:justify-end p-4 md:pr-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose} // Se usa la nueva función de cierre
           >
             <motion.div
-              className="bg-white dark:bg-gray-900 rounded-2xl w-[min(100vw-24px,1120px)] max-h-[90vh] overflow-auto shadow-2xl"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl w-[min(100vw-24px,1120px)] max-h-[90vh] overflow-auto shadow-2xl md:mr-4"
+              initial={{ scale: 0.9, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 50 }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}

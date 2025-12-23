@@ -1,27 +1,18 @@
 // src/components/DashboardStats.jsx
-// ✨ VERSIÓN ADAPTADA PARA BADGE CENTRAL
+// ✨ VERSIÓN ADAPTADA PARA BADGE CENTRAL con React Query
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FirebaseAnalyticsService } from "../utils/firebaseservice";
+import { useBasicStats } from "../hooks/useFirebaseStats";
 
 export default function DashboardStats({
   isOpen: isOpenProp,
   onClose: onCloseProp,
   hideFloatingButton = false
 }) {
-  const [stats, setStats] = useState({
-    totalVisits: 0,
-    uniqueVisitors: 0,
-    likes: 0,
-    dislikes: 0,
-    topPages: [],
-    topProducts: [],
-    registeredUsers: 0
-  });
-
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [loading, setLoading] = useState(true);
-  const [firebaseService] = useState(() => new FirebaseAnalyticsService());
+
+  // 🔄 React Query para estadísticas con real-time updates
+  const { data: stats, isLoading: loading, error } = useBasicStats();
 
   // 🔄 Estado híbrido para el modal
   const [openInternal, setOpenInternal] = useState(false);
@@ -42,48 +33,6 @@ export default function DashboardStats({
     return () => clearInterval(t);
   }, []);
 
-  // ===== Stats de Firebase
-  useEffect(() => {
-    let cleanup;
-    (async () => {
-      try {
-        setLoading(true);
-        await firebaseService.recordVisit();
-
-        // Cargar estadísticas extendidas
-        const extendedStats = await firebaseService.getExtendedStats();
-        setStats(extendedStats);
-
-        // Suscribirse a actualizaciones básicas en tiempo real
-        cleanup = firebaseService.subscribeToStats((basicStats) => {
-          setStats(prev => ({
-            ...prev,
-            ...basicStats
-          }));
-        });
-      } catch {
-        // Fallback a localStorage
-        const savedVisits = localStorage.getItem("siteVisits");
-        const newVisits = savedVisits ? parseInt(savedVisits) + 1 : 1;
-        localStorage.setItem("siteVisits", String(newVisits));
-        const savedLikes = localStorage.getItem("siteLikes");
-        const savedDislikes = localStorage.getItem("siteDislikes");
-        setStats({
-          totalVisits: newVisits,
-          uniqueVisitors: newVisits,
-          likes: savedLikes ? parseInt(savedLikes) : 0,
-          dislikes: savedDislikes ? parseInt(savedDislikes) : 0,
-          topPages: [],
-          topProducts: [],
-          registeredUsers: 0
-        });
-      } finally {
-        setLoading(false);
-      }
-    })();
-    return () => typeof cleanup === "function" && cleanup();
-  }, [firebaseService]);
-
   // ===== Deep-link: solo si NO está controlado por padre
   useEffect(() => {
     if (isOpenProp !== undefined) return; // Controlado por padre
@@ -99,16 +48,28 @@ export default function DashboardStats({
 
   // ===== Helpers
   const pct = () => {
+    if (!stats) return 0;
     const t = stats.likes + stats.dislikes;
     return t === 0 ? 0 : Math.round((stats.likes / t) * 100);
   };
-  
+
   const fmt = (n) =>
-    n >= 1_000_000 
-      ? (n / 1_000_000).toFixed(1) + "M" 
-      : n >= 1000 
-      ? (n / 1000).toFixed(1) + "K" 
+    n >= 1_000_000
+      ? (n / 1_000_000).toFixed(1) + "M"
+      : n >= 1000
+      ? (n / 1000).toFixed(1) + "K"
       : n.toString();
+
+  // Valores seguros para renderizado
+  const safeStats = stats || {
+    totalVisits: 0,
+    uniqueVisitors: 0,
+    likes: 0,
+    dislikes: 0,
+    topPages: [],
+    topProducts: [],
+    registeredUsers: 0
+  };
 
   return (
     <>
@@ -165,27 +126,27 @@ export default function DashboardStats({
               {/* Estadísticas básicas */}
               <Item
                 label="Visitas Totales"
-                value={loading ? "…" : fmt(stats.totalVisits)}
+                value={loading ? "…" : fmt(safeStats.totalVisits)}
                 color="blue"
               />
               <Item
                 label="Visitantes Únicos"
-                value={loading ? "…" : fmt(stats.uniqueVisitors)}
+                value={loading ? "…" : fmt(safeStats.uniqueVisitors)}
                 color="purple"
               />
               <Item
                 label="Usuarios Registrados"
-                value={loading ? "…" : fmt(stats.registeredUsers)}
+                value={loading ? "…" : fmt(safeStats.registeredUsers)}
                 color="indigo"
               />
               <Item
                 label="Me gusta"
-                value={loading ? "…" : fmt(stats.likes)}
+                value={loading ? "…" : fmt(safeStats.likes)}
                 color="green"
               />
               <Item
                 label="No me gusta"
-                value={loading ? "…" : fmt(stats.dislikes)}
+                value={loading ? "…" : fmt(safeStats.dislikes)}
                 color="red"
               />
 
@@ -218,9 +179,9 @@ export default function DashboardStats({
                 </h3>
                 {loading ? (
                   <p className="text-xs text-gray-500">Cargando...</p>
-                ) : stats.topPages && stats.topPages.length > 0 ? (
+                ) : safeStats.topPages && safeStats.topPages.length > 0 ? (
                   <div className="space-y-2">
-                    {stats.topPages.map((page, index) => (
+                    {safeStats.topPages.map((page, index) => (
                       <div
                         key={page.id}
                         className="flex items-center justify-between text-xs bg-white dark:bg-gray-800 p-2 rounded-lg"
@@ -250,9 +211,9 @@ export default function DashboardStats({
                 </h3>
                 {loading ? (
                   <p className="text-xs text-gray-500">Cargando...</p>
-                ) : stats.topProducts && stats.topProducts.length > 0 ? (
+                ) : safeStats.topProducts && safeStats.topProducts.length > 0 ? (
                   <div className="space-y-2">
-                    {stats.topProducts.map((product, index) => (
+                    {safeStats.topProducts.map((product, index) => (
                       <div
                         key={product.id}
                         className="flex items-center justify-between text-xs bg-white dark:bg-gray-800 p-2 rounded-lg"
