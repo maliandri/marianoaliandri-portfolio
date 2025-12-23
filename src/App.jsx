@@ -32,6 +32,7 @@ import DashboardStats from "./components/DashboardStats";
 import CVATSUploader from "./components/CVATSUploader";
 import ROICalculator from "./components/Calculadora";
 import WebCalculator from "./components/CalculadoraWeb";
+import RadarWeb from "./components/RadarWeb";
 
 // HomePage Component
 const HomePage = () => (
@@ -147,6 +148,11 @@ export default function App() {
           onClose={closeTool}
           hideFloatingButton={true}
         />
+        <RadarWeb
+          isOpen={activeTool === 'radarweb'}
+          onClose={closeTool}
+          hideFloatingButton={true}
+        />
 
         {/* Routes */}
         <Routes>
@@ -170,7 +176,17 @@ export default function App() {
               <span className="button-label">Cotizar Web</span>
             </button>
 
-            {/* 2. ROI Calculator */}
+            {/* 2. Radar Web */}
+            <button
+              className="floating-button"
+              onClick={() => openTool('radarweb')}
+              title="Radar Web"
+            >
+              <span className="button-icon">🔍</span>
+              <span className="button-label">Radar Web</span>
+            </button>
+
+            {/* 3. ROI Calculator */}
             <button
               className="floating-button"
               onClick={() => openTool('roi')}
@@ -180,7 +196,7 @@ export default function App() {
               <span className="button-label">Calcular ROI</span>
             </button>
 
-            {/* 3. Radar KPI */}
+            {/* 4. Radar KPI */}
             <button
               className="floating-button"
               onClick={() => openTool('kpi')}
@@ -190,7 +206,7 @@ export default function App() {
               <span className="button-label">Radar KPI</span>
             </button>
 
-            {/* 4. Analizador ATS */}
+            {/* 5. Analizador ATS */}
             <button
               className="floating-button"
               onClick={() => openTool('ats')}
@@ -200,7 +216,7 @@ export default function App() {
               <span className="button-label">Analizador ATS</span>
             </button>
 
-            {/* 5. Estadísticas */}
+            {/* 6. Estadísticas */}
             <button
               className="floating-button"
               onClick={() => openTool('stats')}
