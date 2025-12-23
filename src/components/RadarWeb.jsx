@@ -30,12 +30,13 @@ export default function RadarWeb({
       name: 'Almamod',
       type: 'E-commerce',
       url: 'https://almamod.com',
-      description: 'Tienda online de muebles modulares con gestión de pedidos',
+      description: 'Tienda online de módulos habitacionales con chatbot IA',
       technologies: [
         { name: 'React', icon: '⚛️', category: 'Frontend', benefit: 'UI interactiva y dinámica' },
         { name: 'Vite', icon: '⚡', category: 'Build Tool', benefit: 'Desarrollo ultrarrápido' },
         { name: 'Tailwind CSS', icon: '🎨', category: 'Estilos', benefit: 'Diseño responsive moderno' },
         { name: 'Firebase', icon: '🔥', category: 'Backend', benefit: 'Base de datos en tiempo real' },
+        { name: 'Gemini AI', icon: '🤖', category: 'IA', benefit: 'Chatbot para atención al cliente' },
         { name: 'Resend', icon: '📧', category: 'Email', benefit: 'Envío de leads por email' },
         { name: 'Mercado Pago', icon: '💳', category: 'Pagos', benefit: 'Integración de pagos' },
         { name: 'Cloudinary', icon: '☁️', category: 'Imágenes', benefit: 'Optimización de imágenes' },
@@ -44,11 +45,11 @@ export default function RadarWeb({
       color: 'blue'
     },
     {
-      id: 'colchones',
-      name: 'Colchones Premium',
-      type: 'Landing Page + E-commerce',
-      url: 'https://colchones-premium.vercel.app',
-      description: 'Landing page optimizada para conversión de colchones premium',
+      id: 'aluminehogar',
+      name: 'Alumine Hogar',
+      type: 'E-commerce',
+      url: 'https://aluminehogar.com.ar',
+      description: 'E-commerce de productos para el hogar con optimización de conversión',
       technologies: [
         { name: 'React', icon: '⚛️', category: 'Frontend', benefit: 'Componentes reutilizables' },
         { name: 'Vercel', icon: '▲', category: 'Deploy', benefit: 'Deploy automático y CDN global' },
