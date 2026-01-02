@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Copiar FIREBASE_PRIVATE_KEY para Netlify</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        h1 {
+            color: #00c7b7;
+        }
+        .key-container {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px solid #444;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        button {
+            background: #00c7b7;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #00a896;
+        }
+        .success {
+            background: #00c853;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+        .info {
+            background: #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #ff9800;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            color: #000;
+        }
+        code {
+            background: #444;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Configurar FIREBASE_PRIVATE_KEY en Netlify</h1>
+
+    <div class="info">
+        <strong>📋 Instrucciones:</strong><br>
+        1. Click en el botón "COPIAR CLAVE" abajo<br>
+        2. Ir a Netlify → Site configuration → Environment variables<br>
+        3. Agregar/Editar variable <code>FIREBASE_PRIVATE_KEY</code><br>
+        4. Pegar (Ctrl+V) en el campo de valor<br>
+        5. Marcar scopes: All (Builds, Functions, Post-processing)<br>
+        6. Guardar y hacer deploy
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ IMPORTANTE:</strong> La clave debe estar EN UNA SOLA LÍNEA con <code>\n</code> literales (dos caracteres), no saltos de línea reales.
+    </div>
+
+    <h2>Vista previa de la clave:</h2>
+    <div class="key-container" id="keyPreview"></div>
+
+    <button onclick="copyKey()">📋 COPIAR CLAVE COMPLETA</button>
+
+    <div class="success" id="successMsg">
+        ✅ ¡Clave copiada! Ahora pegala en Netlify
+    </div>
+
+    <h2>Otras variables necesarias:</h2>
+    <div class="info">
+        <strong>FIREBASE_PROJECT_ID:</strong><br>
+        <code>marianoaliandri-3b135</code><br><br>
+
+        <strong>FIREBASE_CLIENT_EMAIL:</strong><br>
+        <code>firebase-adminsdk-fbsvc@marianoaliandri-3b135.iam.gserviceaccount.com</code>
+    </div>
+
+    <script>
+        // La clave COMPLETA en una sola línea con \n literales
+        const privateKey = `-----BEGIN PRIVATE KEY-----\\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCPrrXVNFbyOMSy\\nSth5Pjj//zn/HwUbRFXtF2sbbjcBeOnRJ5yQuPUlDfCofkM4kAfNWilnuPLLZf5T\\njKp8IFFJi6CrBwGIsvBt7uaABDxujeZNQ0dQ6ngkrHKe2MApl8UckeMfPgTPzpGm\\n2xM6xrd74DG+7VR9Me3mKuINn4aYn3U2hYjlaiTX/E4MZ0NWa8FT5E2mo/22T1U/\\nvH3RORaWJuxj+aRGiiIGn8lOyzEtqemxdGS4eeQUORBa57WeR08KHD6yuh3wnUSX\\n8afA31rkKaEuLKUuQe8bNnUI32sprKnPHfekjG3Mab5oeu3bwKRZkzZuIlk6UOom\\n7OUJak4/AgMBAAECggEADwn+wact0UKnNpuQ7E0v/X5DHXSraH7kQ4xnoJe5AtrG\\nFnyqmEH+dCIbu3cj0BV7S5Tmr+hIOYlJGoj8W0ECtnZP8Iwrg+8ULV2LxisrVs2x\\nemAoDyHLm4MVUue7DV9zuUQn3WBKHqTaJ/iBmxhWTOKwMkd4csuOwWsMUtgMvYgN\\ns8rK/FkN3QdGmnvEApW7iUc1QzmsTT3kgla9o956YXRL9xBh+d1bZIxgs26n6ZC3\\nwpUnyvHy4BWK73LwMX3s+dqDfCfGsWsKtMm0gjUQ603f9//LeSb7rDRQOgmj+M/y\\n7rykCVDfv98EyVvhzKpXIPxVBgElwQ6OIxivuhdeYQKBgQDJd6+G+TayZE5KmR3/\\nzqqfZpwOOR46L1JENGYpDlajDNScvMhb9ATZmW3g3Et0tlu9hxJ66MlWvEMtq2jJ\\nK+NdZ6Xw1rutOhFQR4GuYng7rqiRJFDKGp5EFPcKlMyBpWv3HVKRzkVqn0LyLGlK\\n0bWjuhgYOETvlgxRWfI9BwblUQKBgQC2kurNhUwCB5wDqIo4AqUgOOOKEDN3gq1W\\nGg6EO+H7UfBYD7litePqcmdEBjJVvecohZtvBqvLWufT5RQ6URjNVLUGl12pIg/Z\\ngA3mSg38TSXH+qQoRJ94TNHRJNMO2Bzhd7qM3MyaCB1Buj8S4/jF9PNS978LJA0Y\\na/34zVdWjwKBgQC4bkuOeTgcSPzvB4rR8gR6VfnIf3tvcoCSFZHsRccEDqvYLG4S\\n16lU9kMDVUfyOTp0n2FIiTA/qaqp9T/A4d+LU2YyurEmXIEbB8rstBIzOKnx7NfU\\nnFeEJdkdo6gvixryJrK+7aDYgaFMh2GAb8gjcSm7ik95MNhn5LqAKZ2jcQKBgGOM\\nXAbPxY/dwk2kWikMGCknm7mt98IUOJsX/g5P8HnuRZRejoCqGKm+01ud3VgvAZlw\\nsD2rb4Sj/n/lClB544Ihy8raQbF05xt63RlSC6okDpOpsFRchm87w7O71nDjmWu+\\nsrMXuV/LSNiLytRsBTs6wmncuAhFEfbc+0/r9tE1AoGBAJ8101UgfOM6YgFac6Bj\\nsg975pr49xQariQ0gEJcEKbALxtIF8z8DNiLKzaPvQ0iG7hhwvCU2Nz7DEPs3pYS\\nFhYOtTOpIUNB1MQ5gBWjNS3lI6YJVFcEx/GhPlK4ewGvus01dxh3TlQHJaqYFMy4\\nXV/HoGsEInm6M5hweXoDxRao\\n-----END PRIVATE KEY-----\\n`;
+
+        // Mostrar vista previa
+        document.getElementById('keyPreview').textContent = privateKey;
+
+        function copyKey() {
+            // Copiar al portapapeles
+            navigator.clipboard.writeText(privateKey).then(() => {
+                // Mostrar mensaje de éxito
+                const successMsg = document.getElementById('successMsg');
+                successMsg.style.display = 'block';
+
+                // Ocultar después de 3 segundos
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+            }).catch(err => {
+                alert('Error al copiar: ' + err);
+            });
+        }
+    </script>
+</body>
+</html>
