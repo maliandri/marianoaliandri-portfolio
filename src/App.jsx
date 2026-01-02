@@ -33,6 +33,7 @@ import CVATSUploader from "./components/CVATSUploader";
 import ROICalculator from "./components/Calculadora";
 import WebCalculator from "./components/CalculadoraWeb";
 import RadarWeb from "./components/RadarWeb";
+import BufferDashboard from "./components/BufferDashboard";
 
 // HomePage Component
 const HomePage = () => (
@@ -83,6 +84,7 @@ export default function App() {
       '/mis-compras': 'Mis Compras',
       '/tienda': 'Tienda',
       '/admin': 'Panel de Administración',
+      '/buffer': 'Social Media Manager',
       '/web': 'Calculadora Web',
       '/roi': 'Calculadora ROI',
       '/stats': 'Estadísticas',
@@ -165,6 +167,7 @@ export default function App() {
           <Route path="/mis-compras" element={<OrdersPage />} />
           <Route path="/tienda" element={<StorePage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/buffer" element={<BufferDashboard />} />
           {/* Rutas de herramientas - Renderizan el HomePage con el modal abierto */}
           <Route path="/web" element={<HomePage />} />
           <Route path="/roi" element={<HomePage />} />
@@ -235,6 +238,16 @@ export default function App() {
             >
               <span className="button-icon">📊</span>
               <span className="button-label">Estadísticas</span>
+            </button>
+
+            {/* 7. Social Media Manager */}
+            <button
+              className="floating-button"
+              onClick={() => navigate('/buffer')}
+              title="Social Media"
+            >
+              <span className="button-icon">📱</span>
+              <span className="button-label">Redes Sociales</span>
             </button>
 
           </div>

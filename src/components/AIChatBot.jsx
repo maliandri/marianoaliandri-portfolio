@@ -189,6 +189,17 @@ function AIChatBot() {
           conversacion: messages.slice(-10).map(m => `${m.isBot ? 'Bot' : 'Usuario'}: ${m.text}`).join('\n')
         });
 
+        // Publicar en redes sociales vía Buffer (si está configurado)
+        try {
+          const bufferService = (await import('../utils/bufferService')).default;
+          await bufferService.publishMeetingScheduled({
+            clientName: leadData.nombre,
+            service: leadData.interes
+          });
+        } catch (error) {
+          console.log('Buffer no configurado o error al publicar:', error);
+        }
+
         // Confirmar al usuario
         setTimeout(() => {
           addBotMessage('✅ ¡Perfecto! Tus datos han sido enviados. Mariano se pondrá en contacto contigo a la brevedad. ¡Gracias por tu interés!');
