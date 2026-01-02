@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../utils/firebaseservice';
 import priceService from '../utils/priceService';
-import BufferDashboard from '../components/BufferDashboard';
+import SocialMediaDashboard from '../components/SocialMediaDashboard';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -712,7 +712,7 @@ export default function AdminPage() {
         )}
 
         {!loading && activeTab === 'social' && (
-          <BufferDashboard />
+          <SocialMediaDashboard />
         )}
       </div>
     </div>
