@@ -48,4 +48,8 @@ pids
 scripts/
 PRIVATE_KEY_FOR_NETLIFY.txt
 
+# PWA Documentation (private until publication)
+docs/
+PWA-QUICKSTART.md
+
 #
