@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../utils/firebaseservice';
 import priceService from '../utils/priceService';
+import BufferDashboard from '../components/BufferDashboard';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -491,7 +492,8 @@ export default function AdminPage() {
               { id: 'dashboard', label: 'Dashboard', icon: '📊' },
               { id: 'users', label: 'Usuarios', icon: '👥' },
               { id: 'orders', label: 'Órdenes', icon: '📦' },
-              { id: 'products', label: 'Productos', icon: '🛍️' }
+              { id: 'products', label: 'Productos', icon: '🛍️' },
+              { id: 'social', label: 'Redes Sociales', icon: '📱' }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -707,6 +709,10 @@ export default function AdminPage() {
               ))}
             </div>
           </div>
+        )}
+
+        {!loading && activeTab === 'social' && (
+          <BufferDashboard />
         )}
       </div>
     </div>

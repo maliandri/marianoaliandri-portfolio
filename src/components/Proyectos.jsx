@@ -1,7 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import ShareButton from './ShareButton';
-import bufferService from '../utils/bufferService';
 
 // Componente para la sección de proyectos
 function Proyectos() {
@@ -19,14 +17,6 @@ function Proyectos() {
       technologies: ['Power BI', 'Excel'],
     }
   ];
-
-  const handleShareProject = async (project) => {
-    try {
-      await bufferService.publishNewProject(project);
-    } catch (error) {
-      console.error('Error sharing project:', error);
-    }
-  };
   return (
     <motion.section
       id="proyectos"
@@ -62,7 +52,7 @@ function Proyectos() {
 
             {/* Technologies */}
             {proyecto.technologies && proyecto.technologies.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2">
                 {proyecto.technologies.map((tech, i) => (
                   <span
                     key={i}
@@ -73,21 +63,6 @@ function Proyectos() {
                 ))}
               </div>
             )}
-
-            {/* Share Button */}
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-              <ShareButton
-                content={{
-                  title: proyecto.title,
-                  description: proyecto.description,
-                  text: bufferService.generateProjectText(proyecto),
-                }}
-                type="project"
-                variant="minimal"
-                className="w-full justify-center"
-                onShare={() => handleShareProject(proyecto)}
-              />
-            </div>
           </motion.div>
         ))}
       </div>

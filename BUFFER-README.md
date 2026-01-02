@@ -1,20 +1,22 @@
-# 📱 Buffer Integration - Quick Start
+# 📱 Buffer Integration vía Make.com - Quick Start
 
-## ⚡ Configuración Rápida (5 minutos)
+## ⚡ Configuración Rápida (10 minutos)
 
-### 1. Obtener Token
-1. Ve a [buffer.com/developers/api](https://buffer.com/developers/api)
-2. Copia tu Access Token
+### 1. Crear Cuenta en Make.com
+1. Ve a [make.com](https://www.make.com)
+2. Regístrate (plan gratuito: 1,000 operaciones/mes)
 
-### 2. Configurar
+### 2. Conectar Buffer en Make.com
+1. En Make.com: New Scenario
+2. Agrega módulo "Webhooks" → Custom Webhook
+3. Agrega módulo "Buffer" → Create a Post
+4. Conecta Buffer (te pedirá autorización)
+
+### 3. Configurar Webhooks
 ```bash
-# Agrega a .env
-VITE_BUFFER_ACCESS_TOKEN=tu-token-aqui
+# Agrega a .env los webhooks de Make.com
+VITE_MAKE_WEBHOOK_PUBLISH=https://hook.make.com/tu-webhook-aqui
 ```
-
-### 3. Conectar Redes
-1. Ve a [buffer.com/app](https://buffer.com/app)
-2. Conecta LinkedIn, Twitter, Facebook, Instagram
 
 ### 4. ¡Listo!
 ```bash
@@ -22,7 +24,7 @@ npm install
 npm run dev
 ```
 
-Navega a `http://localhost:5173/buffer`
+Navega a `http://localhost:5173/admin` → Tab "Redes Sociales"
 
 ---
 
@@ -46,10 +48,9 @@ Navega a `http://localhost:5173/buffer`
 
 | Función | Ubicación | URL |
 |---------|-----------|-----|
-| Dashboard Principal | Botón flotante o directo | `/buffer` |
-| Compartir Proyectos | Componente Proyectos | Botón en cada card |
-| Settings | Dashboard → Configuración | - |
-| Analytics | Dashboard → Analytics | - |
+| Dashboard Principal | Panel de Admin → Tab "Redes Sociales" | `/admin` |
+| Settings | Dashboard → Configuración | Protegido con login |
+| Analytics | Dashboard → Analytics | Solo para admins |
 
 ---
 
