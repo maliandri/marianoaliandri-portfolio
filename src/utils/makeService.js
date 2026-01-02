@@ -13,15 +13,17 @@ class MakeService {
    * @param {string} data.text - Texto del post
    * @param {Array} data.networks - Redes sociales ['linkedin', 'twitter', 'facebook', 'instagram']
    * @param {string} data.type - Tipo de contenido ['product', 'service', 'statistic', 'custom']
+   * @param {string} data.imageUrl - URL de imagen (requerida para Instagram, opcional para otras)
    * @param {Object} data.metadata - Metadata adicional (opcional)
    */
   async publish(data) {
     try {
       const payload = {
         text: data.text,
-        networks: data.networks || ['linkedin', 'twitter', 'facebook', 'instagram'],
+        networks: data.networks || ['linkedin', 'twitter', 'facebook'],
         type: data.type || 'custom',
         timestamp: new Date().toISOString(),
+        imageUrl: data.imageUrl || null,
         metadata: data.metadata || {}
       };
 
@@ -130,11 +132,12 @@ https://marianoaliandri.com.ar/#contact
   /**
    * Publicar contenido personalizado
    */
-  async publishCustom(text, networks = null) {
+  async publishCustom(text, networks = null, imageUrl = null) {
     return this.publish({
       text,
       type: 'custom',
-      networks: networks || ['linkedin', 'twitter', 'facebook', 'instagram']
+      networks: networks || ['linkedin', 'twitter', 'facebook'],
+      imageUrl
     });
   }
 

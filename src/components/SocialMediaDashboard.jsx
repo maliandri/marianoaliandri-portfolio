@@ -15,7 +15,7 @@ function SocialMediaDashboard() {
 
   // Custom post state
   const [postText, setPostText] = useState('');
-  const [selectedNetworks, setSelectedNetworks] = useState(['linkedin', 'twitter', 'facebook', 'instagram']);
+  const [selectedNetworks, setSelectedNetworks] = useState(['linkedin', 'twitter', 'facebook']);
 
   // Products state
   const [products, setProducts] = useState([]);
@@ -31,8 +31,7 @@ function SocialMediaDashboard() {
   const networks = [
     { id: 'linkedin', name: 'LinkedIn', icon: '💼', color: 'bg-blue-600' },
     { id: 'twitter', name: 'Twitter', icon: '🐦', color: 'bg-sky-500' },
-    { id: 'facebook', name: 'Facebook', icon: '👥', color: 'bg-blue-700' },
-    { id: 'instagram', name: 'Instagram', icon: '📷', color: 'bg-pink-600' }
+    { id: 'facebook', name: 'Facebook + Instagram', icon: '👥📷', color: 'bg-blue-700', info: 'Publica en Facebook e Instagram automáticamente' }
   ];
 
   useEffect(() => {
@@ -265,11 +264,19 @@ Gracias a todos por el apoyo.
                   ? `${network.color} text-white`
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
+              title={network.info || network.name}
             >
               {network.icon} {network.name}
             </button>
           ))}
         </div>
+        {selectedNetworks.includes('facebook') && (
+          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              ℹ️ <strong>Facebook + Instagram:</strong> Si tienes conectado Facebook a Instagram, el post se publicará automáticamente en ambas redes.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Tab Content */}
