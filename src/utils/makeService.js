@@ -4,7 +4,7 @@
 class MakeService {
   constructor() {
     // Webhook URL from Make.com
-    this.webhookURL = import.meta.env.VITE_MAKE_WEBHOOK_PUBLISH || 'https://hook.us2.make.com/qo6w3by4t4fatm8utatt2c54krtyx5nl';
+    this.webhookURL = import.meta.env.VITE_MAKE_WEBHOOK_PUBLISH || 'https://hook.us2.make.com/og06wglflanrsbx84k5fedo9j3b74gct';
   }
 
   /**
