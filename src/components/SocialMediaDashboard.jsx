@@ -16,6 +16,7 @@ function SocialMediaDashboard() {
   // Custom post state
   const [postText, setPostText] = useState('');
   const [selectedNetworks, setSelectedNetworks] = useState(['linkedin', 'facebook']);
+  const [useAI, setUseAI] = useState(false); // Toggle para usar AI
 
   // Products state
   const [products, setProducts] = useState([]);
@@ -76,10 +77,10 @@ function SocialMediaDashboard() {
 
     setIsPublishing(true);
     try {
-      const result = await makeService.publishCustom(postText, selectedNetworks);
+      const result = await makeService.publishCustom(postText, selectedNetworks, null, useAI);
 
       if (result.success) {
-        showMessage('success', '¡Publicación enviada correctamente!');
+        showMessage('success', useAI ? '¡Contenido enviado a AI para generar y publicar!' : '¡Publicación enviada correctamente!');
         setPostText('');
       } else {
         showMessage('error', `Error: ${result.message}`);
@@ -102,7 +103,7 @@ function SocialMediaDashboard() {
       const result = await makeService.publishProduct(selectedProduct);
 
       if (result.success) {
-        showMessage('success', '¡Producto publicado correctamente!');
+        showMessage('success', '✨ ¡AI generando contenido del producto y publicando en redes sociales!');
         setSelectedProduct(null);
       } else {
         showMessage('error', `Error: ${result.message}`);
@@ -125,7 +126,7 @@ function SocialMediaDashboard() {
       const result = await makeService.publishStatistic(stats);
 
       if (result.success) {
-        showMessage('success', '¡Estadística publicada correctamente!');
+        showMessage('success', '✨ ¡AI generando contenido de la estadística y publicando en redes sociales!');
         setStats({ title: '', description: '', metrics: {} });
       } else {
         showMessage('error', `Error: ${result.message}`);
@@ -308,16 +309,46 @@ Gracias a todos por el apoyo.
             </div>
           </div>
 
+          {/* AI Toggle */}
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  ✨ Modo AI-Powered
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {useAI
+                    ? 'Gemini generará un post profesional basado en tu descripción'
+                    : 'Publica tu texto tal como está'}
+                </p>
+              </div>
+              <button
+                onClick={() => setUseAI(!useAI)}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                  useAI ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                    useAI ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
           {/* Composer */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Texto del Post
+              {useAI ? 'Descripción Breve (AI generará el contenido)' : 'Texto del Post'}
             </label>
             <textarea
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
-              rows={10}
-              placeholder="Escribe tu publicación aquí..."
+              rows={useAI ? 4 : 10}
+              placeholder={useAI
+                ? 'Ej: "Acabo de lanzar un nuevo servicio de consultoría en Power BI para empresas que quieren mejorar sus dashboards"'
+                : 'Escribe tu publicación aquí...'}
               className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
             />
             <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -328,9 +359,17 @@ Gracias a todos por el apoyo.
           <button
             onClick={handlePublishCustom}
             disabled={isPublishing || !postText.trim()}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full py-3 ${
+              useAI
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
+                : 'bg-indigo-600 hover:bg-indigo-700'
+            } text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {isPublishing ? '⏳ Publicando...' : '🚀 Publicar Ahora'}
+            {isPublishing
+              ? '⏳ Procesando...'
+              : useAI
+                ? '✨ Generar con AI y Publicar'
+                : '🚀 Publicar Ahora'}
           </button>
         </div>
       )}

@@ -24,6 +24,7 @@ class MakeService {
         type: data.type || 'custom',
         timestamp: new Date().toISOString(),
         imageUrl: data.imageUrl || null,
+        useAI: data.useAI || false, // Indica si debe procesar con AI
         metadata: data.metadata || {}
       };
 
@@ -57,74 +58,67 @@ class MakeService {
   }
 
   /**
-   * Publicar un producto
+   * Publicar un producto (AI generará el contenido)
    */
   async publishProduct(product) {
-    const text = `🎯 Nuevo servicio disponible: ${product.name}
-
-${product.description}
-
-💰 Precio: $${product.price}
-
-¿Te interesa? Contactame:
-https://marianoaliandri.com.ar/#contact
-
-#Servicios #DesarrolloWeb #PowerBI #Python`;
+    // Enviamos descripción breve para que AI genere el post
+    const briefDescription = `Producto: ${product.name}. ${product.description}. Precio: $${product.price}`;
 
     return this.publish({
-      text,
+      text: briefDescription,
       type: 'product',
+      useAI: true, // AI procesará esto
       metadata: {
         productId: product.id,
         productName: product.name,
-        price: product.price
+        productDescription: product.description,
+        price: product.price,
+        productUrl: 'https://marianoaliandri.com.ar/#tienda'
       }
     });
   }
 
   /**
-   * Publicar una estadística del sitio
+   * Publicar una estadística del sitio (AI generará el contenido)
    */
   async publishStatistic(stat) {
-    const text = `📊 ${stat.title}
-
-${stat.description}
-
-${stat.metrics ? Object.entries(stat.metrics).map(([key, value]) => `✅ ${key}: ${value}`).join('\n') : ''}
-
-Conocé más sobre mi trabajo:
-https://marianoaliandri.com.ar
-
-#Analytics #DesarrolloWeb #Resultados`;
+    // Enviamos info para que AI genere el post
+    const briefDescription = `Estadística: ${stat.title}. ${stat.description}. ${
+      stat.metrics ? 'Métricas: ' + Object.entries(stat.metrics).map(([key, value]) => `${key}: ${value}`).join(', ') : ''
+    }`;
 
     return this.publish({
-      text,
+      text: briefDescription,
       type: 'statistic',
-      metadata: stat.metrics || {}
+      useAI: true, // AI procesará esto
+      metadata: {
+        title: stat.title,
+        description: stat.description,
+        metrics: stat.metrics || {},
+        siteUrl: 'https://marianoaliandri.com.ar'
+      }
     });
   }
 
   /**
-   * Publicar un servicio
+   * Publicar un servicio (AI generará el contenido)
    */
   async publishService(service) {
-    const text = `💼 ${service.title}
-
-${service.description}
-
-${service.benefits ? service.benefits.map(b => `✅ ${b}`).join('\n') : ''}
-
-¿Necesitás ayuda con esto?
-https://marianoaliandri.com.ar/#contact
-
-#Servicios #Consultoría #DesarrolloWeb`;
+    // Enviamos info para que AI genere el post
+    const briefDescription = `Servicio: ${service.title}. ${service.description}. ${
+      service.benefits ? 'Beneficios: ' + service.benefits.join(', ') : ''
+    }`;
 
     return this.publish({
-      text,
+      text: briefDescription,
       type: 'service',
+      useAI: true, // AI procesará esto
       metadata: {
         serviceId: service.id || service.title,
-        serviceName: service.title
+        serviceName: service.title,
+        serviceDescription: service.description,
+        benefits: service.benefits || [],
+        serviceUrl: 'https://marianoaliandri.com.ar/#servicios'
       }
     });
   }
@@ -132,12 +126,13 @@ https://marianoaliandri.com.ar/#contact
   /**
    * Publicar contenido personalizado
    */
-  async publishCustom(text, networks = null, imageUrl = null) {
+  async publishCustom(text, networks = null, imageUrl = null, useAI = false) {
     return this.publish({
       text,
       type: 'custom',
       networks: networks || ['linkedin', 'facebook'],
-      imageUrl
+      imageUrl,
+      useAI
     });
   }
 
