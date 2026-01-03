@@ -11,16 +11,16 @@ class MakeService {
    * Publicar en redes sociales via Make.com
    * @param {Object} data - Datos del post
    * @param {string} data.text - Texto del post
-   * @param {Array} data.networks - Redes sociales ['linkedin', 'twitter', 'facebook', 'instagram']
+   * @param {Array} data.networks - Redes sociales ['linkedin', 'facebook']
    * @param {string} data.type - Tipo de contenido ['product', 'service', 'statistic', 'custom']
-   * @param {string} data.imageUrl - URL de imagen (requerida para Instagram, opcional para otras)
+   * @param {string} data.imageUrl - URL de imagen (opcional)
    * @param {Object} data.metadata - Metadata adicional (opcional)
    */
   async publish(data) {
     try {
       const payload = {
         text: data.text,
-        networks: data.networks || ['linkedin', 'twitter', 'facebook'],
+        networks: data.networks || ['linkedin', 'facebook'],
         type: data.type || 'custom',
         timestamp: new Date().toISOString(),
         imageUrl: data.imageUrl || null,
@@ -136,7 +136,7 @@ https://marianoaliandri.com.ar/#contact
     return this.publish({
       text,
       type: 'custom',
-      networks: networks || ['linkedin', 'twitter', 'facebook'],
+      networks: networks || ['linkedin', 'facebook'],
       imageUrl
     });
   }

@@ -15,7 +15,7 @@ function SocialMediaDashboard() {
 
   // Custom post state
   const [postText, setPostText] = useState('');
-  const [selectedNetworks, setSelectedNetworks] = useState(['linkedin', 'twitter', 'facebook']);
+  const [selectedNetworks, setSelectedNetworks] = useState(['linkedin', 'facebook']);
 
   // Products state
   const [products, setProducts] = useState([]);
@@ -30,7 +30,6 @@ function SocialMediaDashboard() {
 
   const networks = [
     { id: 'linkedin', name: 'LinkedIn', icon: '💼', color: 'bg-blue-600' },
-    { id: 'twitter', name: 'Twitter', icon: '🐦', color: 'bg-sky-500' },
     { id: 'facebook', name: 'Facebook + Instagram', icon: '👥📷', color: 'bg-blue-700', info: 'Publica en Facebook e Instagram automáticamente' }
   ];
 
