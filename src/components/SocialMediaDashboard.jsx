@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import makeService from '../utils/makeService';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db } from '../utils/firebaseservice';
 
 /**
  * Social Media Dashboard - Make.com Integration
