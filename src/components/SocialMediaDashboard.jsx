@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import makeService from '../utils/makeService';
+import reelService from '../utils/reelService';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../utils/firebaseservice';
 
@@ -118,6 +119,50 @@ function SocialMediaDashboard() {
       }
     } catch (error) {
       showMessage('error', 'Error al publicar producto');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handlePublishReel = async () => {
+    if (!selectedProduct) {
+      showMessage('error', 'Selecciona un producto');
+      return;
+    }
+
+    if (!selectedProduct.image) {
+      showMessage('error', 'El producto necesita una imagen para generar el reel');
+      return;
+    }
+
+    setIsPublishing(true);
+    try {
+      // Generar video desde la imagen del producto
+      const videoUrl = reelService.generateReelFromImage(selectedProduct.image, {
+        productName: selectedProduct.name,
+        price: selectedProduct.priceARS ? `ARS $${selectedProduct.priceARS}` : selectedProduct.priceUSD ? `USD $${selectedProduct.priceUSD}` : '',
+        duration: 10
+      });
+
+      if (!videoUrl) {
+        showMessage('error', 'No se pudo generar el video del reel');
+        return;
+      }
+
+      console.log('🎬 Video generado:', videoUrl);
+
+      // Publicar el reel con AI caption
+      const result = await makeService.publishReel(selectedProduct, videoUrl);
+
+      if (result.success) {
+        showMessage('success', '🎬 ¡AI generando caption del reel y publicando video en redes sociales!');
+        setSelectedProduct(null);
+      } else {
+        showMessage('error', `Error: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error al publicar reel:', error);
+      showMessage('error', 'Error al publicar reel');
     } finally {
       setIsPublishing(false);
     }
@@ -425,13 +470,22 @@ https://marianoaliandri.com.ar/#contact
             </div>
           )}
 
-          <button
-            onClick={handlePublishProduct}
-            disabled={isPublishing || !selectedProduct}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isPublishing ? '⏳ Publicando...' : '🚀 Publicar Producto'}
-          </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handlePublishProduct}
+              disabled={isPublishing || !selectedProduct}
+              className="py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPublishing ? '⏳ Publicando...' : '🚀 Post'}
+            </button>
+            <button
+              onClick={handlePublishReel}
+              disabled={isPublishing || !selectedProduct}
+              className="py-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPublishing ? '⏳ Generando...' : '🎬 Reel'}
+            </button>
+          </div>
         </div>
       )}
 

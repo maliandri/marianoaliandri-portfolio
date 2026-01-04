@@ -147,6 +147,39 @@ class MakeService {
   }
 
   /**
+   * Publicar un reel/video de producto (AI generará el caption)
+   */
+  async publishReel(product, videoUrl) {
+    console.log('🎬 DEBUG publishReel - Producto:', product);
+    console.log('🎥 DEBUG - Video URL:', videoUrl);
+
+    // Usar precio en pesos argentinos o USD
+    const price = product.priceARS || product.priceUSD || 'Consultar';
+    const currency = product.priceARS ? 'ARS' : (product.priceUSD ? 'USD' : '');
+
+    // Enviamos descripción breve para que AI genere el caption del reel
+    const briefDescription = `REEL de producto: ${product.name}. ${product.description}. Precio: ${currency ? currency + ' ' : ''}$${price}. Genera un caption CORTO y VIRAL para reel/video (máximo 100 palabras).`;
+
+    return this.publish({
+      text: briefDescription,
+      type: 'reel',
+      useAI: true, // AI generará caption corto para reel
+      videoUrl: videoUrl, // URL del video generado
+      imageUrl: null, // Los reels usan video, no imagen
+      metadata: {
+        productId: product.id,
+        productName: product.name,
+        productDescription: product.description,
+        price: price,
+        currency: currency,
+        productUrl: 'https://marianoaliandri.com.ar/#tienda',
+        videoUrl: videoUrl,
+        format: 'reel'
+      }
+    });
+  }
+
+  /**
    * Test de conexión con Make.com
    */
   async testConnection() {
