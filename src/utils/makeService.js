@@ -65,12 +65,14 @@ class MakeService {
       text: briefDescription,
       type: 'product',
       useAI: true, // AI procesará esto
+      imageUrl: product.image || null, // Imagen del producto
       metadata: {
         productId: product.id,
         productName: product.name,
         productDescription: product.description,
         price: product.price,
-        productUrl: 'https://marianoaliandri.com.ar/#tienda'
+        productUrl: 'https://marianoaliandri.com.ar/#tienda',
+        productImage: product.image || null
       }
     });
   }
