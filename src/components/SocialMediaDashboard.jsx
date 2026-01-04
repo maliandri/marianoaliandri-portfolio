@@ -45,6 +45,14 @@ function SocialMediaDashboard() {
         id: doc.id,
         ...doc.data()
       }));
+      console.log('📦 SocialMediaDashboard - Productos cargados desde Firebase:', productsData);
+      console.log('📦 Total de productos:', productsData.length);
+      // Log del producto portfolio específicamente
+      const portfolio = productsData.find(p => p.id === 'portfolio');
+      if (portfolio) {
+        console.log('🎯 Producto Portfolio encontrado:', portfolio);
+        console.log('🖼️ Portfolio.image:', portfolio.image);
+      }
       setProducts(productsData);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -391,7 +399,7 @@ Gracias a todos por el apoyo.
               <option value="">-- Seleccionar --</option>
               {products.map(product => (
                 <option key={product.id} value={product.id}>
-                  {product.name} - ${product.price}
+                  {product.name} - ${product.priceARS ? `ARS ${product.priceARS}` : product.priceUSD ? `USD ${product.priceUSD}` : 'Consultar'}
                 </option>
               ))}
             </select>
@@ -407,7 +415,7 @@ Gracias a todos por el apoyo.
 
 ${selectedProduct.description}
 
-💰 Precio: $${selectedProduct.price}
+💰 Precio: ${selectedProduct.priceARS ? `ARS $${selectedProduct.priceARS}` : selectedProduct.priceUSD ? `USD $${selectedProduct.priceUSD}` : 'Consultar'}
 
 ¿Te interesa? Contactame:
 https://marianoaliandri.com.ar/#contact
