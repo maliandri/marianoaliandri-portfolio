@@ -61,18 +61,21 @@ class MakeService {
     // Enviamos descripción breve para que AI genere el post
     const briefDescription = `Producto: ${product.name}. ${product.description}. Precio: $${product.price}`;
 
+    // Usar imagen del producto o una genérica de placeholder
+    const productImage = product.image || 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-product_n0fmqm.jpg';
+
     return this.publish({
       text: briefDescription,
       type: 'product',
       useAI: true, // AI procesará esto
-      imageUrl: product.image || null, // Imagen del producto
+      imageUrl: productImage,
       metadata: {
         productId: product.id,
         productName: product.name,
         productDescription: product.description,
         price: product.price,
         productUrl: 'https://marianoaliandri.com.ar/#tienda',
-        productImage: product.image || null
+        productImage: productImage
       }
     });
   }
