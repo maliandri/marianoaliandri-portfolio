@@ -28,17 +28,14 @@ class MakeService {
         metadata: data.metadata || {}
       };
 
-      await fetch(this.webhookURL, {
+      const response = await fetch(this.webhookURL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        mode: 'no-cors',
         body: JSON.stringify(payload)
       });
 
-      // Con mode: 'no-cors' no podemos leer la respuesta, pero eso está bien
-      // El webhook se envió exitosamente
       return {
         success: true,
         message: 'Publicación enviada correctamente',
@@ -166,7 +163,6 @@ class MakeService {
         headers: {
           'Content-Type': 'application/json',
         },
-        mode: 'no-cors',
         body: JSON.stringify(testData)
       });
 
