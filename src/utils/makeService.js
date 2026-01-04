@@ -58,6 +58,10 @@ class MakeService {
    * Publicar un producto (AI generará el contenido)
    */
   async publishProduct(product) {
+    console.log('🔍 DEBUG publishProduct - Producto recibido:', product);
+    console.log('🖼️ DEBUG - product.image:', product.image);
+    console.log('🖼️ DEBUG - product.imageUrl:', product.imageUrl);
+
     // Usar precio en pesos argentinos o USD
     const price = product.priceARS || product.priceUSD || 'Consultar';
     const currency = product.priceARS ? 'ARS' : (product.priceUSD ? 'USD' : '');
@@ -67,6 +71,8 @@ class MakeService {
 
     // Usar imagen del producto o una genérica de placeholder
     const productImage = product.image || 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-product_n0fmqm.jpg';
+
+    console.log('✅ DEBUG - Imagen final a enviar:', productImage);
 
     return this.publish({
       text: briefDescription,
