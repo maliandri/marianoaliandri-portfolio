@@ -58,8 +58,12 @@ class MakeService {
    * Publicar un producto (AI generará el contenido)
    */
   async publishProduct(product) {
+    // Usar precio en pesos argentinos o USD
+    const price = product.priceARS || product.priceUSD || 'Consultar';
+    const currency = product.priceARS ? 'ARS' : (product.priceUSD ? 'USD' : '');
+
     // Enviamos descripción breve para que AI genere el post
-    const briefDescription = `Producto: ${product.name}. ${product.description}. Precio: $${product.price}`;
+    const briefDescription = `Producto: ${product.name}. ${product.description}. Precio: ${currency ? currency + ' ' : ''}$${price}`;
 
     // Usar imagen del producto o una genérica de placeholder
     const productImage = product.image || 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-product_n0fmqm.jpg';
@@ -73,7 +77,8 @@ class MakeService {
         productId: product.id,
         productName: product.name,
         productDescription: product.description,
-        price: product.price,
+        price: price,
+        currency: currency,
         productUrl: 'https://marianoaliandri.com.ar/#tienda',
         productImage: productImage
       }
