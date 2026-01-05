@@ -123,42 +123,40 @@ exports.handler = async (event) => {
           volume: 0.5
         },
         tracks: tracks.concat([
-          // Track 2: Nombre del producto (arriba)
+          // Track 2: Nombre del producto (arriba con HTML para wrap)
           {
             clips: [
               {
                 asset: {
-                  type: 'title',
-                  text: productName,
-                  style: 'blockbuster',
-                  color: '#ffffff',
-                  size: 'large',
-                  position: 'top'
+                  type: 'html',
+                  html: `<p style="font-family: 'Arial Black', sans-serif; font-size: 60px; color: #ffffff; text-align: center; font-weight: bold; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); padding: 20px; max-width: 900px; word-wrap: break-word;">${productName}</p>`,
+                  width: 1080,
+                  height: 400
                 },
                 start: 0,
                 length: 30,
+                position: 'top',
                 offset: {
-                  y: 0.15
+                  y: 0.1
                 }
               }
             ]
           },
-          // Track 3: Precio (abajo)
+          // Track 3: Precio (abajo con HTML)
           {
             clips: [
               {
                 asset: {
-                  type: 'title',
-                  text: price ? `Desde ${price}` : 'Consultar precio',
-                  style: 'blockbuster',
-                  color: '#00ff00',
-                  size: 'medium',
-                  position: 'bottom'
+                  type: 'html',
+                  html: `<p style="font-family: 'Arial Black', sans-serif; font-size: 50px; color: #00ff00; text-align: center; font-weight: bold; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); padding: 20px;">${price ? `Desde ${price}` : 'Consultar precio'}</p>`,
+                  width: 1080,
+                  height: 200
                 },
                 start: 0,
                 length: 30,
+                position: 'bottom',
                 offset: {
-                  y: -0.15
+                  y: -0.1
                 }
               }
             ]
