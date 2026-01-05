@@ -97,10 +97,14 @@ class MakeService {
       stat.metrics ? 'Métricas: ' + Object.entries(stat.metrics).map(([key, value]) => `${key}: ${value}`).join(', ') : ''
     }`;
 
+    // Imagen placeholder para estadísticas
+    const statisticImage = 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-statistic_placeholder.jpg';
+
     return this.publish({
       text: briefDescription,
       type: 'statistic',
       useAI: true, // AI procesará esto
+      imageUrl: statisticImage,
       metadata: {
         title: stat.title,
         description: stat.description,
@@ -119,10 +123,14 @@ class MakeService {
       service.benefits ? 'Beneficios: ' + service.benefits.join(', ') : ''
     }`;
 
+    // Imagen placeholder para servicios
+    const serviceImage = 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-service_placeholder.jpg';
+
     return this.publish({
       text: briefDescription,
       type: 'service',
       useAI: true, // AI procesará esto
+      imageUrl: serviceImage,
       metadata: {
         serviceId: service.id || service.title,
         serviceName: service.title,
