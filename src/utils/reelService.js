@@ -1,107 +1,130 @@
 // Reel Generation Service
-// Genera videos cortos (reels) desde imágenes de productos usando Cloudinary
+// Genera videos cortos (reels) desde imágenes de productos usando Shotstack
 
 class ReelService {
-  constructor() {
-    this.cloudName = 'dlshym1te';
-  }
-
   /**
-   * Generar URL de video (reel) desde una imagen de Cloudinary
+   * Generar video (reel) desde una imagen usando Shotstack API via Netlify Functions
    * @param {string} imageUrl - URL de la imagen del producto
    * @param {Object} options - Opciones de generación
-   * @returns {string} URL del video generado
+   * @returns {Promise<Object>} { renderId, statusUrl } para consultar el estado
    */
-  generateReelFromImage(imageUrl, options = {}) {
-    // Extraer el public ID de la URL de Cloudinary
-    const publicId = this.extractPublicId(imageUrl);
-
-    if (!publicId) {
-      console.error('No se pudo extraer el public ID de la imagen:', imageUrl);
-      return null;
-    }
-
+  async generateReelFromImage(imageUrl, options = {}) {
     const {
-      duration = 10, // Duración en segundos
-      width = 1080,
-      height = 1920, // Formato vertical para reels (9:16)
       productName = '',
-      price = '',
-      overlay = true
+      price = ''
     } = options;
 
-    // Construir transformaciones de Cloudinary para convertir imagen en video
-    const transformations = [
-      // 1. Dimensiones verticales para reels
-      `w_${width},h_${height},c_fill,g_center`,
-
-      // 2. Efecto de zoom suave
-      'e_zoompan:mode_zp;maxzoom_1.5;du_' + duration,
-
-      // 3. Overlay de texto con el nombre del producto (si existe)
-      overlay && productName ? `l_text:Arial_100_bold:${encodeURIComponent(productName)},co_rgb:ffffff,g_north,y_150` : '',
-
-      // 4. Overlay del precio (si existe)
-      overlay && price ? `l_text:Arial_80:${encodeURIComponent(price)},co_rgb:00ff00,g_south,y_150` : '',
-
-      // 5. Efecto de fade in/out
-      'e_fade:2000'
-    ].filter(Boolean).join('/');
-
-    // URL del video generado
-    const videoUrl = `https://res.cloudinary.com/${this.cloudName}/video/upload/${transformations}/${publicId}.mp4`;
-
-    return videoUrl;
-  }
-
-  /**
-   * Extraer el public ID de una URL de Cloudinary
-   * Ejemplo: https://res.cloudinary.com/dlshym1te/image/upload/c_fill,w_400,h_300,f_auto,q_auto/v1765836744/ecommerce.webp
-   * Extrae: v1765836744/ecommerce
-   */
-  extractPublicId(imageUrl) {
-    try {
-      // Buscar el patrón /upload/.../.../[public_id].extension
-      const match = imageUrl.match(/\/upload\/(?:.*\/)?(v\d+\/[^.]+)/);
-      if (match && match[1]) {
-        return match[1];
-      }
-
-      // Intentar otro patrón sin versión
-      const match2 = imageUrl.match(/\/upload\/(?:.*\/)?([^/.]+)\.\w+$/);
-      if (match2 && match2[1]) {
-        return match2[1];
-      }
-
+    if (!imageUrl) {
+      console.error('imageUrl is required');
       return null;
+    }
+
+    console.log('🎬 Solicitando generación de video a Shotstack...');
+    console.log('📸 Imagen:', imageUrl);
+    console.log('📦 Producto:', productName);
+    console.log('💰 Precio:', price);
+
+    try {
+      // Llamar a la Netlify Function que genera el video con Shotstack
+      const response = await fetch('/.netlify/functions/generate-reel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          imageUrl,
+          productName,
+          price
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('❌ Error generando video:', error);
+        return null;
+      }
+
+      const result = await response.json();
+      console.log('✅ Video solicitado. Render ID:', result.renderId);
+
+      return {
+        renderId: result.renderId,
+        statusUrl: result.statusUrl
+      };
+
     } catch (error) {
-      console.error('Error extrayendo public ID:', error);
+      console.error('❌ Error llamando a generate-reel function:', error);
       return null;
     }
   }
 
   /**
-   * Generar metadata para el reel (para enviar a Make.com)
-   * @param {Object} product - Datos del producto
-   * @returns {Object} Metadata del reel
+   * Consultar el estado de un video en proceso de generación
+   * @param {string} renderId - ID del render devuelto por generateReelFromImage
+   * @returns {Promise<Object>} { status, videoUrl }
    */
-  generateReelMetadata(product) {
-    const videoUrl = this.generateReelFromImage(product.image, {
-      productName: product.name,
-      price: product.priceARS ? `ARS $${product.priceARS}` : product.priceUSD ? `USD $${product.priceUSD}` : '',
-      duration: 10
-    });
+  async checkReelStatus(renderId) {
+    if (!renderId) {
+      console.error('renderId is required');
+      return null;
+    }
 
-    return {
-      videoUrl,
-      type: 'reel',
-      productId: product.id,
-      productName: product.name,
-      duration: 10,
-      format: 'vertical', // 9:16
-      width: 1080,
-      height: 1920
-    };
+    try {
+      const response = await fetch(`/.netlify/functions/check-reel-status?renderId=${renderId}`);
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('❌ Error consultando estado:', error);
+        return null;
+      }
+
+      const result = await response.json();
+      return {
+        status: result.status, // 'queued', 'rendering', 'done', 'failed'
+        videoUrl: result.videoUrl // Solo disponible cuando status = 'done'
+      };
+
+    } catch (error) {
+      console.error('❌ Error llamando a check-reel-status function:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Esperar a que el video esté listo (polling)
+   * @param {string} renderId - ID del render
+   * @param {number} maxWaitTime - Tiempo máximo de espera en ms (default: 60000 = 1 min)
+   * @returns {Promise<string>} URL del video generado
+   */
+  async waitForVideoReady(renderId, maxWaitTime = 60000) {
+    const startTime = Date.now();
+    const pollInterval = 3000; // Consultar cada 3 segundos
+
+    console.log('⏳ Esperando a que el video esté listo...');
+
+    while (Date.now() - startTime < maxWaitTime) {
+      const status = await this.checkReelStatus(renderId);
+
+      if (!status) {
+        throw new Error('Error consultando estado del video');
+      }
+
+      console.log(`📊 Estado: ${status.status}`);
+
+      if (status.status === 'done') {
+        console.log('✅ Video listo!', status.videoUrl);
+        return status.videoUrl;
+      }
+
+      if (status.status === 'failed') {
+        throw new Error('La generación del video falló');
+      }
+
+      // Esperar antes de volver a consultar
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+
+    throw new Error('Timeout esperando a que el video esté listo');
   }
 }
 

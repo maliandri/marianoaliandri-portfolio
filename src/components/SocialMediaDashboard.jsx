@@ -137,32 +137,45 @@ function SocialMediaDashboard() {
 
     setIsPublishing(true);
     try {
-      // Generar video desde la imagen del producto
-      const videoUrl = reelService.generateReelFromImage(selectedProduct.image, {
+      showMessage('info', '🎬 Generando video con Shotstack (esto tarda ~30 segundos)...');
+
+      // Paso 1: Solicitar generación del video a Shotstack
+      const renderRequest = await reelService.generateReelFromImage(selectedProduct.image, {
         productName: selectedProduct.name,
-        price: selectedProduct.priceARS ? `ARS $${selectedProduct.priceARS}` : selectedProduct.priceUSD ? `USD $${selectedProduct.priceUSD}` : '',
-        duration: 10
+        price: selectedProduct.priceARS ? `ARS $${selectedProduct.priceARS}` : selectedProduct.priceUSD ? `USD $${selectedProduct.priceUSD}` : ''
       });
 
-      if (!videoUrl) {
-        showMessage('error', 'No se pudo generar el video del reel');
+      if (!renderRequest || !renderRequest.renderId) {
+        showMessage('error', 'No se pudo iniciar la generación del video');
         return;
       }
 
-      console.log('🎬 Video generado:', videoUrl);
+      console.log('🎬 Video solicitado. Render ID:', renderRequest.renderId);
+      showMessage('info', '⏳ Esperando a que el video esté listo...');
 
-      // Publicar el reel con AI caption
+      // Paso 2: Esperar a que el video esté listo (polling cada 3 segundos)
+      const videoUrl = await reelService.waitForVideoReady(renderRequest.renderId, 60000);
+
+      if (!videoUrl) {
+        showMessage('error', 'Timeout esperando el video. Intenta de nuevo en unos minutos.');
+        return;
+      }
+
+      console.log('✅ Video listo:', videoUrl);
+      showMessage('success', '✅ Video generado! Publicando en redes sociales...');
+
+      // Paso 3: Publicar el reel con AI caption
       const result = await makeService.publishReel(selectedProduct, videoUrl);
 
       if (result.success) {
-        showMessage('success', '🎬 ¡AI generando caption del reel y publicando video en redes sociales!');
+        showMessage('success', '🎬 ¡Reel publicado exitosamente en Instagram!');
         setSelectedProduct(null);
       } else {
-        showMessage('error', `Error: ${result.message}`);
+        showMessage('error', `Error al publicar: ${result.message}`);
       }
     } catch (error) {
       console.error('Error al publicar reel:', error);
-      showMessage('error', 'Error al publicar reel');
+      showMessage('error', `Error: ${error.message || 'Error al publicar reel'}`);
     } finally {
       setIsPublishing(false);
     }
