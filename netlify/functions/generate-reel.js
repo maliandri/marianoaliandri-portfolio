@@ -73,20 +73,10 @@ exports.handler = async (event) => {
     const randomTransitionOut = transitions[Math.floor(Math.random() * transitions.length)];
     const randomEffect = effects[Math.floor(Math.random() * effects.length)];
 
-    // Música de fondo gratuita - URLs públicas compatibles con Shotstack
-    const musicTracks = [
-      'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
-      'https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3',
-      'https://assets.mixkit.co/music/preview/mixkit-a-very-happy-christmas-897.mp3',
-      'https://assets.mixkit.co/music/preview/mixkit-summer-fun-13.mp3'
-    ];
-    const randomMusic = musicTracks[Math.floor(Math.random() * musicTracks.length)];
-
     console.log('🎲 Elementos aleatorios seleccionados:');
     console.log('- Transición entrada:', randomTransitionIn);
     console.log('- Transición salida:', randomTransitionOut);
     console.log('- Efecto:', randomEffect);
-    console.log('- Música:', randomMusic);
 
     // Configurar el video con Shotstack (30 segundos con video de fondo y transiciones)
     const tracks = [];
@@ -133,11 +123,6 @@ exports.handler = async (event) => {
     const videoConfig = {
       timeline: {
         background: '#000000',
-        soundtrack: {
-          src: randomMusic,
-          effect: 'fadeInFadeOut',
-          volume: 0.4
-        },
         tracks: tracks.concat([
           // Track 3: Nombre del producto (arriba)
           {
