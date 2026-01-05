@@ -123,50 +123,42 @@ exports.handler = async (event) => {
           volume: 0.5
         },
         tracks: tracks.concat([
-          // Track 2: Nombre del producto (centro-arriba)
+          // Track 2: Nombre del producto (arriba)
           {
             clips: [
               {
                 asset: {
                   type: 'title',
                   text: productName,
-                  style: 'minimal',
+                  style: 'blockbuster',
                   color: '#ffffff',
-                  size: 'medium',
-                  position: 'center'
+                  size: 'large',
+                  position: 'top'
                 },
-                start: 0.5,
-                length: 29.5,
+                start: 0,
+                length: 30,
                 offset: {
-                  y: -0.3
-                },
-                transition: {
-                  in: 'slideDown',
-                  out: 'slideUp'
+                  y: 0.15
                 }
               }
             ]
           },
-          // Track 3: Precio (centro-abajo)
+          // Track 3: Precio (abajo)
           {
             clips: [
               {
                 asset: {
                   type: 'title',
                   text: price ? `Desde ${price}` : 'Consultar precio',
-                  style: 'minimal',
+                  style: 'blockbuster',
                   color: '#00ff00',
-                  size: 'small',
-                  position: 'center'
+                  size: 'medium',
+                  position: 'bottom'
                 },
-                start: 1,
-                length: 29,
+                start: 0,
+                length: 30,
                 offset: {
-                  y: 0.3
-                },
-                transition: {
-                  in: 'zoom',
-                  out: 'zoom'
+                  y: -0.15
                 }
               }
             ]
