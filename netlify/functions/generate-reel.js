@@ -32,27 +32,73 @@ exports.handler = async (event) => {
     // Debug: verificar que la key existe (sin mostrar el valor completo por seguridad)
     console.log('🔑 API Key presente:', SHOTSTACK_API_KEY ? `Sí (${SHOTSTACK_API_KEY.substring(0, 8)}...)` : 'No');
 
-    // Configurar el video con Shotstack (30 segundos con video de fondo y animaciones)
+    // Arrays de recursos aleatorios
+    const backgroundVideos = [
+      'https://shotstack-assets.s3.amazonaws.com/footage/abstract-particles-purple.mp4',
+      'https://shotstack-assets.s3.amazonaws.com/footage/neon-lights.mp4',
+      'https://shotstack-assets.s3.amazonaws.com/footage/geometric-shapes.mp4',
+      'https://shotstack-assets.s3.amazonaws.com/footage/sparkles-blue.mp4'
+    ];
+
+    const overlayVideos = [
+      'https://shotstack-assets.s3.amazonaws.com/footage/bokeh-gold.mp4',
+      'https://shotstack-assets.s3.amazonaws.com/footage/bokeh-blue.mp4',
+      'https://shotstack-assets.s3.amazonaws.com/footage/light-leak.mp4',
+      'https://shotstack-assets.s3.amazonaws.com/footage/sparkles-white.mp4'
+    ];
+
+    const soundtracks = [
+      'https://shotstack-assets.s3.amazonaws.com/music/unminus/ambyan.mp3',
+      'https://shotstack-assets.s3.amazonaws.com/music/unminus/palmtrees.mp3',
+      'https://shotstack-assets.s3.amazonaws.com/music/unminus/summer.mp3',
+      'https://shotstack-assets.s3.amazonaws.com/music/unminus/tomorrow.mp3'
+    ];
+
+    const transitions = ['carouselLeft', 'carouselRight', 'slideLeft', 'slideRight', 'zoom', 'fade'];
+    const effects = ['zoomIn', 'zoomOut', 'slideLeft', 'slideRight'];
+
+    // Seleccionar recursos aleatorios
+    const randomBackground = backgroundVideos[Math.floor(Math.random() * backgroundVideos.length)];
+    const randomOverlay = overlayVideos[Math.floor(Math.random() * overlayVideos.length)];
+    const randomSoundtrack = soundtracks[Math.floor(Math.random() * soundtracks.length)];
+    const randomTransitionIn = transitions[Math.floor(Math.random() * transitions.length)];
+    const randomTransitionOut = transitions[Math.floor(Math.random() * transitions.length)];
+    const randomEffect = effects[Math.floor(Math.random() * effects.length)];
+
+    console.log('🎲 Elementos aleatorios seleccionados:');
+    console.log('- Fondo:', randomBackground);
+    console.log('- Overlay:', randomOverlay);
+    console.log('- Música:', randomSoundtrack);
+    console.log('- Transición entrada:', randomTransitionIn);
+    console.log('- Transición salida:', randomTransitionOut);
+    console.log('- Efecto:', randomEffect);
+
+    // Configurar el video con Shotstack (30 segundos con efectos aleatorios)
     const videoConfig = {
       timeline: {
         background: '#000000',
+        soundtrack: {
+          src: randomSoundtrack,
+          effect: 'fadeInFadeOut',
+          volume: 0.5
+        },
         tracks: [
-          // Track 1: Video de fondo animado (partículas)
+          // Track 1: Video de fondo animado (aleatorio)
           {
             clips: [
               {
                 asset: {
                   type: 'video',
-                  src: 'https://shotstack-assets.s3.amazonaws.com/footage/abstract-particles-purple.mp4'
+                  src: randomBackground
                 },
                 start: 0,
                 length: 30,
                 fit: 'crop',
-                opacity: 0.4 // Semi-transparente para no opacar el producto
+                opacity: 0.4
               }
             ]
           },
-          // Track 2: Imagen del producto con zoom y rotación
+          // Track 2: Imagen del producto con efectos aleatorios
           {
             clips: [
               {
@@ -63,26 +109,26 @@ exports.handler = async (event) => {
                 start: 0,
                 length: 30,
                 fit: 'contain',
-                scale: 0.7, // Más pequeño para dejar espacio a efectos
+                scale: 0.7,
                 position: 'center',
                 offset: {
                   y: 0
                 },
-                effect: 'zoomIn',
+                effect: randomEffect,
                 transition: {
-                  in: 'carouselLeft',
-                  out: 'carouselRight'
+                  in: randomTransitionIn,
+                  out: randomTransitionOut
                 }
               }
             ]
           },
-          // Track 3: Overlay de partículas brillantes
+          // Track 3: Overlay de efectos (aleatorio)
           {
             clips: [
               {
                 asset: {
                   type: 'video',
-                  src: 'https://shotstack-assets.s3.amazonaws.com/footage/bokeh-gold.mp4'
+                  src: randomOverlay
                 },
                 start: 0,
                 length: 30,
