@@ -32,7 +32,39 @@ exports.handler = async (event) => {
     // Debug: verificar que la key existe (sin mostrar el valor completo por seguridad)
     console.log('🔑 API Key presente:', SHOTSTACK_API_KEY ? `Sí (${SHOTSTACK_API_KEY.substring(0, 8)}...)` : 'No');
 
-    // Transiciones y efectos aleatorios (sin depender de videos externos)
+    const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
+
+    // Videos de fondo de Pexels (vertical 9:16 para reels)
+    let backgroundVideoUrl = null;
+
+    if (PEXELS_API_KEY) {
+      try {
+        // Buscar videos verticales aleatorios en Pexels
+        const pexelsQueries = ['abstract', 'particles', 'neon', 'bokeh', 'sparkle', 'geometric'];
+        const randomQuery = pexelsQueries[Math.floor(Math.random() * pexelsQueries.length)];
+
+        const pexelsResponse = await fetch(`https://api.pexels.com/videos/search?query=${randomQuery}&orientation=portrait&per_page=15`, {
+          headers: {
+            'Authorization': PEXELS_API_KEY
+          }
+        });
+
+        if (pexelsResponse.ok) {
+          const pexelsData = await pexelsResponse.json();
+          if (pexelsData.videos && pexelsData.videos.length > 0) {
+            const randomVideo = pexelsData.videos[Math.floor(Math.random() * pexelsData.videos.length)];
+            // Buscar archivo de video en resolución HD vertical
+            const videoFile = randomVideo.video_files.find(f => f.height >= 1280 && f.width / f.height < 1) || randomVideo.video_files[0];
+            backgroundVideoUrl = videoFile.link;
+            console.log('🎥 Video de fondo de Pexels:', backgroundVideoUrl);
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ No se pudo obtener video de Pexels, usando solo imagen:', error.message);
+      }
+    }
+
+    // Transiciones y efectos aleatorios
     const transitions = ['carouselLeft', 'carouselRight', 'slideLeft', 'slideRight', 'zoom', 'fade'];
     const effects = ['zoomIn', 'zoomOut'];
 
@@ -46,30 +78,52 @@ exports.handler = async (event) => {
     console.log('- Transición salida:', randomTransitionOut);
     console.log('- Efecto:', randomEffect);
 
-    // Configurar el video con Shotstack (30 segundos con transiciones aleatorias)
+    // Configurar el video con Shotstack (30 segundos con video de fondo y transiciones)
+    const tracks = [];
+
+    // Track 1: Video de fondo de Pexels (si está disponible)
+    if (backgroundVideoUrl) {
+      tracks.push({
+        clips: [
+          {
+            asset: {
+              type: 'video',
+              src: backgroundVideoUrl
+            },
+            start: 0,
+            length: 30,
+            fit: 'crop',
+            opacity: 0.3 // Semi-transparente para que se vea el producto
+          }
+        ]
+      });
+    }
+
+    // Track 2: Imagen del producto con efectos aleatorios
+    tracks.push({
+      clips: [
+        {
+          asset: {
+            type: 'image',
+            src: imageUrl
+          },
+          start: 0,
+          length: 30,
+          fit: 'contain',
+          scale: 0.7,
+          effect: randomEffect,
+          transition: {
+            in: randomTransitionIn,
+            out: randomTransitionOut
+          }
+        }
+      ]
+    });
+
     const videoConfig = {
       timeline: {
         background: '#000000',
-        tracks: [
-          // Track 1: Imagen del producto con efectos aleatorios
-          {
-            clips: [
-              {
-                asset: {
-                  type: 'image',
-                  src: imageUrl
-                },
-                start: 0,
-                length: 30,
-                fit: 'cover',
-                effect: randomEffect,
-                transition: {
-                  in: randomTransitionIn,
-                  out: randomTransitionOut
-                }
-              }
-            ]
-          },
+        tracks: tracks.concat([
           // Track 4: Nombre del producto (arriba)
           {
             clips: [
@@ -118,7 +172,7 @@ exports.handler = async (event) => {
               }
             ]
           }
-        ]
+        ])
       },
       output: {
         format: 'mp4',
