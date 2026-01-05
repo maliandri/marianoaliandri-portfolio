@@ -29,6 +29,9 @@ exports.handler = async (event) => {
       };
     }
 
+    // Debug: verificar que la key existe (sin mostrar el valor completo por seguridad)
+    console.log('🔑 API Key presente:', SHOTSTACK_API_KEY ? `Sí (${SHOTSTACK_API_KEY.substring(0, 8)}...)` : 'No');
+
     // Configurar el video con Shotstack
     const videoConfig = {
       timeline: {
@@ -102,6 +105,7 @@ exports.handler = async (event) => {
     };
 
     console.log('🎬 Solicitando generación de video a Shotstack...');
+    console.log('📋 Config:', JSON.stringify(videoConfig, null, 2));
 
     // Enviar request a Shotstack para generar el video
     const response = await fetch('https://api.shotstack.io/stage/render', {
@@ -113,14 +117,17 @@ exports.handler = async (event) => {
       body: JSON.stringify(videoConfig)
     });
 
+    console.log('📡 Response status:', response.status);
+
     if (!response.ok) {
       const error = await response.text();
-      console.error('❌ Error de Shotstack:', error);
+      console.error('❌ Error de Shotstack (status ' + response.status + '):', error);
       return {
         statusCode: response.status,
         body: JSON.stringify({
           error: 'Failed to generate video',
-          details: error
+          details: error,
+          shotstackStatus: response.status
         })
       };
     }
