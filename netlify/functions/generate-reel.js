@@ -32,7 +32,7 @@ exports.handler = async (event) => {
     // Debug: verificar que la key existe (sin mostrar el valor completo por seguridad)
     console.log('🔑 API Key presente:', SHOTSTACK_API_KEY ? `Sí (${SHOTSTACK_API_KEY.substring(0, 8)}...)` : 'No');
 
-    // Configurar el video con Shotstack
+    // Configurar el video con Shotstack (versión simplificada)
     const videoConfig = {
       timeline: {
         background: '#000000',
@@ -45,13 +45,8 @@ exports.handler = async (event) => {
                   src: imageUrl
                 },
                 start: 0,
-                length: 10, // 10 segundos
-                fit: 'cover',
-                scale: 1.1, // Efecto de zoom suave
-                transition: {
-                  in: 'fade',
-                  out: 'fade'
-                }
+                length: 5,
+                fit: 'cover'
               }
             ]
           },
@@ -61,14 +56,16 @@ exports.handler = async (event) => {
                 asset: {
                   type: 'title',
                   text: productName,
-                  style: 'future',
+                  style: 'minimal',
                   color: '#ffffff',
                   size: 'medium',
-                  background: 'rgba(0,0,0,0.5)',
                   position: 'top'
                 },
                 start: 0,
-                length: 10
+                length: 5,
+                offset: {
+                  y: 0.1
+                }
               }
             ]
           },
@@ -78,14 +75,16 @@ exports.handler = async (event) => {
                 asset: {
                   type: 'title',
                   text: price || '',
-                  style: 'blockbuster',
+                  style: 'minimal',
                   color: '#00ff00',
                   size: 'small',
-                  background: 'rgba(0,0,0,0.7)',
                   position: 'bottom'
                 },
                 start: 0,
-                length: 10
+                length: 5,
+                offset: {
+                  y: -0.1
+                }
               }
             ]
           }
@@ -93,14 +92,8 @@ exports.handler = async (event) => {
       },
       output: {
         format: 'mp4',
-        resolution: 'hd', // 1080p
-        aspectRatio: '9:16', // Vertical para reels
-        size: {
-          width: 1080,
-          height: 1920
-        },
-        fps: 30,
-        quality: 'high'
+        resolution: 'hd',
+        aspectRatio: '9:16'
       }
     };
 
