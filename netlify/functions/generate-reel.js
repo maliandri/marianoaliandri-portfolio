@@ -73,10 +73,20 @@ exports.handler = async (event) => {
     const randomTransitionOut = transitions[Math.floor(Math.random() * transitions.length)];
     const randomEffect = effects[Math.floor(Math.random() * effects.length)];
 
+    // Música de fondo gratuita de Pexels
+    const musicTracks = [
+      'https://cdn.pixabay.com/download/audio/2022/03/15/audio_d1718ab41b.mp3', // Upbeat Corporate
+      'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3', // Inspiring Cinematic
+      'https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3', // Happy Rock
+      'https://cdn.pixabay.com/download/audio/2022/03/24/audio_4a4bf47f50.mp3'  // Future Bass
+    ];
+    const randomMusic = musicTracks[Math.floor(Math.random() * musicTracks.length)];
+
     console.log('🎲 Elementos aleatorios seleccionados:');
     console.log('- Transición entrada:', randomTransitionIn);
     console.log('- Transición salida:', randomTransitionOut);
     console.log('- Efecto:', randomEffect);
+    console.log('- Música:', randomMusic);
 
     // Configurar el video con Shotstack (30 segundos con video de fondo y transiciones)
     const tracks = [];
@@ -123,23 +133,28 @@ exports.handler = async (event) => {
     const videoConfig = {
       timeline: {
         background: '#000000',
+        soundtrack: {
+          src: randomMusic,
+          effect: 'fadeInFadeOut',
+          volume: 0.4
+        },
         tracks: tracks.concat([
-          // Track 4: Nombre del producto (arriba)
+          // Track 3: Nombre del producto (arriba)
           {
             clips: [
               {
                 asset: {
                   type: 'title',
                   text: productName,
-                  style: 'future',
+                  style: 'minimal',
                   color: '#ffffff',
-                  size: 'medium',
+                  size: 'small',
                   position: 'top'
                 },
                 start: 0.5,
                 length: 29.5,
                 offset: {
-                  y: 0.15
+                  y: 0.1
                 },
                 transition: {
                   in: 'slideDown',
@@ -148,22 +163,22 @@ exports.handler = async (event) => {
               }
             ]
           },
-          // Track 5: Precio (abajo)
+          // Track 4: Precio (abajo)
           {
             clips: [
               {
                 asset: {
                   type: 'title',
-                  text: price ? `💰 ${price}` : '',
-                  style: 'blockbuster',
+                  text: price ? `Desde ${price}` : 'Consultar precio',
+                  style: 'minimal',
                   color: '#00ff00',
-                  size: 'small',
+                  size: 'x-small',
                   position: 'bottom'
                 },
                 start: 1,
                 length: 29,
                 offset: {
-                  y: -0.15
+                  y: -0.1
                 },
                 transition: {
                   in: 'zoom',
