@@ -32,11 +32,27 @@ exports.handler = async (event) => {
     // Debug: verificar que la key existe (sin mostrar el valor completo por seguridad)
     console.log('🔑 API Key presente:', SHOTSTACK_API_KEY ? `Sí (${SHOTSTACK_API_KEY.substring(0, 8)}...)` : 'No');
 
-    // Configurar el video con Shotstack (30 segundos con efectos)
+    // Configurar el video con Shotstack (30 segundos con video de fondo y animaciones)
     const videoConfig = {
       timeline: {
         background: '#000000',
         tracks: [
+          // Track 1: Video de fondo animado (partículas)
+          {
+            clips: [
+              {
+                asset: {
+                  type: 'video',
+                  src: 'https://shotstack-assets.s3.amazonaws.com/footage/abstract-particles-purple.mp4'
+                },
+                start: 0,
+                length: 30,
+                fit: 'crop',
+                opacity: 0.4 // Semi-transparente para no opacar el producto
+              }
+            ]
+          },
+          // Track 2: Imagen del producto con zoom y rotación
           {
             clips: [
               {
@@ -46,22 +62,43 @@ exports.handler = async (event) => {
                 },
                 start: 0,
                 length: 30,
-                fit: 'cover',
-                effect: 'zoomIn', // Efecto de zoom progresivo
+                fit: 'contain',
+                scale: 0.7, // Más pequeño para dejar espacio a efectos
+                position: 'center',
+                offset: {
+                  y: 0
+                },
+                effect: 'zoomIn',
                 transition: {
-                  in: 'fade',
-                  out: 'fade'
+                  in: 'carouselLeft',
+                  out: 'carouselRight'
                 }
               }
             ]
           },
+          // Track 3: Overlay de partículas brillantes
+          {
+            clips: [
+              {
+                asset: {
+                  type: 'video',
+                  src: 'https://shotstack-assets.s3.amazonaws.com/footage/bokeh-gold.mp4'
+                },
+                start: 0,
+                length: 30,
+                fit: 'crop',
+                opacity: 0.3
+              }
+            ]
+          },
+          // Track 4: Nombre del producto (arriba)
           {
             clips: [
               {
                 asset: {
                   type: 'title',
                   text: productName,
-                  style: 'minimal',
+                  style: 'future',
                   color: '#ffffff',
                   size: 'medium',
                   position: 'top'
@@ -69,21 +106,23 @@ exports.handler = async (event) => {
                 start: 0.5,
                 length: 29.5,
                 offset: {
-                  y: 0.1
+                  y: 0.15
                 },
                 transition: {
-                  in: 'slideDown'
+                  in: 'slideDown',
+                  out: 'slideUp'
                 }
               }
             ]
           },
+          // Track 5: Precio (abajo)
           {
             clips: [
               {
                 asset: {
                   type: 'title',
-                  text: price || '',
-                  style: 'minimal',
+                  text: price ? `💰 ${price}` : '',
+                  style: 'blockbuster',
                   color: '#00ff00',
                   size: 'small',
                   position: 'bottom'
@@ -91,10 +130,11 @@ exports.handler = async (event) => {
                 start: 1,
                 length: 29,
                 offset: {
-                  y: -0.1
+                  y: -0.15
                 },
                 transition: {
-                  in: 'slideUp'
+                  in: 'zoom',
+                  out: 'zoom'
                 }
               }
             ]
