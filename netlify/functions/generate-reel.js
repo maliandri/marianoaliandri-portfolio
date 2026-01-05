@@ -89,10 +89,10 @@ exports.handler = async (event) => {
     console.log('- Efecto:', randomEffect);
     console.log('- Música:', randomMusic);
 
-    // Configurar el video con Shotstack (30 segundos con video de fondo y transiciones)
+    // Configurar el video con Shotstack (30 segundos solo con video de fondo)
     const tracks = [];
 
-    // Track 1: Video de fondo de Pexels (si está disponible)
+    // Track 1: Video de fondo de Pexels a pantalla completa
     if (backgroundVideoUrl) {
       tracks.push({
         clips: [
@@ -104,32 +104,15 @@ exports.handler = async (event) => {
             start: 0,
             length: 30,
             fit: 'crop',
-            opacity: 0.3 // Semi-transparente para que se vea el producto
+            effect: randomEffect,
+            transition: {
+              in: randomTransitionIn,
+              out: randomTransitionOut
+            }
           }
         ]
       });
     }
-
-    // Track 2: Imagen del producto con efectos aleatorios
-    tracks.push({
-      clips: [
-        {
-          asset: {
-            type: 'image',
-            src: imageUrl
-          },
-          start: 0,
-          length: 30,
-          fit: 'contain',
-          scale: 0.7,
-          effect: randomEffect,
-          transition: {
-            in: randomTransitionIn,
-            out: randomTransitionOut
-          }
-        }
-      ]
-    });
 
     const videoConfig = {
       timeline: {
