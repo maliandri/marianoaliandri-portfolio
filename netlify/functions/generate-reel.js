@@ -32,7 +32,7 @@ exports.handler = async (event) => {
     // Debug: verificar que la key existe (sin mostrar el valor completo por seguridad)
     console.log('🔑 API Key presente:', SHOTSTACK_API_KEY ? `Sí (${SHOTSTACK_API_KEY.substring(0, 8)}...)` : 'No');
 
-    // Configurar el video con Shotstack (30 segundos)
+    // Configurar el video con Shotstack (30 segundos con efectos)
     const videoConfig = {
       timeline: {
         background: '#000000',
@@ -46,7 +46,12 @@ exports.handler = async (event) => {
                 },
                 start: 0,
                 length: 30,
-                fit: 'cover'
+                fit: 'cover',
+                effect: 'zoomIn', // Efecto de zoom progresivo
+                transition: {
+                  in: 'fade',
+                  out: 'fade'
+                }
               }
             ]
           },
@@ -61,10 +66,13 @@ exports.handler = async (event) => {
                   size: 'medium',
                   position: 'top'
                 },
-                start: 0,
-                length: 30,
+                start: 0.5,
+                length: 29.5,
                 offset: {
                   y: 0.1
+                },
+                transition: {
+                  in: 'slideDown'
                 }
               }
             ]
@@ -80,10 +88,13 @@ exports.handler = async (event) => {
                   size: 'small',
                   position: 'bottom'
                 },
-                start: 0,
-                length: 30,
+                start: 1,
+                length: 29,
                 offset: {
                   y: -0.1
+                },
+                transition: {
+                  in: 'slideUp'
                 }
               }
             ]
