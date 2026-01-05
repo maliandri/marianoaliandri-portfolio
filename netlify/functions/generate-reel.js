@@ -123,7 +123,7 @@ exports.handler = async (event) => {
           volume: 0.5
         },
         tracks: tracks.concat([
-          // Track 3: Nombre del producto (arriba)
+          // Track 2: Nombre del producto (centro-arriba)
           {
             clips: [
               {
@@ -132,13 +132,13 @@ exports.handler = async (event) => {
                   text: productName,
                   style: 'minimal',
                   color: '#ffffff',
-                  size: 'small',
-                  position: 'top'
+                  size: 'medium',
+                  position: 'center'
                 },
                 start: 0.5,
                 length: 29.5,
                 offset: {
-                  y: 0.1
+                  y: -0.3
                 },
                 transition: {
                   in: 'slideDown',
@@ -147,7 +147,7 @@ exports.handler = async (event) => {
               }
             ]
           },
-          // Track 4: Precio (abajo)
+          // Track 3: Precio (centro-abajo)
           {
             clips: [
               {
@@ -156,13 +156,13 @@ exports.handler = async (event) => {
                   text: price ? `Desde ${price}` : 'Consultar precio',
                   style: 'minimal',
                   color: '#00ff00',
-                  size: 'x-small',
-                  position: 'bottom'
+                  size: 'small',
+                  position: 'center'
                 },
                 start: 1,
                 length: 29,
                 offset: {
-                  y: -0.1
+                  y: 0.3
                 },
                 transition: {
                   in: 'zoom',
