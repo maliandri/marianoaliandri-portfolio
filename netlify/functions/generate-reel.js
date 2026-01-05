@@ -73,12 +73,12 @@ exports.handler = async (event) => {
     const randomTransitionOut = transitions[Math.floor(Math.random() * transitions.length)];
     const randomEffect = effects[Math.floor(Math.random() * effects.length)];
 
-    // Música de fondo gratuita de Pexels
+    // Música de fondo gratuita - URLs públicas compatibles con Shotstack
     const musicTracks = [
-      'https://cdn.pixabay.com/download/audio/2022/03/15/audio_d1718ab41b.mp3', // Upbeat Corporate
-      'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3', // Inspiring Cinematic
-      'https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3', // Happy Rock
-      'https://cdn.pixabay.com/download/audio/2022/03/24/audio_4a4bf47f50.mp3'  // Future Bass
+      'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
+      'https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3',
+      'https://assets.mixkit.co/music/preview/mixkit-a-very-happy-christmas-897.mp3',
+      'https://assets.mixkit.co/music/preview/mixkit-summer-fun-13.mp3'
     ];
     const randomMusic = musicTracks[Math.floor(Math.random() * musicTracks.length)];
 
