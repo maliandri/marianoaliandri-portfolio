@@ -32,7 +32,7 @@ exports.handler = async (event) => {
     // Debug: verificar que la key existe (sin mostrar el valor completo por seguridad)
     console.log('🔑 API Key presente:', SHOTSTACK_API_KEY ? `Sí (${SHOTSTACK_API_KEY.substring(0, 8)}...)` : 'No');
 
-    // Configurar el video con Shotstack (versión simplificada)
+    // Configurar el video con Shotstack (30 segundos)
     const videoConfig = {
       timeline: {
         background: '#000000',
@@ -45,7 +45,7 @@ exports.handler = async (event) => {
                   src: imageUrl
                 },
                 start: 0,
-                length: 5,
+                length: 30,
                 fit: 'cover'
               }
             ]
@@ -62,7 +62,7 @@ exports.handler = async (event) => {
                   position: 'top'
                 },
                 start: 0,
-                length: 5,
+                length: 30,
                 offset: {
                   y: 0.1
                 }
@@ -81,7 +81,7 @@ exports.handler = async (event) => {
                   position: 'bottom'
                 },
                 start: 0,
-                length: 5,
+                length: 30,
                 offset: {
                   y: -0.1
                 }
