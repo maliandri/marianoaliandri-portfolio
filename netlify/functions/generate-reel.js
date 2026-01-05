@@ -108,7 +108,8 @@ exports.handler = async (event) => {
     console.log('📋 Config:', JSON.stringify(videoConfig, null, 2));
 
     // Enviar request a Shotstack para generar el video
-    const response = await fetch('https://api.shotstack.io/stage/render', {
+    // Usar v1 (sandbox) en lugar de stage
+    const response = await fetch('https://api.shotstack.io/v1/render', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -148,7 +149,7 @@ exports.handler = async (event) => {
         renderId: result.response.id,
         message: 'Video generation started',
         // URL para consultar el estado del render
-        statusUrl: `https://api.shotstack.io/stage/render/${result.response.id}`
+        statusUrl: `https://api.shotstack.io/v1/render/${result.response.id}`
       })
     };
 

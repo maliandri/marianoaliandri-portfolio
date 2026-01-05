@@ -29,7 +29,8 @@ exports.handler = async (event) => {
     }
 
     // Consultar estado del render
-    const response = await fetch(`https://api.shotstack.io/stage/render/${renderId}`, {
+    // Usar v1 (sandbox) en lugar de stage
+    const response = await fetch(`https://api.shotstack.io/v1/render/${renderId}`, {
       method: 'GET',
       headers: {
         'x-api-key': SHOTSTACK_API_KEY
