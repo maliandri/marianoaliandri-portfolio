@@ -73,10 +73,21 @@ exports.handler = async (event) => {
     const randomTransitionOut = transitions[Math.floor(Math.random() * transitions.length)];
     const randomEffect = effects[Math.floor(Math.random() * effects.length)];
 
+    // Música de fondo desde Cloudinary (libre de derechos)
+    const musicTracks = [
+      'https://res.cloudinary.com/dlshym1te/video/upload/v1767648049/hype-drill-music-438398.mp3',
+      'https://res.cloudinary.com/dlshym1te/video/upload/v1767648049/sweet-life-luxury-chill-438146.mp3',
+      'https://res.cloudinary.com/dlshym1te/video/upload/v1767648046/music-free-458044.mp3',
+      'https://res.cloudinary.com/dlshym1te/video/upload/v1767648045/for-p-453681.mp3',
+      'https://res.cloudinary.com/dlshym1te/video/upload/v1767648044/fresh-457883.mp3'
+    ];
+    const randomMusic = musicTracks[Math.floor(Math.random() * musicTracks.length)];
+
     console.log('🎲 Elementos aleatorios seleccionados:');
     console.log('- Transición entrada:', randomTransitionIn);
     console.log('- Transición salida:', randomTransitionOut);
     console.log('- Efecto:', randomEffect);
+    console.log('- Música:', randomMusic);
 
     // Configurar el video con Shotstack (30 segundos con video de fondo y transiciones)
     const tracks = [];
@@ -123,6 +134,11 @@ exports.handler = async (event) => {
     const videoConfig = {
       timeline: {
         background: '#000000',
+        soundtrack: {
+          src: randomMusic,
+          effect: 'fadeInFadeOut',
+          volume: 0.5
+        },
         tracks: tracks.concat([
           // Track 3: Nombre del producto (arriba)
           {
