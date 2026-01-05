@@ -129,16 +129,13 @@ exports.handler = async (event) => {
               {
                 asset: {
                   type: 'html',
-                  html: `<p style="font-family: 'Arial Black', sans-serif; font-size: 60px; color: #ffffff; text-align: center; font-weight: bold; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); padding: 20px; max-width: 900px; word-wrap: break-word;">${productName}</p>`,
+                  html: `<div style="display: flex; align-items: center; justify-content: center; width: 1080px; height: 400px;"><p style="font-family: 'Arial Black', sans-serif; font-size: 60px; color: #ffffff; text-align: center; font-weight: bold; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); padding: 20px; max-width: 900px; word-wrap: break-word; margin: 0;">${productName}</p></div>`,
                   width: 1080,
                   height: 400
                 },
                 start: 0,
                 length: 30,
-                position: 'top',
-                offset: {
-                  y: 0.1
-                }
+                position: 'top'
               }
             ]
           },
@@ -148,16 +145,13 @@ exports.handler = async (event) => {
               {
                 asset: {
                   type: 'html',
-                  html: `<p style="font-family: 'Arial Black', sans-serif; font-size: 50px; color: #00ff00; text-align: center; font-weight: bold; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); padding: 20px;">${price ? `Desde ${price}` : 'Consultar precio'}</p>`,
+                  html: `<div style="display: flex; align-items: center; justify-content: center; width: 1080px; height: 200px;"><p style="font-family: 'Arial Black', sans-serif; font-size: 50px; color: #00ff00; text-align: center; font-weight: bold; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); padding: 20px; margin: 0;">${price ? `Desde ${price}` : 'Consultar precio'}</p></div>`,
                   width: 1080,
                   height: 200
                 },
                 start: 0,
                 length: 30,
-                position: 'bottom',
-                offset: {
-                  y: -0.1
-                }
+                position: 'bottom'
               }
             ]
           }
