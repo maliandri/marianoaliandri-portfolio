@@ -24,10 +24,14 @@ class MakeService {
         type: data.type || 'custom',
         timestamp: new Date().toISOString(),
         imageUrl: data.imageUrl || null,
-        url: data.url || null, // URL del video (para reels)
         useAI: data.useAI || false, // Indica si debe procesar con AI
         metadata: data.metadata || {}
       };
+
+      // Solo incluir 'url' si hay un video (reels)
+      if (data.url) {
+        payload.url = data.url;
+      }
 
       const response = await fetch(this.webhookURL, {
         method: 'POST',
