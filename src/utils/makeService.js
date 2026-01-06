@@ -172,7 +172,7 @@ class MakeService {
       text: briefDescription,
       type: 'reel',
       useAI: true, // AI generará caption corto para reel
-      videoUrl: videoUrl, // URL del video generado
+      url: videoUrl, // URL del video generado (Make.com espera 'url')
       imageUrl: null, // Los reels usan video, no imagen
       metadata: {
         productId: product.id,
