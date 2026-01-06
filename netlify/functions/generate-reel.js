@@ -188,7 +188,7 @@ exports.handler = async (event) => {
                   animation: {
                     preset: 'fadeIn',
                     duration: 1.5,
-                    style: 'full'
+                    style: 'word'
                   }
                 },
                 start: 24,
@@ -231,7 +231,7 @@ exports.handler = async (event) => {
                   animation: {
                     preset: 'fadeIn',
                     duration: 1.5,
-                    style: 'full'
+                    style: 'word'
                   }
                 },
                 start: 0,
@@ -269,7 +269,7 @@ exports.handler = async (event) => {
                   animation: {
                     preset: 'fadeIn',
                     duration: 1.5,
-                    style: 'full'
+                    style: 'word'
                   }
                 },
                 start: 24,
