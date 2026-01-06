@@ -145,7 +145,7 @@ exports.handler = async (event) => {
                   },
                   align: {
                     horizontal: 'center',
-                    vertical: 'middle'
+                    vertical: 'top'
                   },
                   animation: {
                     preset: 'ascend',
@@ -156,13 +156,11 @@ exports.handler = async (event) => {
                 start: 0,
                 length: 6,
                 fit: 'none',
-                position: 'top',
+                position: 'center',
                 offset: {
                   x: 0,
-                  y: 0.15
-                },
-                width: 900,
-                height: 350
+                  y: -0.3
+                }
               },
               {
                 asset: {
@@ -183,7 +181,7 @@ exports.handler = async (event) => {
                   },
                   align: {
                     horizontal: 'center',
-                    vertical: 'middle'
+                    vertical: 'top'
                   },
                   animation: {
                     preset: 'fadeIn',
@@ -194,13 +192,11 @@ exports.handler = async (event) => {
                 start: 24,
                 length: 6,
                 fit: 'none',
-                position: 'top',
+                position: 'center',
                 offset: {
                   x: 0,
-                  y: 0.15
-                },
-                width: 900,
-                height: 350
+                  y: -0.3
+                }
               }
             ]
           },
@@ -226,7 +222,7 @@ exports.handler = async (event) => {
                   },
                   align: {
                     horizontal: 'center',
-                    vertical: 'middle'
+                    vertical: 'bottom'
                   },
                   animation: {
                     preset: 'fadeIn',
@@ -237,13 +233,11 @@ exports.handler = async (event) => {
                 start: 0,
                 length: 6,
                 fit: 'none',
-                position: 'bottom',
+                position: 'center',
                 offset: {
                   x: 0,
-                  y: -0.15
-                },
-                width: 900,
-                height: 200
+                  y: 0.3
+                }
               },
               {
                 asset: {
@@ -264,7 +258,7 @@ exports.handler = async (event) => {
                   },
                   align: {
                     horizontal: 'center',
-                    vertical: 'middle'
+                    vertical: 'bottom'
                   },
                   animation: {
                     preset: 'fadeIn',
@@ -275,13 +269,11 @@ exports.handler = async (event) => {
                 start: 24,
                 length: 6,
                 fit: 'none',
-                position: 'bottom',
+                position: 'center',
                 offset: {
                   x: 0,
-                  y: -0.15
-                },
-                width: 900,
-                height: 200
+                  y: 0.3
+                }
               }
             ]
           }

@@ -24,6 +24,7 @@ class MakeService {
         type: data.type || 'custom',
         timestamp: new Date().toISOString(),
         imageUrl: data.imageUrl || null,
+        url: data.url || null, // URL del video (para reels)
         useAI: data.useAI || false, // Indica si debe procesar con AI
         metadata: data.metadata || {}
       };
