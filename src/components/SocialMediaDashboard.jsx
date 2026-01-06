@@ -117,6 +117,98 @@ function SocialMediaDashboard() {
     reader.readAsDataURL(file);
   };
 
+  // Generar imagen cuadrada de estadísticas (1080x1080)
+  const generateStatisticImage = () => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const size = 1080;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Fondo degradado
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+
+      // Título
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 80px Arial';
+      ctx.textAlign = 'center';
+      const titleLines = wrapText(ctx, stats.title, size - 120, 80);
+      titleLines.forEach((line, i) => {
+        ctx.fillText(line, size / 2, 180 + (i * 90));
+      });
+
+      // Descripción
+      ctx.font = '40px Arial';
+      const descLines = wrapText(ctx, stats.description, size - 120, 40);
+      descLines.forEach((line, i) => {
+        ctx.fillText(line, size / 2, 350 + (i * 50));
+      });
+
+      // Métricas
+      if (Object.keys(stats.metrics).length > 0) {
+        ctx.font = 'bold 50px Arial';
+        let y = 600;
+        Object.entries(stats.metrics).forEach(([key, value]) => {
+          ctx.fillText(`${key}: ${value}`, size / 2, y);
+          y += 70;
+        });
+      }
+
+      // Footer
+      ctx.font = '35px Arial';
+      ctx.fillText('marianoaliandri.com.ar', size / 2, size - 80);
+
+      // Convertir a Base64
+      resolve(canvas.toDataURL('image/jpeg', 0.95));
+    });
+  };
+
+  // Función auxiliar para dividir texto en líneas
+  const wrapText = (ctx, text, maxWidth, fontSize) => {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+
+    words.forEach(word => {
+      const testLine = currentLine + word + ' ';
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && currentLine !== '') {
+        lines.push(currentLine.trim());
+        currentLine = word + ' ';
+      } else {
+        currentLine = testLine;
+      }
+    });
+    lines.push(currentLine.trim());
+    return lines;
+  };
+
+  // Copiar imagen generada al clipboard
+  const handleCopyStatisticImage = async () => {
+    try {
+      const imageDataUrl = await generateStatisticImage();
+
+      // Convertir Base64 a Blob
+      const res = await fetch(imageDataUrl);
+      const blob = await res.blob();
+
+      // Copiar al clipboard
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': blob })
+      ]);
+
+      showMessage('success', '📋 Imagen copiada al portapapeles (1080x1080)');
+    } catch (error) {
+      console.error('Error al copiar imagen:', error);
+      showMessage('error', 'Error al copiar imagen');
+    }
+  };
+
   const handlePublishCustom = async () => {
     if (!postText.trim()) {
       showMessage('error', 'Por favor escribe algo para publicar');
@@ -567,120 +659,128 @@ https://marianoaliandri.com.ar/#contact
       )}
 
       {activeTab === 'statistics' && (
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Título
-            </label>
-            <input
-              type="text"
-              value={stats.title}
-              onChange={(e) => setStats({ ...stats, title: e.target.value })}
-              placeholder="Ej: Alcanzamos 10,000 visitantes"
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Formulario */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Título
+              </label>
+              <input
+                type="text"
+                value={stats.title}
+                onChange={(e) => setStats({ ...stats, title: e.target.value })}
+                placeholder="Ej: Alcanzamos 10,000 visitantes"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Descripción
-            </label>
-            <textarea
-              value={stats.description}
-              onChange={(e) => setStats({ ...stats, description: e.target.value })}
-              rows={4}
-              placeholder="Descripción de la estadística..."
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Descripción
+              </label>
+              <textarea
+                value={stats.description}
+                onChange={(e) => setStats({ ...stats, description: e.target.value })}
+                rows={4}
+                placeholder="Descripción de la estadística..."
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Métricas (opcional)
-            </label>
-            <input
-              type="text"
-              placeholder="Ej: Visitantes: 10,000"
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-2"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  const [key, value] = e.target.value.split(':');
-                  if (key && value) {
-                    setStats({
-                      ...stats,
-                      metrics: { ...stats.metrics, [key.trim()]: value.trim() }
-                    });
-                    e.target.value = '';
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Métricas (opcional)
+              </label>
+              <input
+                type="text"
+                placeholder="Ej: Visitantes: 10,000"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-2"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    const [key, value] = e.target.value.split(':');
+                    if (key && value) {
+                      setStats({
+                        ...stats,
+                        metrics: { ...stats.metrics, [key.trim()]: value.trim() }
+                      });
+                      e.target.value = '';
+                    }
                   }
-                }
-              }}
-            />
-            {Object.keys(stats.metrics).length > 0 && (
-              <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                {Object.entries(stats.metrics).map(([key, value]) => (
-                  <div key={key} className="flex justify-between items-center text-sm mb-1">
-                    <span className="text-gray-700 dark:text-gray-300">✅ {key}: {value}</span>
-                    <button
-                      onClick={() => {
-                        const newMetrics = { ...stats.metrics };
-                        delete newMetrics[key];
-                        setStats({ ...stats, metrics: newMetrics });
-                      }}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                }}
+              />
+              {Object.keys(stats.metrics).length > 0 && (
+                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                  {Object.entries(stats.metrics).map(([key, value]) => (
+                    <div key={key} className="flex justify-between items-center text-sm mb-1">
+                      <span className="text-gray-700 dark:text-gray-300">✅ {key}: {value}</span>
+                      <button
+                        onClick={() => {
+                          const newMetrics = { ...stats.metrics };
+                          delete newMetrics[key];
+                          setStats({ ...stats, metrics: newMetrics });
+                        }}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={handlePublishStatistic}
+              disabled={isPublishing || !stats.title || !stats.description}
+              className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPublishing ? '⏳ Publicando...' : '🚀 Publicar Estadística'}
+            </button>
           </div>
 
-          {/* Imagen de estadística (opcional) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Imagen de Estadística (opcional)
-            </label>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload(e, (url) => setStats({ ...stats, imageUrl: url }))}
-                  className="flex-1 text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50"
-                />
-              </div>
-              <div
-                onPaste={(e) => handlePaste(e, (url) => setStats({ ...stats, imageUrl: url }))}
-                className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
-              >
-                📋 O pega una imagen aquí (Ctrl+V)
-              </div>
-              {stats.imageUrl && (
-                <div className="relative">
+          {/* Preview 1080x1080 */}
+          <div className="space-y-4">
+            <div className="text-center">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Vista Previa (1080x1080)
+              </label>
+              {/* Preview de imagen o placeholder */}
+              {stats.imageUrl ? (
+                <div className="relative w-full aspect-square rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600">
                   <img
                     src={stats.imageUrl}
                     alt="Preview"
-                    className="w-full h-40 object-cover rounded-lg"
+                    className="w-full h-full object-contain bg-white"
                   />
                   <button
                     onClick={() => setStats({ ...stats, imageUrl: '' })}
-                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors"
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors shadow-lg"
                   >
                     ✕
                   </button>
                 </div>
+              ) : (
+                <div className="relative w-full aspect-square bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden flex flex-col items-center justify-center p-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-400 dark:border-gray-600">
+                  <div className="text-center">
+                    <p className="text-6xl mb-4">🖼️</p>
+                    <p className="text-lg font-semibold">Sin imagen</p>
+                    <p className="text-sm mt-2">Pega una imagen abajo</p>
+                  </div>
+                </div>
               )}
+
+              {/* Pegar imagen */}
+              <div className="mt-4">
+                <div
+                  onPaste={(e) => handlePaste(e, (url) => setStats({ ...stats, imageUrl: url }))}
+                  className="p-4 border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-lg text-center text-sm text-gray-600 dark:text-gray-300 bg-indigo-50 dark:bg-indigo-900/20 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
+                >
+                  📋 Pega aquí tu imagen (Ctrl+V)
+                </div>
+              </div>
             </div>
           </div>
-
-          <button
-            onClick={handlePublishStatistic}
-            disabled={isPublishing || !stats.title || !stats.description}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isPublishing ? '⏳ Publicando...' : '🚀 Publicar Estadística'}
-          </button>
         </div>
       )}
 

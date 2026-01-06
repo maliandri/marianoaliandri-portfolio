@@ -9,6 +9,45 @@ class CloudinaryService {
   }
 
   /**
+   * Redimensionar imagen Base64 a formato cuadrado 1080x1080 (Instagram compatible)
+   * @param {string} base64Image - Imagen en formato Base64 (data:image/...)
+   * @returns {Promise<string>} Imagen redimensionada en Base64
+   */
+  async resizeImageToSquare(base64Image) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        // Crear canvas de 1080x1080
+        const canvas = document.createElement('canvas');
+        const size = 1080;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        // Calcular dimensiones para crop centrado
+        const scale = Math.max(size / img.width, size / img.height);
+        const scaledWidth = img.width * scale;
+        const scaledHeight = img.height * scale;
+        const x = (size - scaledWidth) / 2;
+        const y = (size - scaledHeight) / 2;
+
+        // Rellenar con blanco por si hay transparencia
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, size, size);
+
+        // Dibujar imagen centrada y escalada
+        ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+
+        // Convertir a Base64
+        const resizedBase64 = canvas.toDataURL('image/jpeg', 0.92);
+        resolve(resizedBase64);
+      };
+      img.onerror = () => reject(new Error('Error al cargar imagen para redimensionar'));
+      img.src = base64Image;
+    });
+  }
+
+  /**
    * Subir imagen Base64 a Cloudinary
    * @param {string} base64Image - Imagen en formato Base64 (data:image/...)
    * @param {string} folder - Carpeta en Cloudinary (opcional)
@@ -18,8 +57,12 @@ class CloudinaryService {
     try {
       console.log('📤 Subiendo imagen a Cloudinary...');
 
+      // Redimensionar a formato cuadrado 1080x1080 para Instagram
+      console.log('🔄 Redimensionando imagen a 1080x1080 para Instagram...');
+      const resizedImage = await this.resizeImageToSquare(base64Image);
+
       const formData = new FormData();
-      formData.append('file', base64Image);
+      formData.append('file', resizedImage);
       formData.append('upload_preset', this.uploadPreset);
       formData.append('folder', folder);
 

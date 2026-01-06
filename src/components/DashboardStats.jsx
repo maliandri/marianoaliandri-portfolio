@@ -10,6 +10,7 @@ export default function DashboardStats({
   hideFloatingButton = false
 }) {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [copying, setCopying] = useState(false);
 
   // 🔄 React Query para estadísticas con real-time updates
   const { data: stats, isLoading: loading, error } = useBasicStats();
@@ -53,12 +54,16 @@ export default function DashboardStats({
     return t === 0 ? 0 : Math.round((stats.likes / t) * 100);
   };
 
-  const fmt = (n) =>
-    n >= 1_000_000
-      ? (n / 1_000_000).toFixed(1) + "M"
-      : n >= 1000
-      ? (n / 1000).toFixed(1) + "K"
-      : n.toString();
+  const fmt = (n) => {
+    if (n === null || n === undefined) return '0';
+    const num = Number(n);
+    if (isNaN(num)) return '0';
+    return num >= 1_000_000
+      ? (num / 1_000_000).toFixed(1) + "M"
+      : num >= 1000
+      ? (num / 1000).toFixed(1) + "K"
+      : num.toString();
+  };
 
   // Valores seguros para renderizado
   const safeStats = stats || {
@@ -69,6 +74,167 @@ export default function DashboardStats({
     topPages: [],
     topProducts: [],
     registeredUsers: 0
+  };
+
+  // Función para generar imagen 1080x1080 dibujada manualmente
+  const handleCopyImage = async () => {
+    setCopying(true);
+    try {
+      const canvas = document.createElement('canvas');
+      const size = 1080;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Fondo blanco
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+
+      // Header
+      ctx.fillStyle = '#4f46e5'; // indigo-600
+      ctx.font = 'bold 60px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Estadísticas', size / 2, 100);
+
+      // Fecha
+      ctx.fillStyle = '#6b7280'; // gray-500
+      ctx.font = '30px Arial';
+      ctx.fillText(currentTime.toLocaleString('es-ES'), size / 2, 150);
+
+      let y = 230;
+
+      // Función para dibujar una tarjeta de estadística
+      const drawCard = (label, value, color, x, cardY) => {
+        const cardWidth = 320;
+        const cardHeight = 140;
+
+        // Fondo de la tarjeta
+        ctx.fillStyle = color;
+        ctx.fillRect(x, cardY, cardWidth, cardHeight);
+
+        // Label
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '28px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(label, x + 20, cardY + 40);
+
+        // Valor
+        ctx.fillStyle = '#111827'; // gray-900
+        ctx.font = 'bold 50px Arial';
+        ctx.fillText(value, x + 20, cardY + 100);
+      };
+
+      // Grid de estadísticas (3 columnas x 2 filas)
+      const colors = {
+        blue: '#dbeafe',
+        purple: '#e9d5ff',
+        indigo: '#e0e7ff',
+        green: '#d1fae5',
+        red: '#fee2e2',
+        orange: '#fed7aa'
+      };
+
+      drawCard('Visitas Totales', fmt(safeStats.totalVisits), colors.blue, 60, y);
+      drawCard('Visitantes Únicos', fmt(safeStats.uniqueVisitors), colors.purple, 400, y);
+      drawCard('Usuarios Registrados', fmt(safeStats.registeredUsers), colors.indigo, 740, y);
+
+      y += 170;
+
+      drawCard('Me gusta', fmt(safeStats.likes), colors.green, 60, y);
+      drawCard('No me gusta', fmt(safeStats.dislikes), colors.red, 400, y);
+
+      // Satisfacción
+      const cardX = 740;
+      const cardWidth = 320;
+      const cardHeight = 140;
+      ctx.fillStyle = colors.orange;
+      ctx.fillRect(cardX, y, cardWidth, cardHeight);
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '28px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('Satisfacción', cardX + 20, y + 40);
+      ctx.fillStyle = '#111827';
+      ctx.font = 'bold 50px Arial';
+      ctx.fillText(pct() + '%', cardX + 20, y + 100);
+
+      y += 200;
+
+      // Secciones de listas
+      ctx.fillStyle = '#f9fafb'; // gray-50
+      ctx.fillRect(60, y, 480, 300);
+      ctx.fillRect(580, y, 480, 300);
+
+      // Páginas más visitadas
+      ctx.fillStyle = '#374151';
+      ctx.font = 'bold 32px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('📄 Páginas más visitadas', 80, y + 50);
+
+      ctx.font = '24px Arial';
+      ctx.fillStyle = '#6b7280';
+      if (safeStats.topPages && safeStats.topPages.length > 0) {
+        safeStats.topPages.slice(0, 5).forEach((page, i) => {
+          const text = `#${i + 1} ${page.title || page.path}`;
+          const truncated = text.length > 35 ? text.substring(0, 35) + '...' : text;
+          ctx.fillText(truncated, 80, y + 100 + (i * 40));
+        });
+      } else {
+        ctx.fillText('No hay datos disponibles', 80, y + 100);
+      }
+
+      // Productos más visitados
+      ctx.fillStyle = '#374151';
+      ctx.font = 'bold 32px Arial';
+      ctx.fillText('🛍️ Productos más visitados', 600, y + 50);
+
+      ctx.font = '24px Arial';
+      ctx.fillStyle = '#6b7280';
+      if (safeStats.topProducts && safeStats.topProducts.length > 0) {
+        safeStats.topProducts.slice(0, 5).forEach((product, i) => {
+          const text = `#${i + 1} ${product.productName}`;
+          const truncated = text.length > 35 ? text.substring(0, 35) + '...' : text;
+          ctx.fillText(truncated, 600, y + 100 + (i * 40));
+        });
+      } else {
+        ctx.fillText('No hay datos disponibles', 600, y + 100);
+      }
+
+      // Footer
+      y += 340;
+      ctx.fillStyle = '#10b981'; // green-500
+      ctx.font = '26px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('● Conectado a Firebase', size / 2, y);
+
+      // Convertir a blob y copiar
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          alert('Error al generar imagen');
+          return;
+        }
+
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]);
+          alert('📋 Imagen copiada al portapapeles (1080x1080)');
+        } catch (clipError) {
+          console.error('Error al copiar al clipboard:', clipError);
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'estadisticas-1080x1080.png';
+          a.click();
+          URL.revokeObjectURL(url);
+          alert('📥 Imagen descargada (no se pudo copiar al portapapeles)');
+        }
+      }, 'image/png');
+    } catch (error) {
+      console.error('Error al generar imagen:', error);
+      alert('Error al generar imagen: ' + error.message);
+    } finally {
+      setCopying(false);
+    }
   };
 
   return (
@@ -94,11 +260,12 @@ export default function DashboardStats({
         </motion.button>
       )}
 
-      {/* Modal centrado - Expandido */}
+      {/* Modal centrado - Cuadrado 1:1 (1080x1080) */}
       {open && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
           <motion.div
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
+            id="stats-card"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-2xl aspect-square overflow-y-auto border border-gray-200 dark:border-gray-700 flex flex-col"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             onClick={(e) => e.stopPropagation()}
@@ -108,12 +275,21 @@ export default function DashboardStats({
               <h2 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                 Estadísticas
               </h2>
-              <button
-                onClick={() => setOpen(false)}
-                className="text-sm px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-              >
-                Cerrar
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCopyImage}
+                  disabled={copying}
+                  className="text-sm px-3 py-1 rounded-md bg-purple-600 hover:bg-purple-700 text-white transition-colors disabled:opacity-50"
+                >
+                  {copying ? '⏳' : '📋 Copiar'}
+                </button>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="text-sm px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
             </div>
 
             {/* Reloj */}
