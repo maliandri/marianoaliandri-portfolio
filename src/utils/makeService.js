@@ -1,5 +1,6 @@
 // Make.com Webhook Service
 // Servicio simple para publicar en redes sociales via Make.com
+import cloudinaryService from './cloudinaryService';
 
 class MakeService {
   constructor() {
@@ -18,12 +19,27 @@ class MakeService {
    */
   async publish(data) {
     try {
+      // Si hay imagen Base64, subirla a Cloudinary primero
+      let imageUrl = data.imageUrl || null;
+
+      if (imageUrl && cloudinaryService.isBase64(imageUrl)) {
+        console.log('🔄 Detectada imagen Base64, subiendo a Cloudinary...');
+        try {
+          imageUrl = await cloudinaryService.uploadBase64Image(imageUrl);
+          console.log('✅ Imagen subida a Cloudinary:', imageUrl);
+        } catch (error) {
+          console.error('❌ Error al subir imagen, usando placeholder:', error);
+          // Si falla, usar placeholder
+          imageUrl = 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-statistic_placeholder.jpg';
+        }
+      }
+
       const payload = {
         text: data.text,
         networks: data.networks || ['linkedin', 'facebook'],
         type: data.type || 'custom',
         timestamp: new Date().toISOString(),
-        imageUrl: data.imageUrl || null,
+        imageUrl,
         useAI: data.useAI || false, // Indica si debe procesar con AI
         metadata: data.metadata || {}
       };
