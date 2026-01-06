@@ -21,9 +21,11 @@ class MakeService {
     try {
       // Si hay imagen Base64, subirla a Cloudinary primero
       let imageUrl = data.imageUrl || null;
+      let wasPastedImage = false; // Flag para indicar si era imagen pegada
 
       if (imageUrl && cloudinaryService.isBase64(imageUrl)) {
         console.log('🔄 Detectada imagen Base64, subiendo a Cloudinary...');
+        wasPastedImage = true; // Marcar como imagen pegada
         try {
           imageUrl = await cloudinaryService.uploadBase64Image(imageUrl);
           console.log('✅ Imagen subida a Cloudinary:', imageUrl);
@@ -42,6 +44,7 @@ class MakeService {
         timestamp: new Date().toISOString(),
         imageUrl,
         useAI: data.useAI || false, // Indica si debe procesar con AI
+        wasPastedImage, // Indica si la imagen fue pegada (Base64 → Cloudinary)
         metadata: data.metadata || {}
       };
 
