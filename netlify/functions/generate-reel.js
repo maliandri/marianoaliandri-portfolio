@@ -146,11 +146,6 @@ exports.handler = async (event) => {
                   align: {
                     horizontal: 'center',
                     vertical: 'middle'
-                  },
-                  animation: {
-                    preset: 'ascend',
-                    duration: 2,
-                    direction: 'up'
                   }
                 },
                 start: 0,
@@ -182,11 +177,6 @@ exports.handler = async (event) => {
                   align: {
                     horizontal: 'center',
                     vertical: 'middle'
-                  },
-                  animation: {
-                    preset: 'fadeIn',
-                    duration: 1.5,
-                    style: 'word'
                   }
                 },
                 start: 24,
@@ -223,11 +213,6 @@ exports.handler = async (event) => {
                   align: {
                     horizontal: 'center',
                     vertical: 'middle'
-                  },
-                  animation: {
-                    preset: 'fadeIn',
-                    duration: 1.5,
-                    style: 'word'
                   }
                 },
                 start: 0,
@@ -259,11 +244,6 @@ exports.handler = async (event) => {
                   align: {
                     horizontal: 'center',
                     vertical: 'middle'
-                  },
-                  animation: {
-                    preset: 'fadeIn',
-                    duration: 1.5,
-                    style: 'word'
                   }
                 },
                 start: 24,

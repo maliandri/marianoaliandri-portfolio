@@ -35,7 +35,7 @@ const ReelEditor = ({ product, onClose, onPublish }) => {
       // Paso 2: Esperar a que el video esté listo (polling)
       let videoReady = false;
       let attempts = 0;
-      const maxAttempts = 20; // 60 segundos max
+      const maxAttempts = 40; // 120 segundos max (2 minutos)
 
       while (!videoReady && attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 3000));
