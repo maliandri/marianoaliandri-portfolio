@@ -4,8 +4,8 @@ const ReelEditor = ({ product, onClose, onPublish }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [productName, setProductName] = useState(product.name);
   const [price, setPrice] = useState(
-    product.priceARS ? `ARS $${product.priceARS}` :
-    product.priceUSD ? `USD $${product.priceUSD}` : ''
+    product.priceARS ? `Desde: ARS $${product.priceARS}` :
+    product.priceUSD ? `Desde: USD $${product.priceUSD}` : ''
   );
   const [videoUrl, setVideoUrl] = useState(null);
 

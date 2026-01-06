@@ -196,7 +196,7 @@ exports.handler = async (event) => {
               {
                 asset: {
                   type: 'rich-text',
-                  text: price ? `Desde ${price}` : 'Consultar precio',
+                  text: price || 'Consultar precio',
                   font: {
                     family: 'Montserrat',
                     size: 52,
@@ -227,7 +227,7 @@ exports.handler = async (event) => {
               {
                 asset: {
                   type: 'rich-text',
-                  text: price ? `Desde ${price}` : 'Consultar precio',
+                  text: price || 'Consultar precio',
                   font: {
                     family: 'Montserrat',
                     size: 52,
