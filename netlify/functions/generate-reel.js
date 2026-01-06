@@ -132,7 +132,7 @@ exports.handler = async (event) => {
                   text: productName,
                   font: {
                     family: 'Montserrat',
-                    size: 64,
+                    size: 60,
                     color: '#FFFFFF',
                     weight: 900
                   },
@@ -144,13 +144,13 @@ exports.handler = async (event) => {
                   shadow: {
                     offsetX: 4,
                     offsetY: 4,
-                    blur: 8,
+                    blur: 10,
                     color: '#000000',
-                    opacity: 0.8
+                    opacity: 0.9
                   },
                   align: {
                     horizontal: 'center',
-                    vertical: 'top'
+                    vertical: 'middle'
                   },
                   animation: {
                     preset: 'ascend',
@@ -160,12 +160,14 @@ exports.handler = async (event) => {
                 },
                 start: 0,
                 length: 30,
+                fit: 'none',
                 position: 'top',
                 offset: {
-                  y: 0.12
+                  x: 0,
+                  y: 0.15
                 },
-                width: 950,
-                height: 400
+                width: 900,
+                height: 350
               }
             ]
           },
@@ -178,7 +180,7 @@ exports.handler = async (event) => {
                   text: price ? `Desde ${price}` : 'Consultar precio',
                   font: {
                     family: 'Montserrat',
-                    size: 56,
+                    size: 52,
                     color: '#00FF00',
                     weight: 700
                   },
@@ -190,13 +192,13 @@ exports.handler = async (event) => {
                   shadow: {
                     offsetX: 3,
                     offsetY: 3,
-                    blur: 6,
+                    blur: 8,
                     color: '#000000',
-                    opacity: 0.8
+                    opacity: 0.9
                   },
                   align: {
                     horizontal: 'center',
-                    vertical: 'bottom'
+                    vertical: 'middle'
                   },
                   animation: {
                     preset: 'fadeIn',
@@ -206,12 +208,14 @@ exports.handler = async (event) => {
                 },
                 start: 0,
                 length: 30,
+                fit: 'none',
                 position: 'bottom',
                 offset: {
-                  y: -0.12
+                  x: 0,
+                  y: -0.15
                 },
-                width: 950,
-                height: 250
+                width: 900,
+                height: 200
               }
             ]
           }
