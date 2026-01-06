@@ -4,6 +4,7 @@ import makeService from '../utils/makeService';
 import reelService from '../utils/reelService';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../utils/firebaseservice';
+import ReelEditor from './ReelEditor';
 
 /**
  * Social Media Dashboard - Make.com Integration
@@ -18,16 +19,19 @@ function SocialMediaDashboard() {
   const [postText, setPostText] = useState('');
   const [selectedNetworks, setSelectedNetworks] = useState(['linkedin', 'facebook']);
   const [useAI, setUseAI] = useState(false); // Toggle para usar AI
+  const [customImageUrl, setCustomImageUrl] = useState(''); // URL de imagen para publicación libre
 
   // Products state
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showReelEditor, setShowReelEditor] = useState(false);
 
   // Statistics state
   const [stats, setStats] = useState({
     title: '',
     description: '',
-    metrics: {}
+    metrics: {},
+    imageUrl: '' // URL de imagen para estadística
   });
 
   const networks = [
@@ -73,6 +77,46 @@ function SocialMediaDashboard() {
     setTimeout(() => setMessage({ type: '', text: '' }), 5000);
   };
 
+  // Manejar pegado de imagen desde clipboard
+  const handlePaste = async (e, setImageFn) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+          setImageFn(reader.result); // Base64 data URL
+          showMessage('success', '📋 Imagen pegada correctamente');
+        };
+
+        reader.readAsDataURL(blob);
+        break;
+      }
+    }
+  };
+
+  // Manejar carga de archivo de imagen
+  const handleFileUpload = async (e, setImageFn) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showMessage('error', 'Por favor selecciona un archivo de imagen');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageFn(reader.result); // Base64 data URL
+      showMessage('success', '📷 Imagen cargada correctamente');
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   const handlePublishCustom = async () => {
     if (!postText.trim()) {
       showMessage('error', 'Por favor escribe algo para publicar');
@@ -86,11 +130,12 @@ function SocialMediaDashboard() {
 
     setIsPublishing(true);
     try {
-      const result = await makeService.publishCustom(postText, selectedNetworks, null, useAI);
+      const result = await makeService.publishCustom(postText, selectedNetworks, customImageUrl || null, useAI);
 
       if (result.success) {
         showMessage('success', useAI ? '¡Contenido enviado a AI para generar y publicar!' : '¡Publicación enviada correctamente!');
         setPostText('');
+        setCustomImageUrl('');
       } else {
         showMessage('error', `Error: ${result.message}`);
       }
@@ -135,41 +180,22 @@ function SocialMediaDashboard() {
       return;
     }
 
-    setIsPublishing(true);
+    // Abrir el editor visual
+    setShowReelEditor(true);
+  };
+
+  const handleReelPublish = async (videoUrl) => {
     try {
-      showMessage('info', '🎬 Generando video con Shotstack (esto tarda ~30 segundos)...');
+      setIsPublishing(true);
+      showMessage('info', '📤 Publicando reel en redes sociales...');
 
-      // Paso 1: Solicitar generación del video a Shotstack
-      const renderRequest = await reelService.generateReelFromImage(selectedProduct.image, {
-        productName: selectedProduct.name,
-        price: selectedProduct.priceARS ? `ARS $${selectedProduct.priceARS}` : selectedProduct.priceUSD ? `USD $${selectedProduct.priceUSD}` : ''
-      });
-
-      if (!renderRequest || !renderRequest.renderId) {
-        showMessage('error', 'No se pudo iniciar la generación del video');
-        return;
-      }
-
-      console.log('🎬 Video solicitado. Render ID:', renderRequest.renderId);
-      showMessage('info', '⏳ Esperando a que el video esté listo...');
-
-      // Paso 2: Esperar a que el video esté listo (polling cada 3 segundos)
-      const videoUrl = await reelService.waitForVideoReady(renderRequest.renderId, 60000);
-
-      if (!videoUrl) {
-        showMessage('error', 'Timeout esperando el video. Intenta de nuevo en unos minutos.');
-        return;
-      }
-
-      console.log('✅ Video listo:', videoUrl);
-      showMessage('success', '✅ Video generado! Publicando en redes sociales...');
-
-      // Paso 3: Publicar el reel con AI caption
+      // Publicar el reel con AI caption
       const result = await makeService.publishReel(selectedProduct, videoUrl);
 
       if (result.success) {
         showMessage('success', '🎬 ¡Reel publicado exitosamente en Instagram!');
         setSelectedProduct(null);
+        setShowReelEditor(false);
       } else {
         showMessage('error', `Error al publicar: ${result.message}`);
       }
@@ -580,6 +606,15 @@ https://marianoaliandri.com.ar/#contact
             {isPublishing ? '⏳ Publicando...' : '🚀 Publicar Estadística'}
           </button>
         </div>
+      )}
+
+      {/* Reel Editor Modal */}
+      {showReelEditor && selectedProduct && (
+        <ReelEditor
+          product={selectedProduct}
+          onClose={() => setShowReelEditor(false)}
+          onPublish={handleReelPublish}
+        />
       )}
     </div>
   );

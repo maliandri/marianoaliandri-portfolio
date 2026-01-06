@@ -97,8 +97,8 @@ class MakeService {
       stat.metrics ? 'Métricas: ' + Object.entries(stat.metrics).map(([key, value]) => `${key}: ${value}`).join(', ') : ''
     }`;
 
-    // Imagen placeholder para estadísticas
-    const statisticImage = 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-statistic_placeholder.jpg';
+    // Usar imagen del usuario o placeholder
+    const statisticImage = stat.imageUrl || 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-statistic_placeholder.jpg';
 
     return this.publish({
       text: briefDescription,

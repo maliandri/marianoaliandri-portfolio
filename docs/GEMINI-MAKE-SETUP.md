@@ -89,9 +89,8 @@ En el módulo de Gemini, configura estos campos:
 
 **Model**:
 ```
-gemini-1.5-flash
+gemini-2.5-flash
 ```
-(o `gemini-1.5-pro` si quieres mejor calidad pero más lento)
 
 **Prompt** o **User Message**:
 ```
@@ -187,7 +186,7 @@ Este router enviará el contenido generado por Gemini a LinkedIn y Facebook.
    - Busca: "LinkedIn"
    - Selecciona: "Create a Share Update" o "Share an Article"
    - Connection: Conecta tu cuenta de LinkedIn
-   - **Text/Commentary**: `{{2.choices[].message.content}}` o `{{2.response}}` (el texto generado por Gemini)
+   - **Text/Commentary**: `{{2.candidates[1].content.parts[1].text}}` (el texto generado por Gemini)
    - **Visibility**: PUBLIC
 
 #### Ruta B: Facebook
@@ -201,7 +200,7 @@ Este router enviará el contenido generado por Gemini a LinkedIn y Facebook.
    - Selecciona: "Create a Post"
    - Connection: Conecta tu cuenta de Facebook
    - **Page**: Selecciona tu página
-   - **Message**: `{{2.choices[].message.content}}` o `{{2.response}}` (el texto generado por Gemini)
+   - **Message**: `{{2.candidates[1].content.parts[1].text}}` (el texto generado por Gemini)
 
 ---
 
@@ -300,11 +299,11 @@ Post publicado en LinkedIn y Facebook con ese texto generado por Gemini.
 - Asegúrate de que Gemini API esté habilitado en Google Cloud Console
 
 ### Error: "Model not found"
-- Usa `gemini-1.5-flash` o `gemini-1.5-pro`
+- Usa `gemini-2.5-flash` o `gemini-2.5-pro`
 - Verifica que el modelo esté disponible en tu región
 
 ### Gemini no genera texto
-- Verifica el campo de respuesta: puede ser `{{2.response}}`, `{{2.text}}`, o `{{2.choices[].message.content}}`
+- Verifica el campo de respuesta: puede ser `{{2.response}}`, `{{2.text}}`, o `{{2.candidates[1].content.parts[1].text}}`
 - Revisa el historial de ejecución en Make.com para ver qué responde Gemini
 
 ### El texto se publica con formato raro
@@ -321,8 +320,8 @@ Post publicado en LinkedIn y Facebook con ese texto generado por Gemini.
 - ~330 publicaciones/mes gratis
 
 ### Gemini API:
-- **gemini-1.5-flash**: GRATIS hasta 15 requests/min
-- **gemini-1.5-pro**: GRATIS hasta 2 requests/min
+- **gemini-2.5-flash**: GRATIS hasta 15 requests/min
+- **gemini-2.5-pro**: GRATIS hasta 2 requests/min
 - Más info: https://ai.google.dev/pricing
 
 ---
