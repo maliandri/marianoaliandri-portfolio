@@ -136,11 +136,6 @@ exports.handler = async (event) => {
                     color: '#FFFFFF',
                     weight: 900
                   },
-                  stroke: {
-                    width: 5,
-                    color: '#000000',
-                    opacity: 1
-                  },
                   shadow: {
                     offsetX: 4,
                     offsetY: 4,
@@ -178,11 +173,6 @@ exports.handler = async (event) => {
                     size: 60,
                     color: '#FFFFFF',
                     weight: 900
-                  },
-                  stroke: {
-                    width: 5,
-                    color: '#000000',
-                    opacity: 1
                   },
                   shadow: {
                     offsetX: 4,
@@ -227,11 +217,6 @@ exports.handler = async (event) => {
                     color: '#00FF00',
                     weight: 700
                   },
-                  stroke: {
-                    width: 4,
-                    color: '#000000',
-                    opacity: 1
-                  },
                   shadow: {
                     offsetX: 3,
                     offsetY: 3,
@@ -269,11 +254,6 @@ exports.handler = async (event) => {
                     size: 52,
                     color: '#00FF00',
                     weight: 700
-                  },
-                  stroke: {
-                    width: 4,
-                    color: '#000000',
-                    opacity: 1
                   },
                   shadow: {
                     offsetX: 3,
