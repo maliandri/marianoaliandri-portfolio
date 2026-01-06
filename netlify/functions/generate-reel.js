@@ -123,35 +123,45 @@ exports.handler = async (event) => {
           volume: 0.5
         },
         tracks: tracks.concat([
-          // Track 2: Nombre del producto (arriba con HTML para wrap)
+          // Track 2: Nombre del producto (título centrado)
           {
             clips: [
               {
                 asset: {
-                  type: 'html',
-                  html: `<div style="display: flex; align-items: center; justify-content: center; width: 1080px; height: 400px;"><p style="font-family: 'Arial Black', sans-serif; font-size: 60px; color: #ffffff; text-align: center; font-weight: bold; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); padding: 20px; max-width: 900px; word-wrap: break-word; margin: 0;">${productName}</p></div>`,
-                  width: 1080,
-                  height: 400
+                  type: 'title',
+                  text: productName,
+                  style: 'future',
+                  color: '#ffffff',
+                  size: 'medium',
+                  position: 'top',
+                  offset: {
+                    x: 0,
+                    y: 0.15
+                  }
                 },
                 start: 0,
-                length: 30,
-                position: 'top'
+                length: 30
               }
             ]
           },
-          // Track 3: Precio (abajo con HTML)
+          // Track 3: Precio (abajo centrado)
           {
             clips: [
               {
                 asset: {
-                  type: 'html',
-                  html: `<div style="display: flex; align-items: center; justify-content: center; width: 1080px; height: 200px;"><p style="font-family: 'Arial Black', sans-serif; font-size: 50px; color: #00ff00; text-align: center; font-weight: bold; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); padding: 20px; margin: 0;">${price ? `Desde ${price}` : 'Consultar precio'}</p></div>`,
-                  width: 1080,
-                  height: 200
+                  type: 'title',
+                  text: price ? `Desde ${price}` : 'Consultar precio',
+                  style: 'future',
+                  color: '#00ff00',
+                  size: 'small',
+                  position: 'bottom',
+                  offset: {
+                    x: 0,
+                    y: -0.15
+                  }
                 },
                 start: 0,
-                length: 30,
-                position: 'bottom'
+                length: 30
               }
             ]
           }
