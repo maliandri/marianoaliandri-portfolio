@@ -145,7 +145,7 @@ exports.handler = async (event) => {
                   },
                   align: {
                     horizontal: 'center',
-                    vertical: 'top'
+                    vertical: 'middle'
                   },
                   animation: {
                     preset: 'ascend',
@@ -159,7 +159,7 @@ exports.handler = async (event) => {
                 position: 'center',
                 offset: {
                   x: 0,
-                  y: -0.3
+                  y: 0.3
                 }
               },
               {
@@ -181,7 +181,7 @@ exports.handler = async (event) => {
                   },
                   align: {
                     horizontal: 'center',
-                    vertical: 'top'
+                    vertical: 'middle'
                   },
                   animation: {
                     preset: 'fadeIn',
@@ -195,7 +195,7 @@ exports.handler = async (event) => {
                 position: 'center',
                 offset: {
                   x: 0,
-                  y: -0.3
+                  y: 0.3
                 }
               }
             ]
@@ -222,7 +222,7 @@ exports.handler = async (event) => {
                   },
                   align: {
                     horizontal: 'center',
-                    vertical: 'bottom'
+                    vertical: 'middle'
                   },
                   animation: {
                     preset: 'fadeIn',
@@ -236,7 +236,7 @@ exports.handler = async (event) => {
                 position: 'center',
                 offset: {
                   x: 0,
-                  y: 0.3
+                  y: -0.3
                 }
               },
               {
@@ -258,7 +258,7 @@ exports.handler = async (event) => {
                   },
                   align: {
                     horizontal: 'center',
-                    vertical: 'bottom'
+                    vertical: 'middle'
                   },
                   animation: {
                     preset: 'fadeIn',
@@ -272,7 +272,7 @@ exports.handler = async (event) => {
                 position: 'center',
                 offset: {
                   x: 0,
-                  y: 0.3
+                  y: -0.3
                 }
               }
             ]
