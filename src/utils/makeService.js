@@ -33,7 +33,9 @@ class MakeService {
         payload.url = data.url;
       }
 
-      const response = await fetch(this.webhookURL, {
+      console.log('📤 PAYLOAD ENVIADO A MAKE.COM:', JSON.stringify(payload, null, 2));
+
+      await fetch(this.webhookURL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,6 +99,9 @@ class MakeService {
    * Publicar una estadística del sitio (AI generará el contenido)
    */
   async publishStatistic(stat) {
+    console.log('🔍 DEBUG publishStatistic - Estadística recibida:', stat);
+    console.log('🖼️ DEBUG - stat.imageUrl:', stat.imageUrl);
+
     // Enviamos info para que AI genere el post
     const briefDescription = `Estadística: ${stat.title}. ${stat.description}. ${
       stat.metrics ? 'Métricas: ' + Object.entries(stat.metrics).map(([key, value]) => `${key}: ${value}`).join(', ') : ''
@@ -104,6 +109,8 @@ class MakeService {
 
     // Usar imagen del usuario o placeholder
     const statisticImage = stat.imageUrl || 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-statistic_placeholder.jpg';
+
+    console.log('✅ DEBUG - Imagen final a enviar:', statisticImage);
 
     return this.publish({
       text: briefDescription,
