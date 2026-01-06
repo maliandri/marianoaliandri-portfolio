@@ -140,7 +140,8 @@ class MakeService {
         title: stat.title,
         description: stat.description,
         metrics: stat.metrics || {},
-        siteUrl: 'https://marianoaliandri.com.ar'
+        siteUrl: 'https://marianoaliandri.com.ar',
+        productName: stat.title // Para image caption
       }
     });
   }
