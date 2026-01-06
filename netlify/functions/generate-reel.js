@@ -123,45 +123,69 @@ exports.handler = async (event) => {
           volume: 0.5
         },
         tracks: tracks.concat([
-          // Track 2: Nombre del producto (título centrado)
+          // Track 2: Nombre del producto (texto centrado arriba)
           {
             clips: [
               {
                 asset: {
-                  type: 'title',
+                  type: 'text',
                   text: productName,
-                  style: 'future',
-                  color: '#ffffff',
-                  size: 'medium',
-                  position: 'top',
-                  offset: {
-                    x: 0,
-                    y: 0.15
-                  }
+                  font: {
+                    family: 'Montserrat ExtraBold',
+                    size: 56,
+                    color: '#FFFFFF',
+                    weight: 900
+                  },
+                  stroke: {
+                    color: '#000000',
+                    width: 4
+                  },
+                  alignment: {
+                    horizontal: 'center',
+                    vertical: 'top'
+                  },
+                  width: 950,
+                  height: 400
                 },
                 start: 0,
-                length: 30
+                length: 30,
+                position: 'top',
+                offset: {
+                  y: 0.08
+                }
               }
             ]
           },
-          // Track 3: Precio (abajo centrado)
+          // Track 3: Precio (texto centrado abajo)
           {
             clips: [
               {
                 asset: {
-                  type: 'title',
+                  type: 'text',
                   text: price ? `Desde ${price}` : 'Consultar precio',
-                  style: 'future',
-                  color: '#00ff00',
-                  size: 'small',
-                  position: 'bottom',
-                  offset: {
-                    x: 0,
-                    y: -0.15
-                  }
+                  font: {
+                    family: 'Montserrat SemiBold',
+                    size: 48,
+                    color: '#00FF00',
+                    weight: 700
+                  },
+                  stroke: {
+                    color: '#000000',
+                    width: 3
+                  },
+                  alignment: {
+                    horizontal: 'center',
+                    vertical: 'bottom'
+                  },
+                  width: 950,
+                  height: 200
                 },
                 start: 0,
-                length: 30
+                length: 30,
+                position: 'bottom',
+                offset: {
+                  y: -0.08
+                }
               }
             ]
           }
