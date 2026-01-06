@@ -123,69 +123,95 @@ exports.handler = async (event) => {
           volume: 0.5
         },
         tracks: tracks.concat([
-          // Track 2: Nombre del producto (texto centrado arriba)
+          // Track 2: Nombre del producto (rich-text con animación)
           {
             clips: [
               {
                 asset: {
-                  type: 'text',
+                  type: 'rich-text',
                   text: productName,
                   font: {
-                    family: 'Montserrat ExtraBold',
-                    size: 56,
+                    family: 'Montserrat',
+                    size: 64,
                     color: '#FFFFFF',
                     weight: 900
                   },
                   stroke: {
+                    width: 5,
                     color: '#000000',
-                    width: 4
+                    opacity: 1
                   },
-                  alignment: {
+                  shadow: {
+                    offsetX: 4,
+                    offsetY: 4,
+                    blur: 8,
+                    color: '#000000',
+                    opacity: 0.8
+                  },
+                  align: {
                     horizontal: 'center',
                     vertical: 'top'
                   },
-                  width: 950,
-                  height: 400
+                  animation: {
+                    preset: 'ascend',
+                    duration: 2,
+                    direction: 'up'
+                  }
                 },
                 start: 0,
                 length: 30,
                 position: 'top',
                 offset: {
-                  y: 0.08
-                }
+                  y: 0.12
+                },
+                width: 950,
+                height: 400
               }
             ]
           },
-          // Track 3: Precio (texto centrado abajo)
+          // Track 3: Precio (rich-text con animación)
           {
             clips: [
               {
                 asset: {
-                  type: 'text',
+                  type: 'rich-text',
                   text: price ? `Desde ${price}` : 'Consultar precio',
                   font: {
-                    family: 'Montserrat SemiBold',
-                    size: 48,
+                    family: 'Montserrat',
+                    size: 56,
                     color: '#00FF00',
                     weight: 700
                   },
                   stroke: {
+                    width: 4,
                     color: '#000000',
-                    width: 3
+                    opacity: 1
                   },
-                  alignment: {
+                  shadow: {
+                    offsetX: 3,
+                    offsetY: 3,
+                    blur: 6,
+                    color: '#000000',
+                    opacity: 0.8
+                  },
+                  align: {
                     horizontal: 'center',
                     vertical: 'bottom'
                   },
-                  width: 950,
-                  height: 200
+                  animation: {
+                    preset: 'fadeIn',
+                    duration: 1.5,
+                    style: 'full'
+                  }
                 },
                 start: 0,
                 length: 30,
                 position: 'bottom',
                 offset: {
-                  y: -0.08
-                }
+                  y: -0.12
+                },
+                width: 950,
+                height: 250
               }
             ]
           }
