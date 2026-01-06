@@ -30,7 +30,8 @@ class MakeService {
         } catch (error) {
           console.error('❌ Error al subir imagen, usando placeholder:', error);
           // Si falla, usar placeholder
-          imageUrl = 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-statistic_placeholder.jpg';
+          const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dlshym1te';
+          imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/v1735959487/default-statistic_placeholder.jpg`;
         }
       }
 
@@ -90,7 +91,8 @@ class MakeService {
     const briefDescription = `Producto: ${product.name}. ${product.description}. Precio: ${currency ? currency + ' ' : ''}$${price}`;
 
     // Usar imagen del producto o una genérica de placeholder
-    const productImage = product.image || 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-product_n0fmqm.jpg';
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dlshym1te';
+    const productImage = product.image || `https://res.cloudinary.com/${cloudName}/image/upload/v1735959487/default-product_n0fmqm.jpg`;
 
     console.log('✅ DEBUG - Imagen final a enviar:', productImage);
 
@@ -124,7 +126,8 @@ class MakeService {
     }`;
 
     // Usar imagen del usuario o placeholder
-    const statisticImage = stat.imageUrl || 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-statistic_placeholder.jpg';
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dlshym1te';
+    const statisticImage = stat.imageUrl || `https://res.cloudinary.com/${cloudName}/image/upload/v1735959487/default-statistic_placeholder.jpg`;
 
     console.log('✅ DEBUG - Imagen final a enviar:', statisticImage);
 
@@ -152,7 +155,8 @@ class MakeService {
     }`;
 
     // Imagen placeholder para servicios
-    const serviceImage = 'https://res.cloudinary.com/dxhcv6uy4/image/upload/v1735959487/default-service_placeholder.jpg';
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dlshym1te';
+    const serviceImage = `https://res.cloudinary.com/${cloudName}/image/upload/v1735959487/default-service_placeholder.jpg`;
 
     return this.publish({
       text: briefDescription,
