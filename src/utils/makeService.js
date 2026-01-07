@@ -22,12 +22,11 @@ class MakeService {
    * @param {Object} data.metadata - Metadata adicional (opcional)
    */
   async publish(data) {
-    // Seleccionar webhook según el proveedor de AI
+    // Seleccionar proveedor de AI
     const aiProvider = data.aiProvider || 'groq';
-    const webhookURL = this.webhooks[aiProvider];
 
     console.log(`🤖 Usando AI: ${aiProvider.toUpperCase()}`);
-    console.log(`📡 Webhook: ${webhookURL}`);
+
     try {
       // Si hay imagen Base64, subirla a Cloudinary primero
       let imageUrl = data.imageUrl || null;
@@ -55,6 +54,7 @@ class MakeService {
         imageUrl,
         useAI: data.useAI || false, // Indica si debe procesar con AI
         wasPastedImage, // Indica si la imagen fue pegada (Base64 → Cloudinary)
+        aiProvider, // Pasar el proveedor de AI a la función
         metadata: data.metadata || {}
       };
 
@@ -63,15 +63,22 @@ class MakeService {
         payload.url = data.url;
       }
 
-      console.log('📤 PAYLOAD ENVIADO A MAKE.COM:', JSON.stringify(payload, null, 2));
+      console.log('📤 PAYLOAD ENVIADO A NETLIFY FUNCTION:', JSON.stringify(payload, null, 2));
 
-      await fetch(webhookURL, {
+      // Llamar a la Netlify Function en lugar de Make.com directamente
+      const response = await fetch('/.netlify/functions/publish-social', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload)
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error en la función de publicación');
+      }
 
       return {
         success: true,
@@ -242,22 +249,27 @@ class MakeService {
    */
   async testConnection(aiProvider = 'groq') {
     try {
-      const webhookURL = this.webhooks[aiProvider];
-
       const testData = {
         text: '🧪 Test de conexión desde el panel de administración',
         networks: ['linkedin'],
         type: 'test',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        aiProvider
       };
 
-      await fetch(webhookURL, {
+      const response = await fetch('/.netlify/functions/publish-social', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(testData)
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error en test de conexión');
+      }
 
       return {
         success: true,
