@@ -4,8 +4,11 @@ import cloudinaryService from './cloudinaryService';
 
 class MakeService {
   constructor() {
-    // Webhook URL from Make.com
-    this.webhookURL = import.meta.env.VITE_MAKE_WEBHOOK_PUBLISH || 'https://hook.us2.make.com/og06wglflanrsbx84k5fedo9j3b74gct';
+    // Webhook URLs from Make.com
+    this.webhooks = {
+      gemini: import.meta.env.VITE_MAKE_WEBHOOK_GEMINI || 'https://hook.us2.make.com/og06wglflanrsbx84k5fedo9j3b74gct',
+      groq: import.meta.env.VITE_MAKE_WEBHOOK_GROQ || 'https://hook.us2.make.com/jhzkug127k9nfq1vcb623gj1s0ns27xk'
+    };
   }
 
   /**
@@ -15,9 +18,16 @@ class MakeService {
    * @param {Array} data.networks - Redes sociales ['linkedin', 'facebook']
    * @param {string} data.type - Tipo de contenido ['product', 'service', 'statistic', 'custom']
    * @param {string} data.imageUrl - URL de imagen (opcional)
+   * @param {string} data.aiProvider - 'gemini' o 'groq' (opcional, default: 'groq')
    * @param {Object} data.metadata - Metadata adicional (opcional)
    */
   async publish(data) {
+    // Seleccionar webhook según el proveedor de AI
+    const aiProvider = data.aiProvider || 'groq';
+    const webhookURL = this.webhooks[aiProvider];
+
+    console.log(`🤖 Usando AI: ${aiProvider.toUpperCase()}`);
+    console.log(`📡 Webhook: ${webhookURL}`);
     try {
       // Si hay imagen Base64, subirla a Cloudinary primero
       let imageUrl = data.imageUrl || null;
@@ -55,7 +65,7 @@ class MakeService {
 
       console.log('📤 PAYLOAD ENVIADO A MAKE.COM:', JSON.stringify(payload, null, 2));
 
-      await fetch(this.webhookURL, {
+      await fetch(webhookURL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,7 +91,7 @@ class MakeService {
   /**
    * Publicar un producto (AI generará el contenido)
    */
-  async publishProduct(product) {
+  async publishProduct(product, aiProvider = 'groq') {
     console.log('🔍 DEBUG publishProduct - Producto recibido:', product);
     console.log('🖼️ DEBUG - product.image:', product.image);
     console.log('🖼️ DEBUG - product.imageUrl:', product.imageUrl);
@@ -104,6 +114,7 @@ class MakeService {
       type: 'product',
       useAI: true, // AI procesará esto
       imageUrl: productImage,
+      aiProvider, // Pasar el proveedor de AI
       metadata: {
         productId: product.id,
         productName: product.name,
@@ -119,7 +130,7 @@ class MakeService {
   /**
    * Publicar una estadística del sitio (AI generará el contenido)
    */
-  async publishStatistic(stat) {
+  async publishStatistic(stat, aiProvider = 'groq') {
     console.log('🔍 DEBUG publishStatistic - Estadística recibida:', stat);
     console.log('🖼️ DEBUG - stat.imageUrl:', stat.imageUrl);
 
@@ -139,6 +150,7 @@ class MakeService {
       type: 'statistic',
       useAI: true, // AI procesará esto
       imageUrl: statisticImage,
+      aiProvider, // Pasar el proveedor de AI
       metadata: {
         title: stat.title,
         description: stat.description,
@@ -180,20 +192,21 @@ class MakeService {
   /**
    * Publicar contenido personalizado
    */
-  async publishCustom(text, networks = null, imageUrl = null, useAI = false) {
+  async publishCustom(text, networks = null, imageUrl = null, useAI = false, aiProvider = 'groq') {
     return this.publish({
       text,
       type: 'custom',
       networks: networks || ['linkedin', 'facebook'],
       imageUrl,
-      useAI
+      useAI,
+      aiProvider
     });
   }
 
   /**
    * Publicar un reel/video de producto (AI generará el caption)
    */
-  async publishReel(product, videoUrl) {
+  async publishReel(product, videoUrl, aiProvider = 'groq') {
     console.log('🎬 DEBUG publishReel - Producto:', product);
     console.log('🎥 DEBUG - Video URL:', videoUrl);
 
@@ -210,6 +223,7 @@ class MakeService {
       useAI: true, // AI generará caption corto para reel
       url: videoUrl, // URL del video generado (Make.com espera 'url')
       imageUrl: null, // Los reels usan video, no imagen
+      aiProvider, // Pasar el proveedor de AI
       metadata: {
         productId: product.id,
         productName: product.name,
@@ -226,8 +240,10 @@ class MakeService {
   /**
    * Test de conexión con Make.com
    */
-  async testConnection() {
+  async testConnection(aiProvider = 'groq') {
     try {
+      const webhookURL = this.webhooks[aiProvider];
+
       const testData = {
         text: '🧪 Test de conexión desde el panel de administración',
         networks: ['linkedin'],
@@ -235,7 +251,7 @@ class MakeService {
         timestamp: new Date().toISOString()
       };
 
-      await fetch(this.webhookURL, {
+      await fetch(webhookURL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

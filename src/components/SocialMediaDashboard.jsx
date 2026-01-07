@@ -15,6 +15,9 @@ function SocialMediaDashboard() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  // AI Provider selection
+  const [aiProvider, setAiProvider] = useState('groq'); // 'gemini' o 'groq'
+
   // Custom post state
   const [postText, setPostText] = useState('');
   const [selectedNetworks, setSelectedNetworks] = useState(['linkedin', 'facebook']);
@@ -222,7 +225,7 @@ function SocialMediaDashboard() {
 
     setIsPublishing(true);
     try {
-      const result = await makeService.publishCustom(postText, selectedNetworks, customImageUrl || null, useAI);
+      const result = await makeService.publishCustom(postText, selectedNetworks, customImageUrl || null, useAI, aiProvider);
 
       if (result.success) {
         showMessage('success', useAI ? '¡Contenido enviado a AI para generar y publicar!' : '¡Publicación enviada correctamente!');
@@ -246,7 +249,7 @@ function SocialMediaDashboard() {
 
     setIsPublishing(true);
     try {
-      const result = await makeService.publishProduct(selectedProduct);
+      const result = await makeService.publishProduct(selectedProduct, aiProvider);
 
       if (result.success) {
         showMessage('success', '✨ ¡AI generando contenido del producto y publicando en redes sociales!');
@@ -282,7 +285,7 @@ function SocialMediaDashboard() {
       showMessage('info', '📤 Publicando reel en redes sociales...');
 
       // Publicar el reel con AI caption
-      const result = await makeService.publishReel(selectedProduct, videoUrl);
+      const result = await makeService.publishReel(selectedProduct, videoUrl, aiProvider);
 
       if (result.success) {
         showMessage('success', '🎬 ¡Reel publicado exitosamente en Instagram!');
@@ -307,7 +310,7 @@ function SocialMediaDashboard() {
 
     setIsPublishing(true);
     try {
-      const result = await makeService.publishStatistic(stats);
+      const result = await makeService.publishStatistic(stats, aiProvider);
 
       if (result.success) {
         showMessage('success', '✨ ¡AI generando contenido de la estadística y publicando en redes sociales!');
@@ -431,6 +434,42 @@ Gracias a todos por el apoyo.
             {tab.icon} {tab.label}
           </button>
         ))}
+      </div>
+
+      {/* AI Provider Selector */}
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              🤖 Inteligencia Artificial
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Selecciona el motor de AI para generar contenido
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setAiProvider('groq')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                aiProvider === 'groq'
+                  ? 'bg-purple-600 text-white shadow-lg'
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              ⚡ Groq (Rápido)
+            </button>
+            <button
+              onClick={() => setAiProvider('gemini')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                aiProvider === 'gemini'
+                  ? 'bg-indigo-600 text-white shadow-lg'
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              🧠 Gemini (Google)
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Network Selector (visible in all tabs) */}
