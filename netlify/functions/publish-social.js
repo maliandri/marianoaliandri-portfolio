@@ -14,20 +14,9 @@ export async function handler(event) {
     const data = JSON.parse(event.body);
     const aiProvider = data.aiProvider || 'groq';
 
-    // Webhooks de Make.com
-    const webhooks = {
-      gemini: 'https://hook.us2.make.com/bjiutspm6dl2nai4ty3p77b6ml1ml1xl',
-      groq: 'https://hook.us2.make.com/jhzkug127k9nfq1vcb623gj1s0ns27xk'
-    };
-
-    const webhookURL = webhooks[aiProvider];
-
-    if (!webhookURL) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Invalid AI provider' })
-      };
-    }
+    // Usar el mismo webhook para ambos AIs (Make.com tiene límite de webhooks en plan gratuito)
+    // El Router en Make.com decidirá qué AI usar basándose en data.aiProvider
+    const webhookURL = 'https://hook.us2.make.com/bjiutspm6dl2nai4ty3p77b6ml1ml1xl';
 
     console.log(`🤖 Usando AI: ${aiProvider.toUpperCase()}`);
     console.log(`📡 Webhook: ${webhookURL}`);

@@ -4,11 +4,9 @@ import cloudinaryService from './cloudinaryService';
 
 class MakeService {
   constructor() {
-    // Webhook URLs from Make.com (hardcodeadas para evitar límite de 4KB en Netlify Functions)
-    this.webhooks = {
-      gemini: 'https://hook.us2.make.com/bjiutspm6dl2nai4ty3p77b6ml1ml1xl',
-      groq: 'https://hook.us2.make.com/jhzkug127k9nfq1vcb623gj1s0ns27xk'
-    };
+    // Webhook URL de Make.com (único para evitar límite de webhooks en plan gratuito)
+    // El Router en Make.com decide qué AI usar según el campo aiProvider del payload
+    this.webhookURL = 'https://hook.us2.make.com/bjiutspm6dl2nai4ty3p77b6ml1ml1xl';
   }
 
   /**
