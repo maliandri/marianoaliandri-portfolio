@@ -4,10 +4,10 @@ import cloudinaryService from './cloudinaryService';
 
 class MakeService {
   constructor() {
-    // Webhook URLs from Make.com
+    // Webhook URLs from Make.com (hardcodeadas para evitar límite de 4KB en Netlify Functions)
     this.webhooks = {
-      gemini: import.meta.env.VITE_MAKE_WEBHOOK_GEMINI || 'https://hook.us2.make.com/og06wglflanrsbx84k5fedo9j3b74gct',
-      groq: import.meta.env.VITE_MAKE_WEBHOOK_GROQ || 'https://hook.us2.make.com/jhzkug127k9nfq1vcb623gj1s0ns27xk'
+      gemini: 'https://hook.us2.make.com/bjiutspm6dl2nai4ty3p77b6ml1ml1xl',
+      groq: 'https://hook.us2.make.com/jhzkug127k9nfq1vcb623gj1s0ns27xk'
     };
   }
 
