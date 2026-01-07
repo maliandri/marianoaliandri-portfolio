@@ -44,10 +44,10 @@
 
 .animation-section {
   min-height: 100vh;
-  padding: 80px 20px 20px 20px;
+  padding: 80px 20px 20px 290px;
   background: var(--bg-primary, #f9fafb);
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   transition: background-color 0.3s ease;
 }
@@ -58,27 +58,11 @@
 
 .animation-content-wrapper {
   width: 100%;
-  max-width: 1400px;
   display: flex;
   flex-direction: column;
   gap: 5rem;
   justify-content: flex-start;
   align-items: stretch;
-  padding-left: 0;
-  margin: 0 auto;
-}
-
-/* En desktop, agregar padding lateral para dar espacio a los botones flotantes */
-@media (min-width: 993px) {
-  .animation-section {
-    padding-left: 290px;
-  }
-
-  .animation-content-wrapper {
-    max-width: calc(1400px - 270px);
-    margin-left: 0;
-    margin-right: auto;
-  }
 }
 
 /* ================================================================== */
@@ -242,30 +226,7 @@
   }
 
   .animation-section {
-    padding: 80px 20px 20px 20px;
-    justify-content: center;
-  }
-
-  .animation-content-wrapper {
-    max-width: 100%;
-    padding: 0 10px;
-  }
-}
-
-@media (max-width: 768px) {
-  .animation-section {
-    padding: 140px 15px 15px 15px;
-  }
-
-  .animation-content-wrapper {
-    max-width: 100%;
-    padding: 0;
-    gap: 3rem;
-  }
-
-  .floating-buttons-container {
-    top: 140px;
-    padding: 15px 10px;
+    padding-left: 20px;
   }
 }
 
@@ -273,9 +234,9 @@
 /* MÓVIL - BARRA INFERIOR                                             */
 /* ================================================================== */
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .animation-section {
-    padding: 160px 10px 100px 10px !important;
+    padding: 80px 15px 100px 15px !important;
     min-height: calc(100vh - 100px);
   }
 
@@ -317,10 +278,10 @@
 
   /* Botones como íconos circulares más pequeños */
   .floating-button {
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
     padding: 0 !important;
     justify-content: center !important;
     border-radius: 50% !important;
@@ -335,7 +296,7 @@
   /* Ajustar íconos */
   .button-icon {
     margin: 0 !important;
-    font-size: 1.2rem !important;
+    font-size: 1.3rem !important;
   }
 
   /* Ocultar separadores */
@@ -345,6 +306,28 @@
 
   .floating-button::before {
     display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .animation-section {
+    padding: 80px 10px 100px 10px !important;
+  }
+
+  .floating-button {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .button-icon {
+    font-size: 1.2rem !important;
+  }
+
+  .floating-buttons-container {
+    padding: 8px 4px !important;
+    gap: 4px !important;
   }
 }
 
@@ -370,21 +353,12 @@
 /* FOOTER AJUSTES                                                     */
 /* ================================================================== */
 
-/* Footer centrado por defecto */
-.main-footer,
-footer {
-  padding: 2.5rem 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
 /* En desktop, agregar margen izquierdo para evitar superposición con botones flotantes */
-@media (min-width: 993px) {
+@media (min-width: 769px) {
   .main-footer,
   footer {
     margin-left: 290px;
-    margin-right: auto;
-    max-width: calc(1400px - 270px);
+    padding: 2.5rem 2rem;
   }
 }
 
@@ -393,6 +367,5 @@ footer {
   .main-footer,
   footer {
     padding-bottom: 100px;
-    max-width: 100%;
   }
 }
