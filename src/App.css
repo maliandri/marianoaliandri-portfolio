@@ -44,10 +44,10 @@
 
 .animation-section {
   min-height: 100vh;
-  padding: 80px 20px 20px 290px;
+  padding: 80px 20px 20px 20px;
   background: var(--bg-primary, #f9fafb);
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: flex-start;
   transition: background-color 0.3s ease;
 }
@@ -58,11 +58,27 @@
 
 .animation-content-wrapper {
   width: 100%;
+  max-width: 1400px;
   display: flex;
   flex-direction: column;
   gap: 5rem;
   justify-content: flex-start;
   align-items: stretch;
+  padding-left: 0;
+  margin: 0 auto;
+}
+
+/* En desktop, agregar padding lateral para dar espacio a los botones flotantes */
+@media (min-width: 993px) {
+  .animation-section {
+    padding-left: 290px;
+  }
+
+  .animation-content-wrapper {
+    max-width: calc(1400px - 270px);
+    margin-left: 0;
+    margin-right: auto;
+  }
 }
 
 /* ================================================================== */
@@ -226,13 +242,25 @@
   }
 
   .animation-section {
-    padding-left: 20px;
+    padding: 80px 20px 20px 20px;
+    justify-content: center;
+  }
+
+  .animation-content-wrapper {
+    max-width: 100%;
+    padding: 0 10px;
   }
 }
 
 @media (max-width: 768px) {
   .animation-section {
     padding: 140px 15px 15px 15px;
+  }
+
+  .animation-content-wrapper {
+    max-width: 100%;
+    padding: 0;
+    gap: 3rem;
   }
 
   .floating-buttons-container {
@@ -342,12 +370,21 @@
 /* FOOTER AJUSTES                                                     */
 /* ================================================================== */
 
+/* Footer centrado por defecto */
+.main-footer,
+footer {
+  padding: 2.5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
 /* En desktop, agregar margen izquierdo para evitar superposición con botones flotantes */
-@media (min-width: 769px) {
+@media (min-width: 993px) {
   .main-footer,
   footer {
     margin-left: 290px;
-    padding: 2.5rem 2rem;
+    margin-right: auto;
+    max-width: calc(1400px - 270px);
   }
 }
 
@@ -356,5 +393,6 @@
   .main-footer,
   footer {
     padding-bottom: 100px;
+    max-width: 100%;
   }
 }
