@@ -116,7 +116,7 @@ exports.handler = async (event) => {
 
     const videoConfig = {
       timeline: {
-        background: '#000000',
+        background: '#0739b6ff',
         soundtrack: {
           src: randomMusic,
           effect: 'fadeInFadeOut',
