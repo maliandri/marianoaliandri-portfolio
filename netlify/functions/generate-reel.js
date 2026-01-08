@@ -116,7 +116,7 @@ exports.handler = async (event) => {
 
     const videoConfig = {
       timeline: {
-        background: '#0739b6ff',
+        background: '#020202ff',
         soundtrack: {
           src: randomMusic,
           effect: 'fadeInFadeOut',
@@ -231,7 +231,7 @@ exports.handler = async (event) => {
                   font: {
                     family: 'Montserrat',
                     size: 52,
-                    color: '#00FF00',
+                    color: '#fc0202ff',
                     weight: 700
                   },
                   shadow: {
