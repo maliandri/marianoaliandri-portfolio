@@ -11,7 +11,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { imageUrl, productName, price } = JSON.parse(event.body);
+    const { imageUrl, productName, price, productId } = JSON.parse(event.body);
 
     if (!imageUrl || !productName) {
       return {
@@ -113,6 +113,10 @@ exports.handler = async (event) => {
         ]
       });
     }
+    
+    // URL del webhook de Make.com para notificar cuando el reel está listo
+    const callbackUrl = `https://hook.us2.make.com/t9o6h2qpt85npf78qc52lgx6gpukza2i?productId=${productId}`;
+
 
     const videoConfig = {
       timeline: {
@@ -262,7 +266,8 @@ exports.handler = async (event) => {
       output: {
         format: 'mp4',
         resolution: 'hd',
-        aspectRatio: '9:16'
+        aspectRatio: '9:16',
+        callback: callbackUrl
       }
     };
 

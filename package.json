@@ -31,7 +31,6 @@
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-query-devtools": "^5.91.1",
     "axios": "^1.12.2",
-    "buffer-js": "^0.0.3",
     "date-fns": "^4.1.0",
     "express-validator": "^7.2.1",
     "firebase": "^12.6.0",
