@@ -35,7 +35,9 @@ const ReelEditor = ({ product, onClose, onPublish }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Error al generar video');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('❌ Error response:', errorData);
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
       }
 
       const result = await response.json();
