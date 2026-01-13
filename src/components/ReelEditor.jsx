@@ -12,7 +12,15 @@ const ReelEditor = ({ product, onClose, onPublish }) => {
   const handleGenerateAndPublish = async () => {
     try {
       setIsGenerating(true);
-      console.log('🎬 Generando reel con:', { productName, price });
+
+      // Validar que el producto tenga imagen
+      if (!product.image) {
+        alert('Error: El producto no tiene una imagen. Asegúrate de que el producto tenga una imagen antes de generar el reel.');
+        setIsGenerating(false);
+        return;
+      }
+
+      console.log('🎬 Generando reel con:', { productName, price, image: product.image });
 
       // Paso 1: Generar el video con Shotstack
       const response = await fetch('/.netlify/functions/generate-reel', {
@@ -21,7 +29,8 @@ const ReelEditor = ({ product, onClose, onPublish }) => {
         body: JSON.stringify({
           imageUrl: product.image,
           productName: productName,
-          price: price
+          price: price,
+          productId: product.id
         })
       });
 
