@@ -6,7 +6,7 @@ class MakeService {
   constructor() {
     // Webhook URL de Make.com (único para evitar límite de webhooks en plan gratuito)
     // El Router en Make.com decide qué AI usar según el campo aiProvider del payload
-    this.webhookURL = 'https://hookhttps://hook.us2.make.com/t9o6h2qpt85npf78qc52lgx6gpukza2i';
+    this.webhookURL = 'https://hook.us2.make.com/t9o6h2qpt85npf78qc52lgx6gpukza2i';
   }
 
   /**
