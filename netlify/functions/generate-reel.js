@@ -204,7 +204,7 @@ exports.handler = async (event) => {
                   font: {
                     family: 'Montserrat',
                     size: 52,
-                    color: '#00FF00',
+                    color: '#FFFFFF',
                     weight: 700
                   },
                   shadow: {
@@ -235,7 +235,7 @@ exports.handler = async (event) => {
                   font: {
                     family: 'Montserrat',
                     size: 52,
-                    color: '#fc0202',
+                    color: '#FF0000',
                     weight: 700
                   },
                   shadow: {
