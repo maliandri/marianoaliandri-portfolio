@@ -58,6 +58,8 @@
 
 .animation-content-wrapper {
   width: 100%;
+  max-width: 1200px;  /* Ancho máximo para contenido más encuadrado */
+  margin: 0 auto;     /* Centrar el contenido */
   display: flex;
   flex-direction: column;
   gap: 5rem;
