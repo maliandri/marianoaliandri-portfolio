@@ -59,12 +59,13 @@
 .animation-content-wrapper {
   width: 100%;
   max-width: 1200px;  /* Ancho máximo para contenido más encuadrado */
-  margin: 0;          /* Alineado a la izquierda, cerca de los botones */
+  margin: 0 auto;     /* Centrar el contenido */
+  padding-left: 10px; /* Pequeño ajuste hacia la derecha */
   display: flex;
   flex-direction: column;
   gap: 5rem;
-  justify-content: flex-start;
-  align-items: stretch;
+  justify-content: center;
+  align-items: center;  /* Centrar elementos internos */
 }
 
 /* ================================================================== */
