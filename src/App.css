@@ -44,7 +44,7 @@
 
 .animation-section {
   min-height: 100vh;
-  padding: 80px 20px 20px 290px;
+  padding: 70px 20px 20px 280px;  /* Reducido padding-top y padding-left */
   background: var(--bg-primary, #f9fafb);
   display: flex;
   justify-content: flex-start;
@@ -59,7 +59,7 @@
 .animation-content-wrapper {
   width: 100%;
   max-width: 1200px;  /* Ancho máximo para contenido más encuadrado */
-  margin: 0 auto;     /* Centrar el contenido */
+  margin: 0;          /* Alineado a la izquierda, cerca de los botones */
   display: flex;
   flex-direction: column;
   gap: 5rem;
