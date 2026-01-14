@@ -58,6 +58,7 @@
 
 .animation-content-wrapper {
   width: 100%;
+  max-width: 1100px;  /* Ancho alineado con el header (desde botones hasta ~1100px) */
   display: flex;
   flex-direction: column;
   gap: 5rem;
