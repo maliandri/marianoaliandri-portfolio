@@ -44,7 +44,7 @@
 
 .animation-section {
   min-height: 100vh;
-  padding: 70px 20px 20px 280px;  /* Reducido padding-top y padding-left */
+  padding: 70px 20px 20px 265px;  /* 5px de separación desde los botones */
   background: var(--bg-primary, #f9fafb);
   display: flex;
   justify-content: flex-start;
@@ -58,14 +58,17 @@
 
 .animation-content-wrapper {
   width: 100%;
-  max-width: 1200px;  /* Ancho máximo para contenido más encuadrado */
-  margin: 0 auto;     /* Centrar el contenido */
-  padding-left: 10px; /* Pequeño ajuste hacia la derecha */
   display: flex;
   flex-direction: column;
   gap: 5rem;
-  justify-content: center;
-  align-items: center;  /* Centrar elementos internos */
+  justify-content: flex-start;
+  align-items: stretch;  /* Todo al mismo ancho */
+}
+
+/* Asegurar que todas las secciones tengan el mismo ancho */
+.animation-content-wrapper > * {
+  width: 100%;
+  max-width: 100%;
 }
 
 /* ================================================================== */
