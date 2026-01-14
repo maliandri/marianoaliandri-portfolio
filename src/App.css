@@ -44,7 +44,7 @@
 
 .animation-section {
   min-height: 100vh;
-  padding: 70px 20px 20px 265px;  /* 5px de separación desde los botones */
+  padding: 70px 20px 20px 269px;  /* 4px más a la derecha para evitar superposición */
   background: var(--bg-primary, #f9fafb);
   display: flex;
   justify-content: flex-start;
