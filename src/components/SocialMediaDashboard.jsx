@@ -9,6 +9,7 @@ import ReelEditor from './ReelEditor';
 /**
  * Social Media Dashboard - Make.com Integration
  * Panel simplificado para publicar en redes sociales via webhooks
+ * RESPONSIVE: Optimizado para móvil y desktop
  */
 function SocialMediaDashboard() {
   const [activeTab, setActiveTab] = useState('custom'); // custom, products, services, statistics
@@ -39,7 +40,7 @@ function SocialMediaDashboard() {
 
   const networks = [
     { id: 'linkedin', name: 'LinkedIn', icon: '💼', color: 'bg-blue-600' },
-    { id: 'facebook', name: 'Facebook + Instagram', icon: '👥📷', color: 'bg-blue-700', info: 'Publica en Facebook e Instagram automáticamente' }
+    { id: 'facebook', name: 'FB + IG', icon: '👥📷', color: 'bg-blue-700', info: 'Publica en Facebook e Instagram automáticamente' }
   ];
 
   useEffect(() => {
@@ -343,9 +344,9 @@ function SocialMediaDashboard() {
   };
 
   const tabs = [
-    { id: 'custom', label: 'Publicación Libre', icon: '✍️' },
-    { id: 'products', label: 'Productos/Servicios', icon: '🎯' },
-    { id: 'statistics', label: 'Estadísticas', icon: '📊' }
+    { id: 'custom', label: 'Libre', fullLabel: 'Publicación Libre', icon: '✍️' },
+    { id: 'products', label: 'Productos', fullLabel: 'Productos/Servicios', icon: '🎯' },
+    { id: 'statistics', label: 'Stats', fullLabel: 'Estadísticas', icon: '📊' }
   ];
 
   const templates = {
@@ -383,21 +384,21 @@ Gracias a todos por el apoyo.
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
+      {/* Header - RESPONSIVE */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
             Redes Sociales
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            Publica en tus redes sociales via Make.com
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Publica via Make.com
           </p>
         </div>
         <button
           onClick={testConnection}
           disabled={isPublishing}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+          className="w-full sm:w-auto px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 text-sm"
         >
           🔌 Test Conexión
         </button>
@@ -409,7 +410,7 @@ Gracias a todos por el apoyo.
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className={`p-4 rounded-lg ${
+          className={`p-3 sm:p-4 rounded-lg text-sm ${
             message.type === 'success'
               ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
               : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
@@ -419,61 +420,61 @@ Gracias a todos por el apoyo.
         </motion.div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
+      {/* Tabs - RESPONSIVE */}
+      <div className="flex gap-1 sm:gap-2 border-b border-gray-200 dark:border-gray-700 overflow-x-auto pb-1">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`flex-shrink-0 px-3 sm:px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
-            {tab.icon} {tab.label}
+            {tab.icon} <span className="hidden sm:inline">{tab.fullLabel}</span><span className="sm:hidden">{tab.label}</span>
           </button>
         ))}
       </div>
 
-      {/* AI Provider Selector */}
-      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
-        <div className="flex items-center justify-between">
+      {/* AI Provider Selector - RESPONSIVE */}
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-700">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-              🤖 Inteligencia Artificial
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              🤖 Motor AI
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Selecciona el motor de AI para generar contenido
+            <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
+              Selecciona el motor de AI
             </p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setAiProvider('groq')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 aiProvider === 'groq'
                   ? 'bg-purple-600 text-white shadow-lg'
                   : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
-              ⚡ Groq (Rápido)
+              ⚡ Groq
             </button>
             <button
               onClick={() => setAiProvider('gemini')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 aiProvider === 'gemini'
                   ? 'bg-indigo-600 text-white shadow-lg'
                   : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
-              🧠 Gemini (Google)
+              🧠 Gemini
             </button>
           </div>
         </div>
       </div>
 
-      {/* Network Selector (visible in all tabs) */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+      {/* Network Selector - RESPONSIVE */}
+      <div className="bg-gray-50 dark:bg-gray-800 p-3 sm:p-4 rounded-lg">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
           Redes Sociales
         </h3>
@@ -482,7 +483,7 @@ Gracias a todos por el apoyo.
             <button
               key={network.id}
               onClick={() => toggleNetwork(network.id)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`flex-1 sm:flex-none min-w-[100px] px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 selectedNetworks.includes(network.id)
                   ? `${network.color} text-white`
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -494,9 +495,9 @@ Gracias a todos por el apoyo.
           ))}
         </div>
         {selectedNetworks.includes('facebook') && (
-          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
-              ℹ️ <strong>Facebook + Instagram:</strong> Si tienes conectado Facebook a Instagram, el post se publicará automáticamente en ambas redes.
+          <div className="mt-3 p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
+              ℹ️ <strong>FB + IG:</strong> Post en ambas redes automáticamente
             </p>
           </div>
         )}
@@ -505,55 +506,53 @@ Gracias a todos por el apoyo.
       {/* Tab Content */}
       {activeTab === 'custom' && (
         <div className="space-y-4">
-          {/* Templates */}
+          {/* Templates - RESPONSIVE */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Templates Rápidos
+              Templates
             </h3>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => useTemplate('service')}
-                className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
+                className="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs sm:text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
               >
                 💼 Servicio
               </button>
               <button
                 onClick={() => useTemplate('tip')}
-                className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
+                className="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs sm:text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
               >
                 💡 Tip
               </button>
               <button
                 onClick={() => useTemplate('achievement')}
-                className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
+                className="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs sm:text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
               >
                 🎉 Logro
               </button>
             </div>
           </div>
 
-          {/* AI Toggle */}
-          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  ✨ Modo AI-Powered
+          {/* AI Toggle - RESPONSIVE */}
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+                  ✨ Modo AI
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {useAI
-                    ? 'Gemini generará un post profesional basado en tu descripción'
-                    : 'Publica tu texto tal como está'}
+                <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                  {useAI ? 'AI genera el post' : 'Publica tal cual'}
                 </p>
               </div>
               <button
                 onClick={() => setUseAI(!useAI)}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                className={`relative inline-flex h-7 w-12 flex-shrink-0 items-center rounded-full transition-colors ${
                   useAI ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
                 }`}
               >
                 <span
-                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                    useAI ? 'translate-x-7' : 'translate-x-1'
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                    useAI ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>
@@ -563,52 +562,50 @@ Gracias a todos por el apoyo.
           {/* Composer */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {useAI ? 'Descripción Breve (AI generará el contenido)' : 'Texto del Post'}
+              {useAI ? 'Descripción (AI genera contenido)' : 'Texto del Post'}
             </label>
             <textarea
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
-              rows={useAI ? 4 : 10}
+              rows={useAI ? 3 : 6}
               placeholder={useAI
-                ? 'Ej: "Acabo de lanzar un nuevo servicio de consultoría en Power BI para empresas que quieren mejorar sus dashboards"'
+                ? 'Ej: "Nuevo servicio de consultoría en Power BI"'
                 : 'Escribe tu publicación aquí...'}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 text-sm"
             />
-            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {postText.length} caracteres
             </div>
           </div>
 
-          {/* Imagen (opcional) */}
+          {/* Imagen (opcional) - RESPONSIVE */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Imagen (opcional)
             </label>
             <div className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload(e, setCustomImageUrl)}
-                  className="flex-1 text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50"
-                />
-              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileUpload(e, setCustomImageUrl)}
+                className="w-full text-xs sm:text-sm text-gray-500 dark:text-gray-400 file:mr-2 sm:file:mr-4 file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50"
+              />
               <div
                 onPaste={(e) => handlePaste(e, setCustomImageUrl)}
-                className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
+                className="p-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
               >
-                📋 O pega una imagen aquí (Ctrl+V)
+                📋 Pega imagen (Ctrl+V)
               </div>
               {customImageUrl && (
                 <div className="relative">
                   <img
                     src={customImageUrl}
                     alt="Preview"
-                    className="w-full h-40 object-cover rounded-lg"
+                    className="w-full h-32 sm:h-40 object-cover rounded-lg"
                   />
                   <button
                     onClick={() => setCustomImageUrl('')}
-                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors"
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 sm:p-2 transition-colors text-xs"
                   >
                     ✕
                   </button>
@@ -620,7 +617,7 @@ Gracias a todos por el apoyo.
           <button
             onClick={handlePublishCustom}
             disabled={isPublishing || !postText.trim()}
-            className={`w-full py-3 ${
+            className={`w-full py-3 text-sm sm:text-base ${
               useAI
                 ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
                 : 'bg-indigo-600 hover:bg-indigo-700'
@@ -629,8 +626,8 @@ Gracias a todos por el apoyo.
             {isPublishing
               ? '⏳ Procesando...'
               : useAI
-                ? '✨ Generar con AI y Publicar'
-                : '🚀 Publicar Ahora'}
+                ? '✨ Generar y Publicar'
+                : '🚀 Publicar'}
           </button>
         </div>
       )}
@@ -639,7 +636,7 @@ Gracias a todos por el apoyo.
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Seleccionar Producto/Servicio
+              Seleccionar Producto
             </label>
             <select
               value={selectedProduct?.id || ''}
@@ -647,7 +644,7 @@ Gracias a todos por el apoyo.
                 const product = products.find(p => p.id === e.target.value);
                 setSelectedProduct(product);
               }}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
             >
               <option value="">-- Seleccionar --</option>
               {products.map(product => (
@@ -659,46 +656,42 @@ Gracias a todos por el apoyo.
           </div>
 
           {selectedProduct && (
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="bg-gray-50 dark:bg-gray-800 p-3 sm:p-4 rounded-lg">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm">
                 Vista Previa
               </h3>
-              <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                {`🎯 Nuevo servicio disponible: ${selectedProduct.name}
+              <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                {`🎯 ${selectedProduct.name}
 
-${selectedProduct.description}
+${selectedProduct.description?.substring(0, 100)}...
 
-💰 Precio: ${selectedProduct.priceARS ? `ARS $${selectedProduct.priceARS}` : selectedProduct.priceUSD ? `USD $${selectedProduct.priceUSD}` : 'Consultar'}
-
-¿Te interesa? Contactame:
-https://marianoaliandri.com.ar/#contact
-
-#Servicios #DesarrolloWeb #PowerBI #Python`}
+💰 ${selectedProduct.priceARS ? `ARS $${selectedProduct.priceARS}` : selectedProduct.priceUSD ? `USD $${selectedProduct.priceUSD}` : 'Consultar'}`}
               </div>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* Botones de acción - RESPONSIVE */}
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handlePublishProduct}
               disabled={isPublishing || !selectedProduct}
-              className="py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              {isPublishing ? '⏳ Publicando...' : '🚀 Post'}
+              {isPublishing ? '⏳ Publicando...' : '🚀 Publicar Post'}
             </button>
             <button
               onClick={handlePublishReel}
               disabled={isPublishing || !selectedProduct}
-              className="py-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              {isPublishing ? '⏳ Generando...' : '🎬 Reel'}
+              {isPublishing ? '⏳ Generando...' : '🎬 Crear Reel'}
             </button>
           </div>
         </div>
       )}
 
       {activeTab === 'statistics' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
           {/* Formulario */}
           <div className="space-y-4">
             <div>
@@ -709,8 +702,8 @@ https://marianoaliandri.com.ar/#contact
                 type="text"
                 value={stats.title}
                 onChange={(e) => setStats({ ...stats, title: e.target.value })}
-                placeholder="Ej: Alcanzamos 10,000 visitantes"
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Ej: 10,000 visitantes"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
               />
             </div>
 
@@ -721,9 +714,9 @@ https://marianoaliandri.com.ar/#contact
               <textarea
                 value={stats.description}
                 onChange={(e) => setStats({ ...stats, description: e.target.value })}
-                rows={4}
-                placeholder="Descripción de la estadística..."
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                rows={3}
+                placeholder="Descripción..."
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
               />
             </div>
 
@@ -733,8 +726,8 @@ https://marianoaliandri.com.ar/#contact
               </label>
               <input
                 type="text"
-                placeholder="Ej: Visitantes: 10,000"
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-2"
+                placeholder="Ej: Visitantes: 10,000 (Enter para agregar)"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-2 text-sm"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     const [key, value] = e.target.value.split(':');
@@ -751,7 +744,7 @@ https://marianoaliandri.com.ar/#contact
               {Object.keys(stats.metrics).length > 0 && (
                 <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                   {Object.entries(stats.metrics).map(([key, value]) => (
-                    <div key={key} className="flex justify-between items-center text-sm mb-1">
+                    <div key={key} className="flex justify-between items-center text-xs sm:text-sm mb-1">
                       <span className="text-gray-700 dark:text-gray-300">✅ {key}: {value}</span>
                       <button
                         onClick={() => {
@@ -759,7 +752,7 @@ https://marianoaliandri.com.ar/#contact
                           delete newMetrics[key];
                           setStats({ ...stats, metrics: newMetrics });
                         }}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 ml-2"
                       >
                         ✕
                       </button>
@@ -769,24 +762,13 @@ https://marianoaliandri.com.ar/#contact
               )}
             </div>
 
-            <button
-              onClick={handlePublishStatistic}
-              disabled={isPublishing || !stats.title || !stats.description}
-              className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isPublishing ? '⏳ Publicando...' : '🚀 Publicar Estadística'}
-            </button>
-          </div>
-
-          {/* Preview 1080x1080 */}
-          <div className="space-y-4">
-            <div className="text-center">
+            {/* Imagen - RESPONSIVE */}
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Vista Previa (1080x1080)
+                Imagen (opcional)
               </label>
-              {/* Preview de imagen o placeholder */}
               {stats.imageUrl ? (
-                <div className="relative w-full aspect-square rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600">
+                <div className="relative w-full max-w-xs mx-auto aspect-square rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600">
                   <img
                     src={stats.imageUrl}
                     alt="Preview"
@@ -794,31 +776,28 @@ https://marianoaliandri.com.ar/#contact
                   />
                   <button
                     onClick={() => setStats({ ...stats, imageUrl: '' })}
-                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors shadow-lg"
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 transition-colors text-xs"
                   >
                     ✕
                   </button>
                 </div>
               ) : (
-                <div className="relative w-full aspect-square bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden flex flex-col items-center justify-center p-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-400 dark:border-gray-600">
-                  <div className="text-center">
-                    <p className="text-6xl mb-4">🖼️</p>
-                    <p className="text-lg font-semibold">Sin imagen</p>
-                    <p className="text-sm mt-2">Pega una imagen abajo</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Pegar imagen */}
-              <div className="mt-4">
                 <div
                   onPaste={(e) => handlePaste(e, (url) => setStats({ ...stats, imageUrl: url }))}
-                  className="p-4 border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-lg text-center text-sm text-gray-600 dark:text-gray-300 bg-indigo-50 dark:bg-indigo-900/20 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
+                  className="p-4 border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-lg text-center text-xs sm:text-sm text-gray-600 dark:text-gray-300 bg-indigo-50 dark:bg-indigo-900/20 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
                 >
-                  📋 Pega aquí tu imagen (Ctrl+V)
+                  📋 Pega tu imagen aquí (Ctrl+V)
                 </div>
-              </div>
+              )}
             </div>
+
+            <button
+              onClick={handlePublishStatistic}
+              disabled={isPublishing || !stats.title || !stats.description}
+              className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              {isPublishing ? '⏳ Publicando...' : '🚀 Publicar Estadística'}
+            </button>
           </div>
         </div>
       )}
