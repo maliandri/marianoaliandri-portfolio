@@ -25,6 +25,7 @@ import AIChatBot from "./components/AIChatBot.jsx";
 import AuthButton from "./components/AuthButton.jsx";
 import ShopButton from "./components/ShopButton.jsx";
 import Footer from "./components/Footer.jsx";
+import WhatsAppButton from "./components/WhatsAppButton.jsx";
 
 // Herramientas
 import KpiRadar from "./components/KpiRadar";
@@ -241,6 +242,9 @@ export default function App() {
         )}
 
         <Footer />
+
+        {/* Botón flotante de WhatsApp - Siempre visible */}
+        <WhatsAppButton />
       </div>
     </CartProvider>
   );
