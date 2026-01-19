@@ -13,21 +13,13 @@ const ReelEditor = ({ product, onClose, onPublish }) => {
     try {
       setIsGenerating(true);
 
-      // Validar que el producto tenga imagen
-      if (!product.image) {
-        alert('Error: El producto no tiene una imagen. Asegúrate de que el producto tenga una imagen antes de generar el reel.');
-        setIsGenerating(false);
-        return;
-      }
+      console.log('🎬 Generando reel con:', { productName, price });
 
-      console.log('🎬 Generando reel con:', { productName, price, image: product.image });
-
-      // Paso 1: Generar el video con Shotstack
+      // Paso 1: Generar el video con Shotstack (solo texto + video de fondo + audio)
       const response = await fetch('/.netlify/functions/generate-reel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          imageUrl: product.image,
           productName: productName,
           price: price,
           productId: product.id
@@ -85,22 +77,13 @@ const ReelEditor = ({ product, onClose, onPublish }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
       {!videoUrl ? (
         // Editor Form
         <div className="bg-gray-900 rounded-lg p-6 max-w-2xl w-full">
-          <h2 className="text-white text-2xl font-bold mb-4">Editar Reel - {product.name}</h2>
+          <h2 className="text-white text-2xl font-bold mb-4">Crear Reel - {product.name}</h2>
 
           <div className="space-y-4">
-            {/* Vista previa de imagen */}
-            <div className="flex justify-center">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-48 h-48 object-cover rounded-lg"
-              />
-            </div>
-
             {/* Editor de título */}
             <div>
               <label className="block text-white font-semibold mb-2">
@@ -143,7 +126,7 @@ const ReelEditor = ({ product, onClose, onPublish }) => {
                 <li>• Formato: 9:16 (Instagram Reel)</li>
                 <li>• Video de fondo aleatorio de Pexels</li>
                 <li>• Música de fondo aleatoria</li>
-                <li>• El video se generará y publicará automáticamente</li>
+                <li>• Solo texto animado (sin imagen de producto)</li>
               </ul>
             </div>
 

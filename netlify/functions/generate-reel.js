@@ -11,12 +11,12 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { imageUrl, productName, price, productId } = JSON.parse(event.body);
+    const { productName, price, productId } = JSON.parse(event.body);
 
-    if (!imageUrl || !productName) {
+    if (!productName) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'imageUrl and productName are required' })
+        body: JSON.stringify({ error: 'productName is required' })
       };
     }
 
@@ -30,7 +30,7 @@ exports.handler = async (event) => {
     }
 
     console.log('🔑 API Key presente:', SHOTSTACK_API_KEY ? `Sí (${SHOTSTACK_API_KEY.substring(0, 8)}...)` : 'No');
-    console.log('🖼️ Imagen del producto:', imageUrl);
+    console.log('📝 Producto:', productName);
 
     const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
 
@@ -103,7 +103,7 @@ exports.handler = async (event) => {
             start: 0,
             length: 30,
             fit: 'crop',
-            opacity: 0.6,  // MEJORA: Oscurecer el fondo para mejor contraste
+            opacity: 0.6,
             effect: randomEffect,
             transition: {
               in: randomTransitionIn,
@@ -114,55 +114,7 @@ exports.handler = async (event) => {
       });
     }
 
-    // TRACK 2: NUEVO - Imagen del producto (aparece en el centro con efecto Ken Burns)
-    tracks.push({
-      clips: [
-        // Primera aparición: segundos 2-12
-        {
-          asset: {
-            type: 'image',
-            src: imageUrl
-          },
-          start: 2,
-          length: 10,
-          fit: 'contain',
-          scale: 0.7,
-          position: 'center',
-          offset: {
-            x: 0,
-            y: 0
-          },
-          opacity: 1,
-          effect: 'zoomIn',
-          transition: {
-            in: 'fade',
-            out: 'fade'
-          }
-        },
-        // Segunda aparición: segundos 18-28
-        {
-          asset: {
-            type: 'image',
-            src: imageUrl
-          },
-          start: 18,
-          length: 10,
-          fit: 'contain',
-          scale: 0.7,
-          position: 'center',
-          offset: {
-            x: 0,
-            y: 0
-          },
-          opacity: 1,
-          effect: 'zoomOut',
-          transition: {
-            in: 'fade',
-            out: 'fade'
-          }
-        }
-      ]
-    });
+    // Sin imagen del producto - solo texto, video de fondo y audio
 
     // URL del webhook de Make.com para notificar cuando el reel está listo
     const callbackUrl = `https://hook.us2.make.com/t9o6h2qpt85npf78qc52lgx6gpukza2i?productId=${productId}`;
@@ -176,7 +128,7 @@ exports.handler = async (event) => {
           volume: 0.5
         },
         tracks: tracks.concat([
-          // TRACK 3: Nombre del producto (aparece al inicio y al final)
+          // TRACK 2: Nombre del producto (aparece al inicio y al final)
           {
             clips: [
               // Aparición inicial (segundos 0-6)
@@ -225,7 +177,7 @@ exports.handler = async (event) => {
               }
             ]
           },
-          // TRACK 4: Precio (aparece al inicio y al final con colores diferentes)
+          // TRACK 3: Precio (aparece al inicio y al final con colores diferentes)
           {
             clips: [
               // Precio inicial - blanco (segundos 0-6)
@@ -274,7 +226,7 @@ exports.handler = async (event) => {
               }
             ]
           },
-          // TRACK 5: NUEVO - Call to Action en el medio del video
+          // TRACK 4: Call to Action en el medio del video
           {
             clips: [
               {
@@ -351,7 +303,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         success: true,
         renderId: result.response.id,
-        message: 'Video generation started with product image and animations',
+        message: 'Video generation started with text, background video and audio',
         statusUrl: `https://api.shotstack.io/stage/render/${result.response.id}`
       })
     };
