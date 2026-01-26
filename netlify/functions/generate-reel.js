@@ -1,7 +1,6 @@
 // Netlify Function para generar videos con Shotstack - VERSIÓN MEJORADA
-const fetch = require('node-fetch');
 
-exports.handler = async (event) => {
+export async function handler(event) {
   // Solo permitir POST
   if (event.httpMethod !== 'POST') {
     return {
@@ -318,4 +317,4 @@ exports.handler = async (event) => {
       })
     };
   }
-};
+}

@@ -1,7 +1,6 @@
 // Netlify Function para consultar el estado del video en Shotstack
-const fetch = require('node-fetch');
 
-exports.handler = async (event) => {
+export async function handler(event) {
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
@@ -77,4 +76,4 @@ exports.handler = async (event) => {
       })
     };
   }
-};
+}
