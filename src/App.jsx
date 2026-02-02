@@ -26,7 +26,6 @@ import AuthButton from "./components/AuthButton.jsx";
 import ShopButton from "./components/ShopButton.jsx";
 import Footer from "./components/Footer.jsx";
 import WhatsAppButton from "./components/WhatsAppButton.jsx";
-import LinkedInSidebar from "./components/LinkedInSidebar.jsx";
 
 // Herramientas
 import KpiRadar from "./components/KpiRadar";
@@ -57,7 +56,6 @@ const HomePage = () => (
         <section aria-label="Carrousel de-imagenes">
           <Carrousel />
         </section>
-        <LinkedInSidebar />
         <section id="contact" aria-label="Información de contacto">
           <Contact />
         </section>

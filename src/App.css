@@ -222,16 +222,6 @@
 }
 
 /* ================================================================== */
-/* RESPONSIVE DESIGN - DESKTOP XL (SIDEBAR LINKEDIN)                  */
-/* ================================================================== */
-
-@media (min-width: 1440px) {
-  .animation-section {
-    padding-right: 245px;
-  }
-}
-
-/* ================================================================== */
 /* RESPONSIVE DESIGN - MÓVIL                                          */
 /* ================================================================== */
 
@@ -499,12 +489,6 @@
   }
 }
 
-@media (min-width: 1440px) {
-  .main-footer,
-  footer {
-    margin-right: 240px;
-  }
-}
 
 /* En móvil, agregar padding inferior para evitar que la barra de botones tape el footer */
 @media (max-width: 480px) {
