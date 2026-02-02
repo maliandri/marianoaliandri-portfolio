@@ -26,6 +26,7 @@ import AuthButton from "./components/AuthButton.jsx";
 import ShopButton from "./components/ShopButton.jsx";
 import Footer from "./components/Footer.jsx";
 import WhatsAppButton from "./components/WhatsAppButton.jsx";
+import LinkedInSidebar from "./components/LinkedInSidebar.jsx";
 
 // Herramientas
 import KpiRadar from "./components/KpiRadar";
@@ -242,6 +243,9 @@ export default function App() {
         )}
 
         <Footer />
+
+        {/* Sidebar LinkedIn 30 Días - Solo desktop xl */}
+        <LinkedInSidebar />
 
         {/* Botón flotante de WhatsApp - Siempre visible */}
         <WhatsAppButton />
