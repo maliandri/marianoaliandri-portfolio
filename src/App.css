@@ -226,12 +226,26 @@
 /* ================================================================== */
 
 @media (min-width: 1280px) {
+  .floating-buttons-container {
+    left: 10px;
+    padding: 14px 10px;
+    gap: 10px;
+  }
+
+  .floating-button {
+    width: 180px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    gap: 8px;
+  }
+
   .animation-section {
-    padding-right: 260px;
+    padding-left: 215px;
+    padding-right: 250px;
   }
 
   .animation-content-wrapper {
-    max-width: 900px;
+    max-width: 100%;
   }
 }
 
@@ -500,6 +514,14 @@
   footer {
     margin-left: 290px;
     padding: 2.5rem 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .main-footer,
+  footer {
+    margin-left: 215px;
+    margin-right: 240px;
   }
 }
 

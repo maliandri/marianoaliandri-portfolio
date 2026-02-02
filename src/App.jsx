@@ -57,6 +57,7 @@ const HomePage = () => (
         <section aria-label="Carrousel de-imagenes">
           <Carrousel />
         </section>
+        <LinkedInSidebar />
         <section id="contact" aria-label="Información de contacto">
           <Contact />
         </section>
@@ -243,9 +244,6 @@ export default function App() {
         )}
 
         <Footer />
-
-        {/* Sidebar LinkedIn 30 Días - Solo desktop xl */}
-        <LinkedInSidebar />
 
         {/* Botón flotante de WhatsApp - Siempre visible */}
         <WhatsAppButton />
