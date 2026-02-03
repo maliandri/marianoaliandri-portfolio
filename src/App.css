@@ -47,7 +47,7 @@
   padding: 70px 20px 20px 290px;  /* Más espacio para evitar superposición con botonera */
   background: var(--bg-primary, #f9fafb);
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;  /* Centrado entre sidebars */
   align-items: flex-start;
   transition: background-color 0.3s ease;
 }
@@ -229,6 +229,80 @@
   display: none;
 }
 
+/* ================================================================== */
+/* LINKEDIN MOBILE - Botón y Panel a pantalla completa                */
+/* ================================================================== */
+
+/* Botón toggle móvil - visible solo en < 1440px */
+.linkedin-mobile-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 400;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(227, 242, 253, 0.95) 0%, rgba(187, 222, 251, 0.95) 100%);
+  backdrop-filter: blur(15px);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.2);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.dark .linkedin-mobile-toggle {
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.linkedin-mobile-toggle:hover {
+  transform: scale(1.05);
+}
+
+.linkedin-toggle-badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4c01f9, #0A66C2);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Panel móvil a pantalla completa */
+.linkedin-mobile-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: 20px;
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
+  overflow-y: auto;
+}
+
+.dark .linkedin-mobile-panel {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+}
+
+/* Ocultar botón toggle en desktop >= 1440px */
+@media (min-width: 1440px) {
+  .linkedin-mobile-toggle {
+    display: none !important;
+  }
+
+  .linkedin-mobile-panel {
+    display: none !important;
+  }
+}
+
 @media (min-width: 1440px) {
   .linkedin-sidebar {
     display: block;
@@ -262,12 +336,6 @@
   /* Ajustar contenido central para dar espacio al sidebar */
   .animation-section {
     padding-right: 280px;
-  }
-
-  /* Ajustar footer */
-  .main-footer,
-  footer {
-    margin-right: 280px;
   }
 }
 
@@ -530,12 +598,21 @@
 /* FOOTER AJUSTES                                                     */
 /* ================================================================== */
 
-/* En desktop, agregar margen izquierdo para evitar superposición con botones flotantes */
+/* En desktop, centrar footer con el mismo ancho que el contenido */
 @media (min-width: 769px) {
   .main-footer,
   footer {
-    margin-left: 290px;
-    padding: 2.5rem 2rem;
+    padding: 2.5rem 20px 2.5rem 290px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .main-footer,
+  footer {
+    /* Centrar footer entre sidebars - misma lógica que animation-section */
+    padding: 2.5rem 280px 2.5rem 290px;
+    display: flex;
+    justify-content: center;
   }
 }
 

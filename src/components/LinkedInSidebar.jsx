@@ -14,6 +14,7 @@ const slideVariants = {
 export default function LinkedInSidebar() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
 
   const post = linkedinPosts[currentIndex];
   const total = linkedinPosts.length;
@@ -42,6 +43,145 @@ export default function LinkedInSidebar() {
   }, [post]);
 
   return (
+    <>
+    {/* Botón móvil para expandir/contraer */}
+    <button
+      onClick={() => setMobileExpanded(!mobileExpanded)}
+      className="linkedin-mobile-toggle"
+      aria-label={mobileExpanded ? 'Cerrar LinkedIn 30 Días' : 'Ver LinkedIn 30 Días'}
+    >
+      <div className="w-5 h-5 rounded bg-[#0A66C2] flex items-center justify-center">
+        <span className="text-white text-[9px] font-bold">in</span>
+      </div>
+      <span className="linkedin-toggle-badge">{post.day}</span>
+    </button>
+
+    {/* Panel móvil expandible */}
+    <AnimatePresence>
+      {mobileExpanded && (
+        <motion.div
+          className="linkedin-mobile-panel"
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 100 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        >
+          <button
+            onClick={() => setMobileExpanded(false)}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+            aria-label="Cerrar"
+          >
+            <span className="text-gray-600 dark:text-gray-300 text-lg">✕</span>
+          </button>
+
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-6 rounded bg-[#0A66C2] flex items-center justify-center">
+              <span className="text-white text-[10px] font-bold">in</span>
+            </div>
+            <span className="text-sm font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+              30 Días
+            </span>
+          </div>
+
+          {/* Content Card */}
+          <div className="rounded-xl bg-white/90 dark:bg-gray-800/90 border border-gray-200/60 dark:border-gray-700/60 shadow-lg overflow-hidden">
+            {/* Timer bar */}
+            <motion.div
+              key={`mobile-timer-${currentIndex}`}
+              className="h-[3px] bg-gradient-to-r from-[#0A66C2] to-[#4c01f9]"
+              initial={{ width: '0%' }}
+              animate={{ width: '100%' }}
+              transition={{ duration: INTERVAL_MS / 1000, ease: 'linear' }}
+            />
+
+            <div className="p-4">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`mobile-${currentIndex}`}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="flex flex-col gap-3"
+                >
+                  {/* Day badge */}
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4c01f9] to-[#0A66C2] text-white text-sm font-bold flex items-center justify-center shrink-0">
+                      {post.day}
+                    </span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
+                      Día {post.day} de {total}
+                    </span>
+                  </div>
+
+                  {/* Problema */}
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-red-500/80 dark:text-red-400/80 font-bold mb-1">
+                      Problema
+                    </p>
+                    <p className="text-base font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+                      {post.problema}
+                    </p>
+                  </div>
+
+                  {/* Solución */}
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-emerald-600/80 dark:text-emerald-400/80 font-bold mb-1">
+                      Solución
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-snug">
+                      {post.propuesta}
+                    </p>
+                  </div>
+
+                  {/* Gancho */}
+                  <div className="pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed italic">
+                      "{post.gancho}"
+                    </p>
+                  </div>
+
+                  {/* CTA */}
+                  <motion.button
+                    onClick={handleWhatsApp}
+                    className="mt-2 w-full py-2 px-4 text-sm font-semibold rounded-lg bg-gradient-to-r from-[#4c01f9] to-[#0A66C2] text-white hover:shadow-md hover:shadow-indigo-500/25 transition-shadow cursor-pointer"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    {post.cta} →
+                  </motion.button>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center justify-center gap-4 mt-3">
+            <button
+              onClick={goPrev}
+              className="w-8 h-8 rounded-full bg-gray-200/80 dark:bg-gray-700/80 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+              aria-label="Anterior"
+            >
+              <span className="text-sm text-gray-600 dark:text-gray-300">◀</span>
+            </button>
+            <span className="text-sm text-gray-400 dark:text-gray-500 font-medium tabular-nums">
+              {post.day}/{total}
+            </span>
+            <button
+              onClick={goNext}
+              className="w-8 h-8 rounded-full bg-gray-200/80 dark:bg-gray-700/80 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+              aria-label="Siguiente"
+            >
+              <span className="text-sm text-gray-600 dark:text-gray-300">▶</span>
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+
+    {/* Sidebar desktop (>= 1440px) */}
     <aside
       className="linkedin-sidebar"
       onMouseEnter={() => setIsPlaying(false)}
@@ -153,5 +293,6 @@ export default function LinkedInSidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }
