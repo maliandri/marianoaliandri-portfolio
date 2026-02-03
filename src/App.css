@@ -222,6 +222,56 @@
 }
 
 /* ================================================================== */
+/* LINKEDIN SIDEBAR - SOLO DESKTOP >= 1440px                          */
+/* ================================================================== */
+
+.linkedin-sidebar {
+  display: none;
+}
+
+@media (min-width: 1440px) {
+  .linkedin-sidebar {
+    display: block;
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 240px;
+    z-index: var(--z-fixed);
+    /* Glassmorphism matching left sidebar */
+    background: linear-gradient(135deg, rgba(227, 242, 253, 0.95) 0%, rgba(187, 222, 251, 0.95) 100%);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    padding: 15px;
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(33, 150, 243, 0.3);
+    box-shadow:
+      0 8px 32px rgba(33, 150, 243, 0.2),
+      0 4px 16px rgba(33, 150, 243, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+
+  .dark .linkedin-sidebar {
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 4px 16px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* Ajustar contenido central para dar espacio al sidebar */
+  .animation-section {
+    padding-right: 280px;
+  }
+
+  /* Ajustar footer */
+  .main-footer,
+  footer {
+    margin-right: 280px;
+  }
+}
+
+/* ================================================================== */
 /* RESPONSIVE DESIGN - MÓVIL                                          */
 /* ================================================================== */
 
