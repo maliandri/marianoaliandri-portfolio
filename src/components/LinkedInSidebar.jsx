@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { linkedinPosts } from '../data/linkedinPosts';
 
 const INTERVAL_MS = 7000;
-const WHATSAPP_NUMBER = '5492996302273';
+const WHATSAPP_NUMBER = '5492995414422';
 
 const slideVariants = {
   enter: { opacity: 0, y: 20 },
