@@ -43,7 +43,7 @@ function SocialMediaDashboard() {
   });
 
   // Firebase stats (productos más visitados, páginas, usuarios)
-  const { data: firebaseStats, isLoading: loadingStats } = useExtendedStats();
+  const { data: firebaseStats, isLoading: loadingStats, error: statsError } = useExtendedStats();
 
   const networks = [
     { id: 'linkedin', name: 'LinkedIn', icon: '💼', color: 'bg-blue-600' },
@@ -865,7 +865,14 @@ ${selectedProduct.description?.substring(0, 100)}...
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
               📊 Estadísticas en Tiempo Real
               {loadingStats && <span className="animate-pulse text-xs text-indigo-500">Cargando...</span>}
+              {statsError && <span className="text-xs text-red-500">Error al cargar</span>}
             </h3>
+
+            {!loadingStats && !firebaseStats && !statsError && (
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-4 p-3 bg-gray-100 dark:bg-gray-800 rounded">
+                No hay datos de estadísticas disponibles todavía.
+              </div>
+            )}
 
             {firebaseStats && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
@@ -897,32 +904,40 @@ ${selectedProduct.description?.substring(0, 100)}...
             )}
 
             {/* Páginas más visitadas */}
-            {firebaseStats?.topPages?.length > 0 && (
+            {firebaseStats && (
               <div className="mb-4">
                 <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">📄 Páginas más visitadas</h4>
-                <div className="space-y-1">
-                  {firebaseStats.topPages.slice(0, 5).map((page, index) => (
-                    <div key={page.id || index} className="flex justify-between items-center text-xs bg-white dark:bg-gray-800 px-3 py-2 rounded">
-                      <span className="text-gray-700 dark:text-gray-300 truncate flex-1">{page.path || page.id}</span>
-                      <span className="text-indigo-600 dark:text-indigo-400 font-medium ml-2">{page.views || page.count || 0}</span>
-                    </div>
-                  ))}
-                </div>
+                {firebaseStats.topPages?.length > 0 ? (
+                  <div className="space-y-1">
+                    {firebaseStats.topPages.slice(0, 5).map((page, index) => (
+                      <div key={page.id || index} className="flex justify-between items-center text-xs bg-white dark:bg-gray-800 px-3 py-2 rounded">
+                        <span className="text-gray-700 dark:text-gray-300 truncate flex-1">{page.path || page.title || page.id}</span>
+                        <span className="text-indigo-600 dark:text-indigo-400 font-medium ml-2">{page.views || page.count || 0}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-400 dark:text-gray-500 italic">Sin datos de páginas</div>
+                )}
               </div>
             )}
 
             {/* Productos más visitados */}
-            {firebaseStats?.topProducts?.length > 0 && (
+            {firebaseStats && (
               <div className="mb-4">
                 <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">🎯 Productos más visitados</h4>
-                <div className="space-y-1">
-                  {firebaseStats.topProducts.slice(0, 5).map((product, index) => (
-                    <div key={product.id || index} className="flex justify-between items-center text-xs bg-white dark:bg-gray-800 px-3 py-2 rounded">
-                      <span className="text-gray-700 dark:text-gray-300 truncate flex-1">{product.name || product.id}</span>
-                      <span className="text-purple-600 dark:text-purple-400 font-medium ml-2">{product.views || product.count || 0}</span>
-                    </div>
-                  ))}
-                </div>
+                {firebaseStats.topProducts?.length > 0 ? (
+                  <div className="space-y-1">
+                    {firebaseStats.topProducts.slice(0, 5).map((product, index) => (
+                      <div key={product.id || index} className="flex justify-between items-center text-xs bg-white dark:bg-gray-800 px-3 py-2 rounded">
+                        <span className="text-gray-700 dark:text-gray-300 truncate flex-1">{product.productName || product.name || product.id}</span>
+                        <span className="text-purple-600 dark:text-purple-400 font-medium ml-2">{product.views || product.count || 0}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-400 dark:text-gray-500 italic">Sin datos de productos</div>
+                )}
               </div>
             )}
 
