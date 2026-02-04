@@ -45,7 +45,13 @@ class MakeService {
       }
 
       const payload = {
+        // Texto del post - múltiples campos para compatibilidad con diferentes módulos de Make.com
         text: data.text,
+        content: data.text, // LinkedIn Video Post espera 'content'
+        caption: data.text, // Facebook/Instagram Reel esperan 'caption'
+        description: data.text, // Algunos módulos usan 'description'
+        message: data.text, // Facebook Pages usa 'message'
+
         networks: data.networks || ['linkedin', 'facebook'],
         type: data.type || 'custom',
         timestamp: new Date().toISOString(),
@@ -59,6 +65,9 @@ class MakeService {
       // Solo incluir 'url' si hay un video (reels)
       if (data.url) {
         payload.url = data.url;
+        payload.video_url = data.url; // Alias para módulos que esperan 'video_url'
+        payload.videoUrl = data.url; // Alias camelCase
+        payload.source = data.url; // Facebook Reel API usa 'source'
       }
 
       console.log('📤 PAYLOAD ENVIADO A NETLIFY FUNCTION:', JSON.stringify(payload, null, 2));
