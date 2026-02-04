@@ -17,13 +17,16 @@ function SocialMediaDashboard() {
   const [message, setMessage] = useState({ type: '', text: '' });
 
   // AI Provider selection
-  const [aiProvider, setAiProvider] = useState('groq'); // 'gemini' o 'groq'
+  const [aiProvider, setAiProvider] = useState('gemini'); // 'gemini' o 'groq'
 
   // Custom post state
   const [postText, setPostText] = useState('');
   const [selectedNetworks, setSelectedNetworks] = useState(['linkedin', 'facebook']);
   const [useAI, setUseAI] = useState(false); // Toggle para usar AI
   const [customImageUrl, setCustomImageUrl] = useState(''); // URL de imagen para publicación libre
+  const [contentType, setContentType] = useState('post'); // 'post' o 'reel'
+  const [videoFile, setVideoFile] = useState(null); // Archivo de video para reels
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState(''); // URL de preview del video
 
   // Products state
   const [products, setProducts] = useState([]);
@@ -119,6 +122,36 @@ function SocialMediaDashboard() {
     };
 
     reader.readAsDataURL(file);
+  };
+
+  // Manejar carga de archivo de video para Reels
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('video/')) {
+      showMessage('error', 'Por favor selecciona un archivo de video');
+      return;
+    }
+
+    // Verificar tamaño (máximo 100MB para reels)
+    if (file.size > 100 * 1024 * 1024) {
+      showMessage('error', 'El video debe ser menor a 100MB');
+      return;
+    }
+
+    setVideoFile(file);
+    setVideoPreviewUrl(URL.createObjectURL(file));
+    showMessage('success', '🎬 Video cargado correctamente');
+  };
+
+  // Limpiar video
+  const clearVideo = () => {
+    if (videoPreviewUrl) {
+      URL.revokeObjectURL(videoPreviewUrl);
+    }
+    setVideoFile(null);
+    setVideoPreviewUrl('');
   };
 
   // Generar imagen cuadrada de estadísticas (1080x1080)
@@ -238,6 +271,49 @@ function SocialMediaDashboard() {
     } catch (error) {
       showMessage('error', 'Error al publicar');
     } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  // Publicar Reel personalizado (video cargado por el usuario)
+  const handlePublishCustomReel = async () => {
+    if (!videoFile) {
+      showMessage('error', 'Por favor carga un video para el reel');
+      return;
+    }
+
+    if (!postText.trim()) {
+      showMessage('error', 'Por favor escribe una descripción para el reel');
+      return;
+    }
+
+    setIsPublishing(true);
+    try {
+      // Convertir video a base64
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const videoBase64 = reader.result;
+
+        const result = await makeService.publishCustomReel({
+          caption: postText,
+          videoBase64: videoBase64,
+          networks: selectedNetworks,
+          useAI: useAI,
+          aiProvider: aiProvider
+        });
+
+        if (result.success) {
+          showMessage('success', '🎬 ¡Reel enviado correctamente!');
+          setPostText('');
+          clearVideo();
+        } else {
+          showMessage('error', `Error: ${result.message}`);
+        }
+        setIsPublishing(false);
+      };
+      reader.readAsDataURL(videoFile);
+    } catch (error) {
+      showMessage('error', 'Error al publicar reel');
       setIsPublishing(false);
     }
   };
@@ -506,7 +582,44 @@ Gracias a todos por el apoyo.
       {/* Tab Content */}
       {activeTab === 'custom' && (
         <div className="space-y-4">
-          {/* Templates - RESPONSIVE */}
+          {/* Tipo de contenido: Post o Reel */}
+          <div className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 p-3 sm:p-4 rounded-lg border border-pink-200 dark:border-pink-700">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  📝 Tipo de Contenido
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {contentType === 'post' ? 'Publicación con texto e imagen' : 'Video corto para Reels/Shorts'}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setContentType('post'); clearVideo(); }}
+                  className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    contentType === 'post'
+                      ? 'bg-indigo-600 text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  📄 Post
+                </button>
+                <button
+                  onClick={() => { setContentType('reel'); setCustomImageUrl(''); }}
+                  className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    contentType === 'reel'
+                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  🎬 Reel
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Templates - RESPONSIVE (solo para posts) */}
+          {contentType === 'post' && (
           <div>
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Templates
@@ -532,6 +645,7 @@ Gracias a todos por el apoyo.
               </button>
             </div>
           </div>
+          )}
 
           {/* AI Toggle - RESPONSIVE */}
           <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-800">
@@ -578,7 +692,8 @@ Gracias a todos por el apoyo.
             </div>
           </div>
 
-          {/* Imagen (opcional) - RESPONSIVE */}
+          {/* Imagen (opcional) - Solo para Posts */}
+          {contentType === 'post' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Imagen (opcional)
@@ -613,7 +728,45 @@ Gracias a todos por el apoyo.
               )}
             </div>
           </div>
+          )}
 
+          {/* Video - Solo para Reels */}
+          {contentType === 'reel' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              🎬 Video del Reel
+            </label>
+            <div className="space-y-2">
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleVideoUpload}
+                className="w-full text-xs sm:text-sm text-gray-500 dark:text-gray-400 file:mr-2 sm:file:mr-4 file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-pink-50 dark:file:bg-pink-900/30 file:text-pink-700 dark:file:text-pink-300 hover:file:bg-pink-100 dark:hover:file:bg-pink-900/50"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Formatos: MP4, MOV, WebM • Máximo: 100MB • Duración recomendada: 15-60 seg
+              </p>
+              {videoPreviewUrl && (
+                <div className="relative">
+                  <video
+                    src={videoPreviewUrl}
+                    controls
+                    className="w-full h-48 sm:h-64 object-contain rounded-lg bg-black"
+                  />
+                  <button
+                    onClick={clearVideo}
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 sm:p-2 transition-colors text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          )}
+
+          {/* Botón de publicar - diferente para Post y Reel */}
+          {contentType === 'post' ? (
           <button
             onClick={handlePublishCustom}
             disabled={isPublishing || !postText.trim()}
@@ -629,6 +782,17 @@ Gracias a todos por el apoyo.
                 ? '✨ Generar y Publicar'
                 : '🚀 Publicar'}
           </button>
+          ) : (
+          <button
+            onClick={handlePublishCustomReel}
+            disabled={isPublishing || !postText.trim() || !videoFile}
+            className="w-full py-3 text-sm sm:text-base bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isPublishing
+              ? '⏳ Subiendo Reel...'
+              : '🎬 Publicar Reel'}
+          </button>
+          )}
         </div>
       )}
 

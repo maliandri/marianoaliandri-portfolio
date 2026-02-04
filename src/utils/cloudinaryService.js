@@ -91,7 +91,45 @@ class CloudinaryService {
    * @returns {boolean} true si es Base64
    */
   isBase64(url) {
-    return url && url.startsWith('data:image/');
+    return url && (url.startsWith('data:image/') || url.startsWith('data:video/'));
+  }
+
+  /**
+   * Subir video Base64 a Cloudinary
+   * @param {string} base64Video - Video en formato Base64 (data:video/...)
+   * @param {string} folder - Carpeta en Cloudinary (opcional)
+   * @returns {Promise<string>} URL del video en Cloudinary
+   */
+  async uploadBase64Video(base64Video, folder = 'reels') {
+    try {
+      console.log('📤 Subiendo video a Cloudinary...');
+
+      const videoUploadURL = `https://api.cloudinary.com/v1_1/${this.cloudName}/video/upload`;
+
+      const formData = new FormData();
+      formData.append('file', base64Video);
+      formData.append('upload_preset', this.uploadPreset);
+      formData.append('folder', folder);
+      formData.append('resource_type', 'video');
+
+      const response = await fetch(videoUploadURL, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Error al subir video: ${errorData.error?.message || response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Video subido exitosamente:', data.secure_url);
+
+      return data.secure_url;
+    } catch (error) {
+      console.error('❌ Error al subir video a Cloudinary:', error);
+      throw error;
+    }
   }
 }
 

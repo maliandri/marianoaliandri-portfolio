@@ -209,6 +209,68 @@ class MakeService {
   }
 
   /**
+   * Publicar un reel/video personalizado (video cargado por el usuario)
+   * @param {Object} data - Datos del reel
+   * @param {string} data.caption - Texto/descripción del reel
+   * @param {string} data.videoBase64 - Video en formato Base64
+   * @param {Array} data.networks - Redes sociales
+   * @param {boolean} data.useAI - Si debe generar caption con AI
+   * @param {string} data.aiProvider - Proveedor de AI
+   */
+  async publishCustomReel(data) {
+    console.log('🎬 publishCustomReel - Iniciando...');
+
+    try {
+      // Subir video a Cloudinary
+      let videoUrl = null;
+      if (data.videoBase64) {
+        console.log('📤 Subiendo video a Cloudinary...');
+        try {
+          videoUrl = await cloudinaryService.uploadBase64Video(data.videoBase64);
+          console.log('✅ Video subido:', videoUrl);
+        } catch (error) {
+          console.error('❌ Error subiendo video:', error);
+          return {
+            success: false,
+            message: 'Error al subir el video: ' + error.message
+          };
+        }
+      }
+
+      if (!videoUrl) {
+        return {
+          success: false,
+          message: 'No se pudo procesar el video'
+        };
+      }
+
+      // Enviar a Make.com
+      return this.publish({
+        text: data.useAI
+          ? `REEL personalizado: ${data.caption}. Genera un caption CORTO y VIRAL para reel/video (máximo 100 palabras).`
+          : data.caption,
+        type: 'reel',
+        networks: data.networks || ['facebook'], // Reels van a FB/IG
+        useAI: data.useAI || false,
+        url: videoUrl,
+        imageUrl: null,
+        aiProvider: data.aiProvider || 'gemini',
+        metadata: {
+          format: 'reel',
+          videoUrl: videoUrl,
+          customReel: true
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error en publishCustomReel:', error);
+      return {
+        success: false,
+        message: error.message
+      };
+    }
+  }
+
+  /**
    * Publicar un reel/video de producto (AI generará el caption)
    */
   async publishReel(product, videoUrl, aiProvider = 'groq') {
