@@ -5,6 +5,7 @@ import reelService from '../utils/reelService';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../utils/firebaseservice';
 import ReelEditor from './ReelEditor';
+import { useExtendedStats } from '../hooks/useFirebaseStats';
 
 /**
  * Social Media Dashboard - Make.com Integration
@@ -40,6 +41,9 @@ function SocialMediaDashboard() {
     metrics: {},
     imageUrl: '' // URL de imagen para estadística
   });
+
+  // Firebase stats (productos más visitados, páginas, usuarios)
+  const { data: firebaseStats, isLoading: loadingStats } = useExtendedStats();
 
   const networks = [
     { id: 'linkedin', name: 'LinkedIn', icon: '💼', color: 'bg-blue-600' },
@@ -856,7 +860,97 @@ ${selectedProduct.description?.substring(0, 100)}...
 
       {activeTab === 'statistics' && (
         <div className="space-y-4">
-          {/* Formulario */}
+          {/* Estadísticas en tiempo real de Firebase */}
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 p-4 rounded-lg border border-indigo-200 dark:border-indigo-700">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+              📊 Estadísticas en Tiempo Real
+              {loadingStats && <span className="animate-pulse text-xs text-indigo-500">Cargando...</span>}
+            </h3>
+
+            {firebaseStats && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                    {firebaseStats.totalVisits?.toLocaleString() || 0}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Visitas Totales</div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {firebaseStats.uniqueVisitors?.toLocaleString() || 0}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Visitantes Únicos</div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {firebaseStats.registeredUsers?.toLocaleString() || 0}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Usuarios Registrados</div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-pink-600 dark:text-pink-400">
+                    {firebaseStats.likes || 0} / {firebaseStats.dislikes || 0}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Likes / Dislikes</div>
+                </div>
+              </div>
+            )}
+
+            {/* Páginas más visitadas */}
+            {firebaseStats?.topPages?.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">📄 Páginas más visitadas</h4>
+                <div className="space-y-1">
+                  {firebaseStats.topPages.slice(0, 5).map((page, index) => (
+                    <div key={page.id || index} className="flex justify-between items-center text-xs bg-white dark:bg-gray-800 px-3 py-2 rounded">
+                      <span className="text-gray-700 dark:text-gray-300 truncate flex-1">{page.path || page.id}</span>
+                      <span className="text-indigo-600 dark:text-indigo-400 font-medium ml-2">{page.views || page.count || 0}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Productos más visitados */}
+            {firebaseStats?.topProducts?.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">🎯 Productos más visitados</h4>
+                <div className="space-y-1">
+                  {firebaseStats.topProducts.slice(0, 5).map((product, index) => (
+                    <div key={product.id || index} className="flex justify-between items-center text-xs bg-white dark:bg-gray-800 px-3 py-2 rounded">
+                      <span className="text-gray-700 dark:text-gray-300 truncate flex-1">{product.name || product.id}</span>
+                      <span className="text-purple-600 dark:text-purple-400 font-medium ml-2">{product.views || product.count || 0}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Botón para copiar estadísticas al formulario */}
+            {firebaseStats && (
+              <button
+                onClick={() => {
+                  const metricsObj = {
+                    'Visitas': firebaseStats.totalVisits?.toLocaleString() || '0',
+                    'Visitantes únicos': firebaseStats.uniqueVisitors?.toLocaleString() || '0',
+                    'Usuarios registrados': firebaseStats.registeredUsers?.toLocaleString() || '0'
+                  };
+                  setStats({
+                    ...stats,
+                    title: `📊 ${firebaseStats.totalVisits?.toLocaleString() || 0} visitas en marianoaliandri.com.ar`,
+                    description: `Mi portfolio alcanzó ${firebaseStats.uniqueVisitors?.toLocaleString() || 0} visitantes únicos y ${firebaseStats.registeredUsers?.toLocaleString() || 0} usuarios registrados. ¡Gracias por el apoyo!`,
+                    metrics: metricsObj
+                  });
+                  showMessage('success', '📊 Estadísticas copiadas al formulario');
+                }}
+                className="w-full py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs font-medium hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
+              >
+                📋 Usar estas estadísticas para publicar
+              </button>
+            )}
+          </div>
+
+          {/* Formulario de publicación */}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
