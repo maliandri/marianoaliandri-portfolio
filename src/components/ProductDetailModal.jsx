@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { ExchangeService, formatARS, formatUSD } from '../utils/exchangeService';
+import { FirebaseAnalyticsService } from '../utils/firebaseservice';
 
 export default function ProductDetailModal({ product, onClose }) {
   const { addToCart } = useCart();
   const [fx, setFx] = useState({ rate: null, loading: true });
   const fxService = new ExchangeService();
+  const analyticsRef = useRef(null);
 
-  // Cargar cotización al montar
+  // Cargar cotización y registrar vista del producto al montar
   useEffect(() => {
     async function loadExchange() {
       try {
@@ -20,7 +22,15 @@ export default function ProductDetailModal({ product, onClose }) {
       }
     }
     loadExchange();
-  }, []);
+
+    // Registrar vista del producto en Firebase
+    if (product?.id && product?.name) {
+      if (!analyticsRef.current) {
+        analyticsRef.current = new FirebaseAnalyticsService();
+      }
+      analyticsRef.current.trackProductView(product.id, product.name);
+    }
+  }, [product?.id]);
 
   if (!product) return null;
 
