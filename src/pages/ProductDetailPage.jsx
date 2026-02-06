@@ -1,24 +1,50 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getProductById } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { ExchangeService, formatARS, formatUSD } from '../utils/exchangeService';
 import { FirebaseAnalyticsService } from '../utils/firebaseservice';
+import priceService from '../utils/priceService';
 import SEO from '../components/SEO';
 
 export default function ProductDetailPage() {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [fx, setFx] = useState({ rate: null, loading: true });
   const fxService = new ExchangeService();
   const analyticsRef = useRef(null);
 
-  const product = getProductById(productId);
-
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    async function loadProduct() {
+      try {
+        const allProducts = await priceService.getAllPrices();
+        const found = allProducts[productId];
+        if (found) {
+          setProduct({
+            ...found,
+            shortDescription: found.shortDescription || found.description || '',
+            features: found.features || ['Desarrollo profesional', 'Soporte técnico', 'Documentación incluida'],
+            deliverables: found.deliverables || ['Código fuente', 'Documentación técnica', 'Capacitación'],
+            tags: found.tags || [found.category || 'Servicio'],
+            duration: found.duration || '2-4 semanas',
+          });
+
+          if (!analyticsRef.current) {
+            analyticsRef.current = new FirebaseAnalyticsService();
+          }
+          analyticsRef.current.trackProductView(found.id, found.name);
+        }
+      } catch (error) {
+        console.error('Error cargando producto:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
     async function loadExchange() {
       try {
@@ -28,15 +54,18 @@ export default function ProductDetailPage() {
         setFx({ rate: null, loading: false });
       }
     }
-    loadExchange();
 
-    if (product?.id && product?.name) {
-      if (!analyticsRef.current) {
-        analyticsRef.current = new FirebaseAnalyticsService();
-      }
-      analyticsRef.current.trackProductView(product.id, product.name);
-    }
+    loadProduct();
+    loadExchange();
   }, [productId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-20">
+        <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
