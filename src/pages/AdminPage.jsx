@@ -860,7 +860,9 @@ function AdminUsersPanel({ users, formatDate }) {
         setActionResult({ type: 'success', msg: `Salutacion enviada a ${user.email}` });
       } else {
         const err = await res.json().catch(() => ({}));
-        setActionResult({ type: 'error', msg: err.error || 'Error enviando email' });
+        const detail = err.details || err.error || `HTTP ${res.status}`;
+        setActionResult({ type: 'error', msg: `Error: ${detail}` });
+        console.error('send-email error:', err);
       }
     } catch {
       setActionResult({ type: 'error', msg: 'Error de conexion' });

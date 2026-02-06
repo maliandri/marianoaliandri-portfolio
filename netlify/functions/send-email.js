@@ -263,22 +263,25 @@ export async function handler(event) {
 
     const template = templates[type](formData);
 
-    // Para greeting, enviar al usuario; para el resto, al admin
+    // Para welcome, enviar al usuario; para el resto, al admin
     const recipient = template.to || ADMIN_EMAIL;
+    const toList = Array.isArray(recipient) ? recipient : [recipient];
+
+    console.log(`Enviando email tipo=${type}, from=${FROM_EMAIL}, to=${toList.join(',')}, subject=${template.subject}`);
 
     const { data: emailResult, error } = await resend.emails.send({
       from: FROM_EMAIL,
-      to: Array.isArray(recipient) ? recipient : [recipient],
+      to: toList,
       subject: template.subject,
       html: template.html,
     });
 
     if (error) {
-      console.error('Error Resend:', error);
+      console.error('Error Resend:', JSON.stringify(error));
       return {
         statusCode: 500,
         headers: responseHeaders,
-        body: JSON.stringify({ error: 'Error enviando email', details: error.message }),
+        body: JSON.stringify({ error: 'Error enviando email', details: error.message, name: error.name, statusCode: error.statusCode }),
       };
     }
 
@@ -290,11 +293,11 @@ export async function handler(event) {
       body: JSON.stringify({ success: true, message: 'Email enviado correctamente', id: emailResult.id }),
     };
   } catch (error) {
-    console.error('Error en send-email:', error);
+    console.error('Error en send-email:', error.message, error.stack);
     return {
       statusCode: 500,
       headers: responseHeaders,
-      body: JSON.stringify({ error: 'Error interno', details: error.message }),
+      body: JSON.stringify({ error: 'Error interno', details: error.message, stack: error.stack?.split('\n').slice(0, 3) }),
     };
   }
 }
