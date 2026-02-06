@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { ExchangeService, formatARS, formatUSD } from '../utils/exchangeService';
 
@@ -153,12 +154,12 @@ export default function ProductCard({ product, onViewDetails }) {
 
           {/* Botones */}
           <div className="flex gap-2">
-            <button
-              onClick={() => onViewDetails(product)}
-              className="flex-1 px-4 py-2 border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-sm font-semibold"
+            <Link
+              to={`/tienda/${product.id}`}
+              className="flex-1 px-4 py-2 border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-sm font-semibold text-center"
             >
               Ver Detalles
-            </button>
+            </Link>
 
             {!isCustom && (
               <button

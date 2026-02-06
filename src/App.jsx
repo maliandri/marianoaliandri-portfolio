@@ -70,6 +70,7 @@ import ProfilePage from "./pages/ProfilePage.jsx";
 import OrdersPage from "./pages/OrdersPage.jsx";
 import StorePage from "./pages/StorePage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
+import ProductDetailPage from "./pages/ProductDetailPage.jsx";
 
 export default function App() {
   const location = useLocation();
@@ -166,6 +167,7 @@ export default function App() {
           <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/mis-compras" element={<OrdersPage />} />
           <Route path="/tienda" element={<StorePage />} />
+          <Route path="/tienda/:productId" element={<ProductDetailPage />} />
           <Route path="/admin" element={<AdminPage />} />
           {/* Rutas de herramientas - Renderizan el HomePage con el modal abierto */}
           <Route path="/web" element={<HomePage />} />
