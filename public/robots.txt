@@ -75,14 +75,24 @@ User-agent: *
 Allow: /
 
 # ========================================
-# BLOQUEAR SOLO SI NECESARIO
-# (actualmente todo permitido)
+# RUTAS PRIVADAS Y NO INDEXABLES
 # ========================================
 
-# Descomenta estas líneas si querés bloquear algo específico:
-# Disallow: /admin/
-# Disallow: /api/
-# Disallow: /.env
+# Panel de administración (requiere auth)
+Disallow: /admin
+Disallow: /perfil
+Disallow: /mis-compras
+
+# Callbacks de pagos (no deben indexarse)
+Disallow: /payment-pending
+Disallow: /payment-success
+Disallow: /payment-failure
+Disallow: /success
+Disallow: /failure
+Disallow: /pending
+
+# Netlify functions
+Disallow: /.netlify/
 
 # ========================================
 # SITEMAP

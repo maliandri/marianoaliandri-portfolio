@@ -87,6 +87,43 @@
   status = 301
   force = true
 
+# Redirecciones de callbacks de MercadoPago (evitar indexación)
+[[redirects]]
+  from = "/payment-pending"
+  to = "/?payment=pending"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/payment-success"
+  to = "/?payment=success"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/payment-failure"
+  to = "/?payment=failure"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/success"
+  to = "/?payment=success"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/failure"
+  to = "/?payment=failure"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/pending"
+  to = "/?payment=pending"
+  status = 301
+  force = true
+
 # SPA redirect (debe ir al final)
 [[redirects]]
   from = "/*"

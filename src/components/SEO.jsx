@@ -1,7 +1,7 @@
 import React from 'react';
 
 const SEO = ({ title, description, canonical, robots }) => {
-  const siteUrl = 'https://www.marianoaliandri.com.ar';
+  const siteUrl = 'https://marianoaliandri.com.ar';
   const canonicalUrl = canonical ? `${siteUrl}${canonical}` : siteUrl;
 
   return (

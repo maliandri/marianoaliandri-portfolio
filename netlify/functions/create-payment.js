@@ -65,9 +65,9 @@ export async function handler(event) {
       items: paymentItems,
       payer: payer || {},
       back_urls: {
-        success: `${process.env.URL}/success`,
-        failure: `${process.env.URL}/failure`,
-        pending: `${process.env.URL}/pending`
+        success: `${process.env.URL}/?payment=success`,
+        failure: `${process.env.URL}/?payment=failure`,
+        pending: `${process.env.URL}/?payment=pending`
       },
       auto_return: 'approved',
       metadata: {
