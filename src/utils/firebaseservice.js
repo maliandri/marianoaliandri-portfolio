@@ -9,7 +9,14 @@ import {
   increment,
   serverTimestamp,
   onSnapshot,
-  runTransaction
+  runTransaction,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  limit as limitQuery
 } from 'firebase/firestore';
 import {
   getAuth,
@@ -670,6 +677,65 @@ export class FirebaseAuthService {
 
 // Crear instancia global de autenticación
 export const firebaseAuth = new FirebaseAuthService();
+
+// ===== SERVICIO DE PREGUNTAS Y RESPUESTAS =====
+class FirebaseQAService {
+  constructor() {
+    this.db = db;
+  }
+
+  async submitQuestion(productId, productName, questionText, user) {
+    if (!user) throw new Error('Usuario no autenticado');
+    if (questionText.length < 10 || questionText.length > 500) {
+      throw new Error('La pregunta debe tener entre 10 y 500 caracteres');
+    }
+
+    const ref = await addDoc(collection(this.db, 'productQuestions'), {
+      productId,
+      productName,
+      questionText,
+      questionAuthorUid: user.uid,
+      questionAuthorName: user.displayName || 'Usuario',
+      questionAuthorPhoto: user.photoURL || '',
+      createdAt: serverTimestamp(),
+      answerText: null,
+      answeredAt: null,
+      answeredBy: null,
+      isVisible: true
+    });
+
+    return ref;
+  }
+
+  async getQuestionsByProduct(productId, maxResults = 50) {
+    const q = query(
+      collection(this.db, 'productQuestions'),
+      where('productId', '==', productId),
+      where('isVisible', '==', true),
+      orderBy('createdAt', 'desc'),
+      limitQuery(maxResults)
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  async answerQuestion(questionId, answerText) {
+    await updateDoc(doc(this.db, 'productQuestions', questionId), {
+      answerText,
+      answeredAt: serverTimestamp(),
+      answeredBy: 'Mariano Aliandri'
+    });
+  }
+
+  async hideQuestion(questionId) {
+    await updateDoc(doc(this.db, 'productQuestions', questionId), {
+      isVisible: false
+    });
+  }
+}
+
+export const firebaseQA = new FirebaseQAService();
 
 // Exportar db para uso directo en páginas
 export { db };

@@ -6,6 +6,7 @@ import { ExchangeService, formatARS, formatUSD } from '../utils/exchangeService'
 import { FirebaseAnalyticsService } from '../utils/firebaseservice';
 import priceService from '../utils/priceService';
 import SEO from '../components/SEO';
+import ProductQA from '../components/ProductQA';
 
 export default function ProductDetailPage() {
   const { productId } = useParams();
@@ -241,8 +242,11 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
+              {/* Preguntas y Respuestas */}
+              <ProductQA productId={productId} productName={product.name} />
+
               {/* Precio y CTA */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-8">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
                     {isCustom ? (
