@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../utils/firebaseservice';
+import { db, firebaseQA } from '../utils/firebaseservice';
 import priceService from '../utils/priceService';
 import SocialMediaDashboard from '../components/SocialMediaDashboard';
 
@@ -451,7 +451,8 @@ export default function AdminPage() {
               { id: 'users', label: 'Usuarios', icon: '👥' },
               { id: 'orders', label: 'Órdenes', icon: '📦' },
               { id: 'products', label: 'Productos', icon: '🛍️' },
-              { id: 'social', label: 'Redes Sociales', icon: '📱' }
+              { id: 'social', label: 'Redes Sociales', icon: '📱' },
+              { id: 'questions', label: 'Preguntas', icon: '💬' }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -672,6 +673,10 @@ export default function AdminPage() {
         {!loading && activeTab === 'social' && (
           <SocialMediaDashboard />
         )}
+
+        {!loading && activeTab === 'questions' && (
+          <AdminQuestionsPanel />
+        )}
       </div>
     </div>
   );
@@ -846,6 +851,220 @@ function ProductCard({ product, onUpdate, onDelete, formatARS }) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminQuestionsPanel() {
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('pending'); // 'pending', 'answered', 'hidden', 'all'
+  const [answeringId, setAnsweringId] = useState(null);
+  const [answerText, setAnswerText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    loadQuestions();
+  }, []);
+
+  const loadQuestions = async () => {
+    setLoading(true);
+    try {
+      const data = await firebaseQA.getAllQuestions();
+      setQuestions(data);
+    } catch (err) {
+      console.error('Error cargando preguntas:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAnswer = async (questionId) => {
+    if (!answerText.trim()) return;
+    setSubmitting(true);
+    try {
+      await firebaseQA.answerQuestion(questionId, answerText.trim());
+      setAnsweringId(null);
+      setAnswerText('');
+      await loadQuestions();
+    } catch (err) {
+      console.error('Error respondiendo:', err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleHide = async (questionId) => {
+    try {
+      await firebaseQA.hideQuestion(questionId);
+      await loadQuestions();
+    } catch (err) {
+      console.error('Error ocultando:', err);
+    }
+  };
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return '-';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  const filtered = questions.filter(q => {
+    if (filter === 'pending') return q.isVisible && !q.answerText;
+    if (filter === 'answered') return q.isVisible && q.answerText;
+    if (filter === 'hidden') return !q.isVisible;
+    return true;
+  });
+
+  const pendingCount = questions.filter(q => q.isVisible && !q.answerText).length;
+  const answeredCount = questions.filter(q => q.isVisible && q.answerText).length;
+  const hiddenCount = questions.filter(q => !q.isVisible).length;
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Preguntas de Productos
+        </h2>
+        <button
+          onClick={loadQuestions}
+          className="px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+        >
+          Actualizar
+        </button>
+      </div>
+
+      {/* Filtros */}
+      <div className="flex gap-2 flex-wrap">
+        {[
+          { id: 'pending', label: `Pendientes (${pendingCount})`, color: 'yellow' },
+          { id: 'answered', label: `Respondidas (${answeredCount})`, color: 'green' },
+          { id: 'hidden', label: `Ocultas (${hiddenCount})`, color: 'red' },
+          { id: 'all', label: `Todas (${questions.length})`, color: 'gray' }
+        ].map(f => (
+          <button
+            key={f.id}
+            onClick={() => setFilter(f.id)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              filter === f.id
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Lista de preguntas */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          No hay preguntas en esta categoria
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map(q => (
+            <div key={q.id} className={`bg-white dark:bg-gray-800 rounded-lg border p-4 ${!q.isVisible ? 'opacity-50 border-red-300 dark:border-red-800' : 'border-gray-200 dark:border-gray-700'}`}>
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <div className="flex items-center gap-2">
+                  {q.questionAuthorPhoto ? (
+                    <img src={q.questionAuthorPhoto} alt="" className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center text-sm font-bold text-purple-700 dark:text-purple-300">
+                      {(q.questionAuthorName || '?')[0]}
+                    </div>
+                  )}
+                  <div>
+                    <span className="font-semibold text-gray-900 dark:text-white text-sm">{q.questionAuthorName}</span>
+                    <span className="text-xs text-gray-400 ml-2">{formatDate(q.createdAt)}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                    {q.productName || q.productId}
+                  </span>
+                  {q.answerText ? (
+                    <span className="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">Respondida</span>
+                  ) : (
+                    <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-2 py-0.5 rounded-full">Pendiente</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Pregunta */}
+              <p className="text-gray-700 dark:text-gray-300 mb-3">{q.questionText}</p>
+
+              {/* Respuesta existente */}
+              {q.answerText && (
+                <div className="border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-900/20 rounded-r-lg p-3 mb-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">{q.answeredBy || 'Mariano Aliandri'}</span>
+                    <span className="text-xs text-gray-400">{formatDate(q.answeredAt)}</span>
+                  </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{q.answerText}</p>
+                </div>
+              )}
+
+              {/* Form de respuesta */}
+              {answeringId === q.id ? (
+                <div className="space-y-2">
+                  <textarea
+                    value={answerText}
+                    onChange={(e) => setAnswerText(e.target.value)}
+                    placeholder="Escribi tu respuesta..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleAnswer(q.id)}
+                      disabled={submitting || !answerText.trim()}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium disabled:opacity-50 flex items-center gap-1"
+                    >
+                      {submitting && <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                      Publicar Respuesta
+                    </button>
+                    <button
+                      onClick={() => { setAnsweringId(null); setAnswerText(''); }}
+                      className="px-4 py-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-sm"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  {!q.answerText && q.isVisible && (
+                    <button
+                      onClick={() => { setAnsweringId(q.id); setAnswerText(''); }}
+                      className="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                    >
+                      Responder
+                    </button>
+                  )}
+                  {q.isVisible && (
+                    <button
+                      onClick={() => handleHide(q.id)}
+                      className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                    >
+                      Ocultar
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

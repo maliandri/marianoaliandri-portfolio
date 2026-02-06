@@ -733,6 +733,15 @@ class FirebaseQAService {
       isVisible: false
     });
   }
+
+  async getAllQuestions() {
+    const q = query(
+      collection(this.db, 'productQuestions'),
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
 }
 
 export const firebaseQA = new FirebaseQAService();
