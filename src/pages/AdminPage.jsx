@@ -564,29 +564,7 @@ export default function AdminPage() {
         )}
 
         {!loading && activeTab === 'users' && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Usuarios Registrados ({users.length})</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead>
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nombre</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Registro</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {users.map(user => (
-                    <tr key={user.id}>
-                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.email}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.displayName || 'N/A'}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{formatDate(user.createdAt)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <AdminUsersPanel users={users} formatDate={formatDate} />
         )}
 
         {!loading && activeTab === 'orders' && (
@@ -853,6 +831,198 @@ function ProductCard({ product, onUpdate, onDelete, formatARS }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function AdminUsersPanel({ users, formatDate }) {
+  const [showGreeting, setShowGreeting] = useState(false);
+  const [greetingSubject, setGreetingSubject] = useState('Saludos de Mariano Aliandri');
+  const [greetingMessage, setGreetingMessage] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [sending, setSending] = useState(false);
+  const [sendResult, setSendResult] = useState(null);
+
+  const toggleUser = (userId) => {
+    setSelectedUsers(prev =>
+      prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const toggleAll = () => {
+    if (selectedUsers.length === users.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(users.map(u => u.id));
+    }
+  };
+
+  const sendGreetings = async () => {
+    if (!greetingMessage.trim() || selectedUsers.length === 0) return;
+
+    setSending(true);
+    setSendResult(null);
+    let sent = 0;
+    let failed = 0;
+
+    for (const userId of selectedUsers) {
+      const user = users.find(u => u.id === userId);
+      if (!user?.email) { failed++; continue; }
+
+      try {
+        const res = await fetch('/.netlify/functions/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'greeting',
+            to: user.email,
+            recipientName: user.displayName || '',
+            subject: greetingSubject,
+            message: greetingMessage,
+          }),
+        });
+        if (res.ok) sent++;
+        else failed++;
+      } catch {
+        failed++;
+      }
+    }
+
+    setSending(false);
+    setSendResult({ sent, failed });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Usuarios Registrados ({users.length})</h2>
+          <button
+            onClick={() => { setShowGreeting(!showGreeting); setSendResult(null); }}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              showGreeting
+                ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700'
+            }`}
+          >
+            {showGreeting ? 'Cancelar' : 'Enviar Salutaciones'}
+          </button>
+        </div>
+
+        {/* Panel de salutaciones */}
+        {showGreeting && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="mb-6 p-5 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl border border-purple-200 dark:border-purple-800"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Componer Salutacion</h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asunto</label>
+                <input
+                  type="text"
+                  value={greetingSubject}
+                  onChange={(e) => setGreetingSubject(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Asunto del email..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mensaje</label>
+                <textarea
+                  value={greetingMessage}
+                  onChange={(e) => setGreetingMessage(e.target.value)}
+                  rows={5}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  placeholder="Escribi tu salutacion aqui..."
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedUsers.length} usuario{selectedUsers.length !== 1 ? 's' : ''} seleccionado{selectedUsers.length !== 1 ? 's' : ''}
+                </span>
+                <button
+                  onClick={sendGreetings}
+                  disabled={sending || !greetingMessage.trim() || selectedUsers.length === 0}
+                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {sending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>Enviar Salutacion</>
+                  )}
+                </button>
+              </div>
+
+              {sendResult && (
+                <div className={`p-3 rounded-lg text-sm font-medium ${
+                  sendResult.failed === 0
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                    : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                }`}>
+                  Enviados: {sendResult.sent} | Fallidos: {sendResult.failed}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Tabla de usuarios */}
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead>
+              <tr>
+                {showGreeting && (
+                  <th className="px-4 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.length === users.length && users.length > 0}
+                      onChange={toggleAll}
+                      className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                    />
+                  </th>
+                )}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nombre</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Registro</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {users.map(user => (
+                <tr
+                  key={user.id}
+                  className={`${showGreeting ? 'cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/10' : ''} ${
+                    selectedUsers.includes(user.id) ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                  }`}
+                  onClick={showGreeting ? () => toggleUser(user.id) : undefined}
+                >
+                  {showGreeting && (
+                    <td className="px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.includes(user.id)}
+                        onChange={() => toggleUser(user.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                      />
+                    </td>
+                  )}
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.email}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.displayName || 'N/A'}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{formatDate(user.createdAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

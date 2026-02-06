@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Resend } from 'resend';
 
 // Contexto del asistente de Mariano - Estrategia de cierre de leads
 const MARIANO_CONTEXT = `
@@ -137,31 +138,36 @@ function detectLeadInfo(message, conversationHistory = []) {
   };
 }
 
-// Enviar notificación de lead por email usando Netlify Forms
+// Enviar notificación de lead por email usando Resend
 async function sendLeadNotification(leadInfo, lastMessage, conversationHistory) {
-  // Construir resumen de la conversación
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('RESEND_API_KEY no configurada, omitiendo email');
+    return;
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
   const conversationSummary = conversationHistory
     .filter(msg => msg.role === 'user')
     .map((msg, i) => `${i + 1}. ${msg.parts[0].text}`)
     .join('\n');
 
-  const formData = new URLSearchParams();
-  formData.append('form-name', 'chatbot-lead');
-  formData.append('name', leadInfo.name);
-  formData.append('email', leadInfo.email);
-  formData.append('phone', leadInfo.phone);
-  formData.append('last-message', lastMessage);
-  formData.append('conversation', conversationSummary);
-  formData.append('timestamp', leadInfo.timestamp);
-
-  const response = await fetch('https://marianoaliandri.com.ar/', {
+  // Importar la funcion send-email internamente
+  const response = await fetch(`https://${process.env.URL || 'marianoaliandri.com.ar'}/.netlify/functions/send-email`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: formData.toString()
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'chatbot-lead',
+      name: leadInfo.name,
+      email: leadInfo.email,
+      phone: leadInfo.phone,
+      message: lastMessage,
+      conversation: conversationSummary,
+    }),
   });
 
   if (!response.ok) {
-    throw new Error(`Error enviando formulario: ${response.status}`);
+    throw new Error(`Error enviando email: ${response.status}`);
   }
 
   return response;
