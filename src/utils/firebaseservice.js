@@ -6,6 +6,7 @@ import {
   setDoc,
   getDoc,
   updateDoc,
+  deleteDoc,
   increment,
   serverTimestamp,
   onSnapshot,
@@ -537,19 +538,36 @@ export class FirebaseAuthService {
       const result = await getRedirectResult(this.auth);
       if (result && result.user) {
         console.log('✅ Login con redirect exitoso:', result.user.displayName);
+        const user = result.user;
 
-        // Intentar guardar datos del usuario en Firestore (no bloqueante)
         try {
-          const userRef = doc(this.db, 'users', result.user.uid);
-          await setDoc(userRef, {
-            uid: result.user.uid,
-            displayName: result.user.displayName,
-            email: result.user.email,
-            photoURL: result.user.photoURL,
-            lastLogin: serverTimestamp(),
-            createdAt: serverTimestamp()
-          }, { merge: true });
-          console.log('✅ Datos de usuario guardados en Firestore');
+          const userRef = doc(this.db, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+          const isNewUser = !userSnap.exists();
+
+          if (isNewUser) {
+            await setDoc(userRef, {
+              uid: user.uid,
+              displayName: user.displayName,
+              email: user.email,
+              photoURL: user.photoURL,
+              lastLogin: serverTimestamp(),
+              createdAt: serverTimestamp(),
+              welcomeEmailSent: false
+            });
+          } else {
+            await setDoc(userRef, {
+              displayName: user.displayName,
+              photoURL: user.photoURL,
+              lastLogin: serverTimestamp()
+            }, { merge: true });
+          }
+
+          if (isNewUser) {
+            this._sendWelcomeEmail(user.displayName, user.email, userRef);
+          }
+
+          console.log(`✅ Datos de usuario ${isNewUser ? 'creados' : 'actualizados'} en Firestore`);
         } catch (firestoreError) {
           console.warn('⚠️ No se pudieron guardar datos en Firestore:', firestoreError.message);
         }
@@ -570,22 +588,38 @@ export class FirebaseAuthService {
       const result = await signInWithPopup(this.auth, this.googleProvider);
       const user = result.user;
 
-      // Intentar guardar datos del usuario en Firestore (no bloqueante)
+      // Verificar si es primer login y guardar datos
       try {
         const userRef = doc(this.db, 'users', user.uid);
-        await setDoc(userRef, {
-          uid: user.uid,
-          displayName: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          lastLogin: serverTimestamp(),
-          createdAt: serverTimestamp()
-        }, { merge: true });
-        console.log('✅ Datos de usuario guardados en Firestore');
+        const userSnap = await getDoc(userRef);
+        const isNewUser = !userSnap.exists();
+
+        if (isNewUser) {
+          await setDoc(userRef, {
+            uid: user.uid,
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            lastLogin: serverTimestamp(),
+            createdAt: serverTimestamp(),
+            welcomeEmailSent: false
+          });
+        } else {
+          await setDoc(userRef, {
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            lastLogin: serverTimestamp()
+          }, { merge: true });
+        }
+
+        // Enviar email de bienvenida si es nuevo usuario
+        if (isNewUser) {
+          this._sendWelcomeEmail(user.displayName, user.email, userRef);
+        }
+
+        console.log(`✅ Datos de usuario ${isNewUser ? 'creados' : 'actualizados'} en Firestore`);
       } catch (firestoreError) {
-        // No bloquear el login si Firestore falla
         console.warn('⚠️ No se pudieron guardar datos en Firestore:', firestoreError.message);
-        console.warn('El login continuará de todas formas');
       }
 
       console.log('✅ Login exitoso:', user.displayName);
@@ -604,6 +638,27 @@ export class FirebaseAuthService {
         success: false,
         error: error.message
       };
+    }
+  }
+
+  // Enviar email de bienvenida (no bloqueante)
+  async _sendWelcomeEmail(name, email, userRef) {
+    try {
+      const res = await fetch('/.netlify/functions/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'welcome',
+          to: email,
+          recipientName: name,
+        }),
+      });
+      if (res.ok) {
+        await setDoc(userRef, { welcomeEmailSent: true }, { merge: true });
+        console.log('📧 Email de bienvenida enviado a', email);
+      }
+    } catch (err) {
+      console.warn('⚠️ Error enviando email de bienvenida:', err.message);
     }
   }
 

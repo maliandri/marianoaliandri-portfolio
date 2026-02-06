@@ -836,191 +836,109 @@ function ProductCard({ product, onUpdate, onDelete, formatARS }) {
 }
 
 function AdminUsersPanel({ users, formatDate }) {
-  const [showGreeting, setShowGreeting] = useState(false);
-  const [greetingSubject, setGreetingSubject] = useState('Saludos de Mariano Aliandri');
-  const [greetingMessage, setGreetingMessage] = useState('');
-  const [selectedUsers, setSelectedUsers] = useState([]);
-  const [sending, setSending] = useState(false);
-  const [sendResult, setSendResult] = useState(null);
+  const [sendingId, setSendingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [actionResult, setActionResult] = useState(null);
+  const [localUsers, setLocalUsers] = useState(users);
 
-  const toggleUser = (userId) => {
-    setSelectedUsers(prev =>
-      prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
-    );
-  };
+  useEffect(() => { setLocalUsers(users); }, [users]);
 
-  const toggleAll = () => {
-    if (selectedUsers.length === users.length) {
-      setSelectedUsers([]);
-    } else {
-      setSelectedUsers(users.map(u => u.id));
-    }
-  };
-
-  const sendGreetings = async () => {
-    if (!greetingMessage.trim() || selectedUsers.length === 0) return;
-
-    setSending(true);
-    setSendResult(null);
-    let sent = 0;
-    let failed = 0;
-
-    for (const userId of selectedUsers) {
-      const user = users.find(u => u.id === userId);
-      if (!user?.email) { failed++; continue; }
-
-      try {
-        const res = await fetch('/.netlify/functions/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'greeting',
-            to: user.email,
-            recipientName: user.displayName || '',
-            subject: greetingSubject,
-            message: greetingMessage,
-          }),
-        });
-        if (res.ok) sent++;
-        else failed++;
-      } catch {
-        failed++;
+  const resendWelcome = async (user) => {
+    setSendingId(user.id);
+    setActionResult(null);
+    try {
+      const res = await fetch('/.netlify/functions/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'welcome',
+          to: user.email,
+          recipientName: user.displayName || '',
+        }),
+      });
+      if (res.ok) {
+        setActionResult({ type: 'success', msg: `Salutacion enviada a ${user.email}` });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setActionResult({ type: 'error', msg: err.error || 'Error enviando email' });
       }
+    } catch {
+      setActionResult({ type: 'error', msg: 'Error de conexion' });
+    } finally {
+      setSendingId(null);
     }
+  };
 
-    setSending(false);
-    setSendResult({ sent, failed });
+  const deleteUser = async (user) => {
+    if (!confirm(`Eliminar a ${user.displayName || user.email} de la base de datos?\n\nEsto elimina solo el registro en Firestore, no la cuenta de Google.`)) return;
+
+    setDeletingId(user.id);
+    setActionResult(null);
+    try {
+      await deleteDoc(doc(db, 'users', user.id));
+      setLocalUsers(prev => prev.filter(u => u.id !== user.id));
+      setActionResult({ type: 'success', msg: `${user.displayName || user.email} eliminado` });
+    } catch (err) {
+      setActionResult({ type: 'error', msg: 'Error eliminando: ' + err.message });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Usuarios Registrados ({users.length})</h2>
-          <button
-            onClick={() => { setShowGreeting(!showGreeting); setSendResult(null); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              showGreeting
-                ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700'
-            }`}
-          >
-            {showGreeting ? 'Cancelar' : 'Enviar Salutaciones'}
-          </button>
-        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Usuarios Registrados ({localUsers.length})</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Al registrarse por primera vez, se les envia automaticamente un email de bienvenida.</p>
 
-        {/* Panel de salutaciones */}
-        {showGreeting && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="mb-6 p-5 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl border border-purple-200 dark:border-purple-800"
-          >
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Componer Salutacion</h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asunto</label>
-                <input
-                  type="text"
-                  value={greetingSubject}
-                  onChange={(e) => setGreetingSubject(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Asunto del email..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mensaje</label>
-                <textarea
-                  value={greetingMessage}
-                  onChange={(e) => setGreetingMessage(e.target.value)}
-                  rows={5}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                  placeholder="Escribi tu salutacion aqui..."
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {selectedUsers.length} usuario{selectedUsers.length !== 1 ? 's' : ''} seleccionado{selectedUsers.length !== 1 ? 's' : ''}
-                </span>
-                <button
-                  onClick={sendGreetings}
-                  disabled={sending || !greetingMessage.trim() || selectedUsers.length === 0}
-                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {sending ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Enviando...
-                    </>
-                  ) : (
-                    <>Enviar Salutacion</>
-                  )}
-                </button>
-              </div>
-
-              {sendResult && (
-                <div className={`p-3 rounded-lg text-sm font-medium ${
-                  sendResult.failed === 0
-                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                    : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                }`}>
-                  Enviados: {sendResult.sent} | Fallidos: {sendResult.failed}
-                </div>
-              )}
-            </div>
-          </motion.div>
+        {actionResult && (
+          <div className={`mb-4 p-3 rounded-lg text-sm font-medium ${
+            actionResult.type === 'success'
+              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+          }`}>
+            {actionResult.msg}
+          </div>
         )}
 
-        {/* Tabla de usuarios */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-              <tr>
-                {showGreeting && (
-                  <th className="px-4 py-3 text-left">
-                    <input
-                      type="checkbox"
-                      checked={selectedUsers.length === users.length && users.length > 0}
-                      onChange={toggleAll}
-                      className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
-                    />
-                  </th>
+        <div className="space-y-3">
+          {localUsers.map(user => (
+            <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="" className="w-10 h-10 rounded-full flex-shrink-0" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center text-sm font-bold text-purple-700 dark:text-purple-300 flex-shrink-0">
+                    {(user.displayName || user.email || '?')[0].toUpperCase()}
+                  </div>
                 )}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nombre</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Registro</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {users.map(user => (
-                <tr
-                  key={user.id}
-                  className={`${showGreeting ? 'cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/10' : ''} ${
-                    selectedUsers.includes(user.id) ? 'bg-purple-50 dark:bg-purple-900/20' : ''
-                  }`}
-                  onClick={showGreeting ? () => toggleUser(user.id) : undefined}
+                <div className="min-w-0">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{user.displayName || 'Sin nombre'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{formatDate(user.createdAt)}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                <button
+                  onClick={() => resendWelcome(user)}
+                  disabled={sendingId === user.id}
+                  className="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs font-medium disabled:opacity-50 flex items-center gap-1"
                 >
-                  {showGreeting && (
-                    <td className="px-4 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedUsers.includes(user.id)}
-                        onChange={() => toggleUser(user.id)}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
-                      />
-                    </td>
-                  )}
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.email}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.displayName || 'N/A'}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{formatDate(user.createdAt)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  {sendingId === user.id ? (
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : null}
+                  Reenviar Salutacion
+                </button>
+                <button
+                  onClick={() => deleteUser(user)}
+                  disabled={deletingId === user.id}
+                  className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-xs font-medium disabled:opacity-50"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

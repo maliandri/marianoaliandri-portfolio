@@ -170,23 +170,38 @@ const templates = {
     };
   },
 
-  greeting: (data) => ({
-    subject: data.subject || 'Saludos de Mariano Aliandri',
+  welcome: (data) => ({
+    subject: `Bienvenido/a ${data.recipientName || ''} - Mariano Aliandri`,
     to: data.to,
     html: baseTemplate(`
-      <h2 style="margin:0 0 16px;color:#111827;font-size:22px;text-align:center;">Hola${data.recipientName ? ` ${data.recipientName}` : ''}!</h2>
-      <div style="padding:20px;background-color:#faf5ff;border-radius:12px;border:1px solid #e9d5ff;">
-        <p style="margin:0;color:#374151;font-size:15px;line-height:1.8;white-space:pre-line;">${data.message}</p>
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);width:64px;height:64px;border-radius:50%;line-height:64px;font-size:28px;">
+          <span style="color:#fff;">&#9733;</span>
+        </div>
+      </div>
+      <h2 style="margin:0 0 8px;color:#111827;font-size:22px;text-align:center;">Bienvenido/a${data.recipientName ? `, ${data.recipientName}` : ''}!</h2>
+      <p style="margin:0 0 24px;color:#6b7280;font-size:14px;text-align:center;">Gracias por registrarte en marianoaliandri.com.ar</p>
+      <div style="padding:24px;background-color:#faf5ff;border-radius:12px;border:1px solid #e9d5ff;">
+        <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.8;">Hola! Soy Mariano Aliandri, desarrollador web y especialista en Data Analytics.</p>
+        <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.8;">Ahora que sos parte de la comunidad, vas a poder:</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:6px 0;color:#374151;font-size:14px;">&#10003; &nbsp;Hacer preguntas sobre los servicios y productos</td></tr>
+          <tr><td style="padding:6px 0;color:#374151;font-size:14px;">&#10003; &nbsp;Recibir respuestas personalizadas directamente de mi</td></tr>
+          <tr><td style="padding:6px 0;color:#374151;font-size:14px;">&#10003; &nbsp;Acceder a cotizaciones y calculadoras exclusivas</td></tr>
+          <tr><td style="padding:6px 0;color:#374151;font-size:14px;">&#10003; &nbsp;Guardar tu perfil profesional</td></tr>
+        </table>
+        <p style="margin:20px 0 0;color:#374151;font-size:15px;line-height:1.8;">Si tenes alguna consulta o proyecto en mente, no dudes en escribirme. Estoy para ayudarte!</p>
       </div>
       <div style="margin-top:28px;text-align:center;">
-        <a href="https://marianoaliandri.com.ar" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#ffffff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Visitar mi sitio web</a>
+        <a href="https://marianoaliandri.com.ar/store" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#ffffff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin-right:8px;">Ver Servicios</a>
+        <a href="https://wa.me/5492995414422?text=Hola Mariano! Me registre en tu web y me gustaria consultarte sobre..." style="display:inline-block;background:#22c55e;color:#ffffff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">WhatsApp</a>
       </div>
-      <p style="margin:24px 0 0;color:#9ca3af;font-size:13px;text-align:center;line-height:1.6;">
+      <p style="margin:28px 0 0;color:#9ca3af;font-size:13px;text-align:center;line-height:1.6;">
         Mariano Aliandri<br>
         Desarrollo Web & Data Analytics<br>
         <a href="https://wa.me/5492995414422" style="color:#7c3aed;text-decoration:none;">+54 299 541-4422</a>
       </p>
-    `, data.message?.substring(0, 100)),
+    `, `Bienvenido/a ${data.recipientName || ''} a marianoaliandri.com.ar`),
   }),
 
   'chatbot-lead': (data) => ({
