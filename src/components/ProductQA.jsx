@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { firebaseAuth, firebaseQA } from '../utils/firebaseservice';
 
-const ADMIN_EMAIL = 'yo@marianoaliandri.com.ar';
+function isAdminSession() {
+  return sessionStorage.getItem('adminAuth') === 'true';
+}
 
 function timeAgo(timestamp) {
   if (!timestamp) return '';
@@ -29,7 +31,15 @@ export default function ProductQA({ productId, productName }) {
   const [answerText, setAnswerText] = useState('');
   const [answerSubmitting, setAnswerSubmitting] = useState(false);
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const [isAdmin, setIsAdmin] = useState(isAdminSession());
+
+  // Detectar cambios en la sesion admin
+  useEffect(() => {
+    const checkAdmin = () => setIsAdmin(isAdminSession());
+    checkAdmin();
+    window.addEventListener('storage', checkAdmin);
+    return () => window.removeEventListener('storage', checkAdmin);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = firebaseAuth.onAuthChange((userData) => {
