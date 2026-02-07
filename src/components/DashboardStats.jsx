@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useBasicStats } from "../hooks/useFirebaseStats";
+import { useSearchConsoleStats } from "../hooks/useSearchConsole";
 
 export default function DashboardStats({
   isOpen: isOpenProp,
@@ -14,6 +15,7 @@ export default function DashboardStats({
 
   // 🔄 React Query para estadísticas con real-time updates
   const { data: stats, isLoading: loading, error } = useBasicStats();
+  const { data: gscData, isLoading: gscLoading } = useSearchConsoleStats();
 
   // 🔄 Estado híbrido para el modal
   const [openInternal, setOpenInternal] = useState(false);
@@ -82,13 +84,14 @@ export default function DashboardStats({
     try {
       const canvas = document.createElement('canvas');
       const size = 1080;
+      const hasGsc = gscData && gscData.sites && gscData.sites.length > 0;
       canvas.width = size;
-      canvas.height = size;
+      canvas.height = hasGsc ? size + 400 : size;
       const ctx = canvas.getContext('2d');
 
       // Fondo blanco
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, size, size);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Header
       ctx.fillStyle = '#4f46e5'; // indigo-600
@@ -199,12 +202,80 @@ export default function DashboardStats({
         ctx.fillText('No hay datos disponibles', 600, y + 100);
       }
 
-      // Footer
       y += 340;
+
+      // Google Search Console section
+      if (hasGsc) {
+        ctx.fillStyle = '#374151';
+        ctx.font = 'bold 32px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText('🔍 Google Search Console', 60, y);
+
+        ctx.font = '22px Arial';
+        ctx.fillStyle = '#9ca3af';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${gscData.period?.days || 28} dias`, size - 60, y);
+        ctx.textAlign = 'left';
+
+        y += 20;
+
+        // Totales GSC
+        if (gscData.aggregated) {
+          const gscColors = ['#dbeafe', '#e9d5ff', '#d1fae5', '#fed7aa'];
+          const gscLabels = ['Clicks', 'Impresiones', 'CTR', 'Posicion'];
+          const gscValues = [
+            fmt(gscData.aggregated.totalClicks),
+            fmt(gscData.aggregated.totalImpressions),
+            gscData.aggregated.averageCTR + '%',
+            String(gscData.aggregated.averagePosition)
+          ];
+          const cardW = 230;
+          gscLabels.forEach((label, i) => {
+            const cx = 60 + i * (cardW + 15);
+            ctx.fillStyle = gscColors[i];
+            ctx.fillRect(cx, y, cardW, 80);
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '20px Arial';
+            ctx.fillText(label, cx + 15, y + 30);
+            ctx.fillStyle = '#111827';
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText(gscValues[i], cx + 15, y + 65);
+          });
+          y += 100;
+        }
+
+        // Sitios
+        const siteDots = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
+        gscData.sites.forEach((site, si) => {
+          ctx.fillStyle = siteDots[si % siteDots.length];
+          ctx.beginPath();
+          ctx.arc(75, y + 15, 8, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#374151';
+          ctx.font = 'bold 24px Arial';
+          ctx.fillText(site.siteUrl, 95, y + 22);
+
+          ctx.fillStyle = '#6b7280';
+          ctx.font = '22px Arial';
+          ctx.fillText(`${fmt(site.totals.clicks)} clicks  |  ${fmt(site.totals.impressions)} imp  |  CTR ${site.totals.ctr}%  |  Pos ${site.totals.position}`, 95, y + 52);
+
+          if (site.topQueries.length > 0) {
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '20px Arial';
+            const topQ = site.topQueries[0];
+            ctx.fillText(`Top: "${topQ.query}" (${topQ.clicks} clicks)`, 95, y + 78);
+          }
+
+          y += 95;
+        });
+      }
+
+      // Footer
       ctx.fillStyle = '#10b981'; // green-500
       ctx.font = '26px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('● Conectado a Firebase', size / 2, y);
+      ctx.fillText('● Conectado a Firebase', size / 2, y + 20);
 
       // Convertir a blob y copiar
       canvas.toBlob(async (blob) => {
@@ -412,6 +483,9 @@ export default function DashboardStats({
               </div>
             </div>
 
+            {/* Google Search Console */}
+            <SearchConsoleSection data={gscData} loading={gscLoading} fmt={fmt} />
+
             {/* Footer con estado de conexión */}
             <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 text-center">
               <div
@@ -445,7 +519,7 @@ function Item({ label, value, color }) {
     green: "bg-green-50 dark:bg-green-900/20",
     red: "bg-red-50 dark:bg-red-900/20",
   };
-  
+
   return (
     <div className={`${colorMap[color]} p-3 rounded-xl`}>
       <div className="text-[11px] text-gray-600 dark:text-gray-400">
@@ -453,6 +527,144 @@ function Item({ label, value, color }) {
       </div>
       <div className="text-base font-bold text-gray-900 dark:text-gray-100">
         {value}
+      </div>
+    </div>
+  );
+}
+
+// Colores por sitio para GSC
+const siteColors = [
+  { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-600 dark:text-blue-400', dot: 'bg-blue-500' },
+  { bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800', text: 'text-purple-600 dark:text-purple-400', dot: 'bg-purple-500' },
+  { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-600 dark:text-green-400', dot: 'bg-green-500' },
+  { bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-600 dark:text-orange-400', dot: 'bg-orange-500' },
+];
+
+// Sección de Google Search Console
+function SearchConsoleSection({ data, loading, fmt }) {
+  const [expanded, setExpanded] = useState(null);
+
+  if (loading) {
+    return (
+      <div className="mb-4 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl">
+        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+          <span>🔍</span> Google Search Console
+        </h3>
+        <p className="text-xs text-gray-500 animate-pulse">Cargando datos de Search Console...</p>
+      </div>
+    );
+  }
+
+  if (!data || !data.sites) return null;
+
+  const { sites, aggregated, period } = data;
+
+  return (
+    <div className="mb-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <span>🔍</span> Google Search Console
+        </h3>
+        {period && (
+          <span className="text-[10px] text-gray-400 dark:text-gray-500">
+            {period.days} dias
+          </span>
+        )}
+      </div>
+
+      {/* Totales agregados */}
+      {aggregated && (
+        <div className="grid grid-cols-4 gap-2 mb-3">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg text-center">
+            <div className="text-[10px] text-gray-500 dark:text-gray-400">Clicks</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-white">{fmt(aggregated.totalClicks)}</div>
+          </div>
+          <div className="bg-purple-50 dark:bg-purple-900/20 p-2 rounded-lg text-center">
+            <div className="text-[10px] text-gray-500 dark:text-gray-400">Impresiones</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-white">{fmt(aggregated.totalImpressions)}</div>
+          </div>
+          <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded-lg text-center">
+            <div className="text-[10px] text-gray-500 dark:text-gray-400">CTR</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-white">{aggregated.averageCTR}%</div>
+          </div>
+          <div className="bg-orange-50 dark:bg-orange-900/20 p-2 rounded-lg text-center">
+            <div className="text-[10px] text-gray-500 dark:text-gray-400">Posicion</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-white">{aggregated.averagePosition}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Cards por sitio */}
+      <div className="space-y-2">
+        {sites.map((site, i) => {
+          const colors = siteColors[i % siteColors.length];
+          const isExpanded = expanded === i;
+
+          return (
+            <div key={site.siteUrl} className={`${colors.bg} border ${colors.border} rounded-lg overflow-hidden`}>
+              {/* Header del sitio - siempre visible */}
+              <button
+                onClick={() => setExpanded(isExpanded ? null : i)}
+                className="w-full flex items-center justify-between p-2.5 text-left"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`w-2 h-2 rounded-full ${colors.dot} flex-shrink-0`} />
+                  <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
+                    {site.siteUrl}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                  <span className={`text-xs font-bold ${colors.text}`}>{fmt(site.totals.clicks)} clicks</span>
+                  <span className="text-[10px] text-gray-400">{fmt(site.totals.impressions)} imp</span>
+                  <svg
+                    className={`w-3 h-3 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+
+              {/* Detalle expandido */}
+              {isExpanded && (
+                <div className="px-2.5 pb-2.5 space-y-2">
+                  {/* Métricas */}
+                  <div className="flex gap-3 text-[10px] text-gray-500 dark:text-gray-400">
+                    <span>CTR: <strong className="text-gray-700 dark:text-gray-300">{site.totals.ctr}%</strong></span>
+                    <span>Pos: <strong className="text-gray-700 dark:text-gray-300">{site.totals.position}</strong></span>
+                  </div>
+
+                  {/* Top queries */}
+                  {site.topQueries.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">Top Busquedas</p>
+                      {site.topQueries.slice(0, 3).map((q, qi) => (
+                        <div key={qi} className="flex items-center justify-between text-[11px] py-0.5">
+                          <span className="text-gray-600 dark:text-gray-300 truncate max-w-[200px]">"{q.query}"</span>
+                          <span className={`font-semibold ${colors.text}`}>{q.clicks}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Top pages */}
+                  {site.topPages.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">Top Paginas</p>
+                      {site.topPages.slice(0, 3).map((p, pi) => (
+                        <div key={pi} className="flex items-center justify-between text-[11px] py-0.5">
+                          <span className="text-gray-600 dark:text-gray-300 truncate max-w-[200px]">{p.page || '/'}</span>
+                          <span className={`font-semibold ${colors.text}`}>{p.clicks}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
