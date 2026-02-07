@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { ExchangeService, formatARS, formatUSD } from '../utils/exchangeService';
 
 export default function ProductCard({ product, onViewDetails }) {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [fx, setFx] = useState({ rate: null, loading: true });
   const fxService = new ExchangeService();
 
@@ -38,11 +39,12 @@ export default function ProductCard({ product, onViewDetails }) {
 
   return (
     <motion.div
-      className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 flex flex-col h-full"
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 flex flex-col h-full cursor-pointer"
       whileHover={{ y: -5 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      onClick={() => navigate(`/tienda/${product.id}`)}
     >
       {/* Badge Featured */}
       {product.featured && (
@@ -156,6 +158,7 @@ export default function ProductCard({ product, onViewDetails }) {
           <div className="flex gap-2">
             <Link
               to={`/tienda/${product.id}`}
+              onClick={(e) => e.stopPropagation()}
               className="flex-1 px-4 py-2 border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-sm font-semibold text-center"
             >
               Ver Detalles
@@ -164,7 +167,7 @@ export default function ProductCard({ product, onViewDetails }) {
             {!isCustom && (
               <button
                 id={`add-to-cart-${product.id}`}
-                onClick={handleAddToCart}
+                onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
                 className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all text-sm font-semibold shadow-md hover:shadow-lg"
               >
                 Agregar
