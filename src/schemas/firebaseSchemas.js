@@ -10,6 +10,7 @@ export const basicStatsSchema = z.object({
   uniqueVisitors: z.number().int().nonnegative().default(0),
   likes: z.number().int().nonnegative().default(0),
   dislikes: z.number().int().nonnegative().default(0),
+  registeredUsers: z.number().int().nonnegative().default(0),
 });
 
 /**

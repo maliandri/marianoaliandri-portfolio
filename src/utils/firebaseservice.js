@@ -231,7 +231,8 @@ export class FirebaseAnalyticsService {
           totalVisits: data.totalVisits || 0,
           uniqueVisitors: data.uniqueVisitors || 0,
           likes: data.likes || 0,
-          dislikes: data.dislikes || 0
+          dislikes: data.dislikes || 0,
+          registeredUsers: data.registeredUsers || 0
         };
       } else {
         console.log('📊 No hay estadísticas aún, inicializando...');
@@ -240,13 +241,15 @@ export class FirebaseAnalyticsService {
           totalVisits: 0,
           uniqueVisitors: 0,
           likes: 0,
-          dislikes: 0
+          dislikes: 0,
+          registeredUsers: 0
         });
         return {
           totalVisits: 0,
           uniqueVisitors: 0,
           likes: 0,
-          dislikes: 0
+          dislikes: 0,
+          registeredUsers: 0
         };
       }
     } catch (error) {
@@ -255,7 +258,8 @@ export class FirebaseAnalyticsService {
         totalVisits: 0,
         uniqueVisitors: 0,
         likes: 0,
-        dislikes: 0
+        dislikes: 0,
+        registeredUsers: 0
       };
     }
   }
@@ -290,7 +294,8 @@ export class FirebaseAnalyticsService {
               totalVisits: data.totalVisits || 0,
               uniqueVisitors: data.uniqueVisitors || 0,
               likes: data.likes || 0,
-              dislikes: data.dislikes || 0
+              dislikes: data.dislikes || 0,
+              registeredUsers: data.registeredUsers || 0
             };
             console.log('📊 Estadísticas actualizadas en tiempo real:', stats);
             callback(stats);
@@ -489,18 +494,16 @@ export class FirebaseAnalyticsService {
   // Obtener estadísticas completas (extendidas)
   async getExtendedStats() {
     try {
-      const [basicStats, topPages, topProducts, registeredUsers] = await Promise.all([
+      const [basicStats, topPages, topProducts] = await Promise.all([
         this.getStats(),
         this.getTopPages(5),
-        this.getTopProducts(5),
-        this.getRegisteredUsersCount()
+        this.getTopProducts(5)
       ]);
 
       return {
         ...basicStats,
         topPages,
-        topProducts,
-        registeredUsers
+        topProducts
       };
     } catch (error) {
       console.error('❌ Error obteniendo estadísticas extendidas:', error);
@@ -555,6 +558,9 @@ export class FirebaseAuthService {
               createdAt: serverTimestamp(),
               welcomeEmailSent: false
             });
+            // Incrementar contador de usuarios registrados en analytics
+            const statsRef = doc(this.db, 'analytics', 'stats');
+            await updateDoc(statsRef, { registeredUsers: increment(1) }).catch(() => {});
           } else {
             await setDoc(userRef, {
               displayName: user.displayName,
@@ -604,6 +610,9 @@ export class FirebaseAuthService {
             createdAt: serverTimestamp(),
             welcomeEmailSent: false
           });
+          // Incrementar contador de usuarios registrados en analytics
+          const statsRef = doc(this.db, 'analytics', 'stats');
+          await updateDoc(statsRef, { registeredUsers: increment(1) }).catch(() => {});
         } else {
           await setDoc(userRef, {
             displayName: user.displayName,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc, increment } from 'firebase/firestore';
 import { db, firebaseQA } from '../utils/firebaseservice';
 import priceService from '../utils/priceService';
 import SocialMediaDashboard from '../components/SocialMediaDashboard';
@@ -878,6 +878,8 @@ function AdminUsersPanel({ users, formatDate }) {
     setActionResult(null);
     try {
       await deleteDoc(doc(db, 'users', user.id));
+      // Decrementar contador de usuarios registrados en analytics
+      await updateDoc(doc(db, 'analytics', 'stats'), { registeredUsers: increment(-1) }).catch(() => {});
       setLocalUsers(prev => prev.filter(u => u.id !== user.id));
       setActionResult({ type: 'success', msg: `${user.displayName || user.email} eliminado` });
     } catch (err) {
