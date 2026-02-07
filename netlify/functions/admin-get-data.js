@@ -131,6 +131,12 @@ export const handler = async (event) => {
       storeOrders: storeCount
     };
 
+    // Sincronizar contador de usuarios registrados en analytics/stats
+    await db.doc('analytics/stats').set(
+      { registeredUsers: users.length },
+      { merge: true }
+    ).catch(err => console.warn('⚠️ No se pudo sincronizar registeredUsers:', err.message));
+
     console.log('✅ Datos cargados:', {
       users: users.length,
       orders: orders.length,
